@@ -9,7 +9,6 @@ namespace SmartCare.Domain.Entities
 
         public class Product
         {
-
             public Guid ProductId { get; set; }
             public string en_Name { get; set; }
 
@@ -32,11 +31,12 @@ namespace SmartCare.Domain.Entities
 
             public decimal Price { get; set; }
 
-            public bool? IsDeleted { get; set; } = false;
+            public bool IsDeleted { get; set; } = false;
 
+            public bool IsAvailable { get; set; }
 
-            //these might represent text search or AI embedding fields
-            public string? SearchVector { get; set; }
+        //these might represent text search or AI embedding fields
+        public string? SearchVector { get; set; }
 
             public string? EmbeddingVector { get; set; }
 

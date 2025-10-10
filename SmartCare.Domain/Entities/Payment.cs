@@ -12,7 +12,7 @@ namespace SmartCare.Domain.Entities
         public int Id { get; set; }
         public Guid OrderId { get; set; }
         public decimal Amount { get; set; }
-        public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.CreditCard;
+        public PaymentMethod PaymentMethod { get; set; }
         public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
         public string? TransactionId { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
