@@ -1,24 +1,26 @@
-# Ignore Visual Studio and build folders
+# Ignore Visual Studio folders
 .vs/
 */.vs/
+
+# Build folders
 bin/
 obj/
 Debug/
 Release/
 
-# Ignore user-specific files
+# User-specific files
 *.user
 *.suo
 *.userosscache
 *.sln.docstates
 
-# Ignore IDE cache
+# IDE cache
 *.vsidx
 
-# Ignore other temporary files
+# Logs and temp files
 *.log
 *.tmp
 
-# Ignore OS-specific files
+# OS-specific
 .DS_Store
 Thumbs.db
