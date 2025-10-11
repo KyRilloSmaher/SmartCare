@@ -13,12 +13,15 @@ namespace SmartCare.Domain.Entities
     {
         public Gender Gender { get; set; }
         public string ProfileImageUrl { get; set; }
-        public int Age { get; set; }
-        public string Address { get; set; }
+        public DateOnly birthDate { get; set; }
         public string? Code { get; set; }
+        public string? RefreshToken { get; set; }
+        public DateTime? RefreshTokenExpiryTime { get; set; }
         public AccountType AccountType { get; set; }
+        public ICollection<Address> Addresses { get; set; }
         public  ICollection<Favorite> Favorites { get; set; }
         public  ICollection<Order> Orders { get; set; }
+        public ICollection<Rate> Rates { get; set; }
         public  Cart Cart { get; set; }
     }
 }

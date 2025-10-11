@@ -10,9 +10,9 @@ namespace SmartCare.Domain.Entities
         public class Product
         {
             public Guid ProductId { get; set; }
-            public string en_Name { get; set; }
+            public string NameAr { get; set; }
 
-            public string ar_Name { get; set; }
+            public string NameEn { get; set; }
             public Guid CategoryId { get; set; }
 
             public Guid CompanyId { get; set; }
@@ -22,7 +22,9 @@ namespace SmartCare.Domain.Entities
             public string MedicalDescription { get; set; }
 
             public string Tags { get; set; }
-
+            public float AverageRating { get; set; }
+            public int TotalRatings { get; set; }
+            public float DiscountPercentage { get; set; }
             public string ActiveIngredients { get; set; }
 
             public string SideEffects { get; set; }
