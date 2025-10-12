@@ -14,7 +14,21 @@ namespace SmartCare.Domain.Constants
         public const string RECORD_UPDATED = "Record updated successfully.";
         public const string RECORD_DELETED = "Record deleted successfully.";
         public const string SETTINGS_SAVED = "Settings saved successfully.";
-
+        // =====================
+        // ⚠️ Common Validation / Errors
+        // =====================
+        public const string ERROR = "An unexpected error occurred. Please try again.";
+        public const string FAILED = "The operation failed. Please try again.";
+        public const string INVALID_INPUT = "Invalid input. Please check the provided data.";
+        public const string RECORD_NOT_FOUND = "The requested record was not found.";
+        public const string DUPLICATE_RECORD = "A record with similar data already exists.";
+        public const string REQUIRED_FIELDS_MISSING = "Some required fields are missing.";
+        public const string INVALID_TOKEN = "Invalid or expired token.";
+        public const string DATABASE_ERROR = "A database error occurred.";
+        public const string NETWORK_ERROR = "A network error occurred. Please try again later.";
+        public const string SERVER_ERROR = "Internal server error.";
+        public const string BAD_REQUEST = "Bad request. Please verify the input data.";
+        public const string NULL_PARAMETER = "Null Parameter to the Function";
         // =====================
         // 👤 User & Auth
         // =====================
@@ -23,6 +37,7 @@ namespace SmartCare.Domain.Constants
         public const string USER_DELETED = "User account deleted successfully.";
         public const string USER_VERIFIED = "User verified successfully.";
         public const string USER_NOT_FOUND = "User not found.";
+        public const string UNAUTHORIZED = "Invalid or expired refresh token";
         public const string EMAIL_ALREADY_EXISTS = "The email address is already registered.";
         public const string USERNAME_ALREADY_EXISTS = "The username is already taken.";
         public const string PASSWORD_CHANGED = "Password changed successfully.";
@@ -31,9 +46,14 @@ namespace SmartCare.Domain.Constants
         public const string ACCOUNT_LOCKED = "Your account is locked. Please contact support.";
         public const string EMAIL_NOT_CONFIRMED = "Please confirm your email before continuing.";
         public const string TOKEN_EXPIRED = "Your session has expired. Please log in again.";
+        public const string TOKEN_GENERATED = "New Refresh Token has been generated";
         public const string LOGIN_SUCCESS = "Login successful.";
         public const string LOGOUT_SUCCESS = "Logout successful.";
         public const string ACCESS_DENIED = "Access denied. You do not have permission to perform this action.";
+        public const string GENERATING_CODE_FAILED = "Failed To Generate Reset Code";
+        public const string RESET_PASSWORD_CODE_SENT = "Reset Code Sent To Your Email Successfully";
+        public const string INVALID_RESET_CODE = "The reset code is invalid or has expired.";
+        public const string PASSWORD_RESET_CODE_CONFIRMED = "Reset Password Code confirmed successfully.";
 
         // =====================
         // 💊 Product & Inventory
@@ -96,20 +116,7 @@ namespace SmartCare.Domain.Constants
         public const string FILE_TOO_LARGE = "The uploaded file is too large. Please upload a smaller file.";
         public const string FILE_NOT_FOUND = "Requested file was not found.";
 
-        // =====================
-        // ⚠️ Common Validation / Errors
-        // =====================
-        public const string ERROR = "An unexpected error occurred. Please try again.";
-        public const string OPERATION_FAILED = "The operation failed. Please try again.";
-        public const string INVALID_INPUT = "Invalid input. Please check the provided data.";
-        public const string RECORD_NOT_FOUND = "The requested record was not found.";
-        public const string DUPLICATE_RECORD = "A record with similar data already exists.";
-        public const string REQUIRED_FIELDS_MISSING = "Some required fields are missing.";
-        public const string INVALID_TOKEN = "Invalid or expired token.";
-        public const string DATABASE_ERROR = "A database error occurred.";
-        public const string NETWORK_ERROR = "A network error occurred. Please try again later.";
-        public const string SERVER_ERROR = "Internal server error.";
-        public const string BAD_REQUEST = "Bad request. Please verify the input data.";
+
 
         // =====================
         // 📢 Notifications
