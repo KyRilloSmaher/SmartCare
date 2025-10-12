@@ -48,6 +48,7 @@ namespace SmartCare.Domain.Entities
             public string? DosageForm { get; set; }
 
             // Navigation properties
+            
             public  Category Category { get; set; }
 
             public  Company Company { get; set; }
@@ -56,6 +57,8 @@ namespace SmartCare.Domain.Entities
             public  ICollection<OrderItem> OrderItems { get; set; }
             public  ICollection<Favorite> Favorites { get; set; }
             public  ICollection<ProductImage> Images { get; set; }
+
+            public ICollection<Rate> Rates { get; set; }
         }
     }
 
