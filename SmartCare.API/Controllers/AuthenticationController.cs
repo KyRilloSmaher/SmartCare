@@ -4,6 +4,10 @@ using SmartCare.Application.IServices;
 using SmartCare.Application.DTOs.Auth.Responses;
 using SmartCare.API.Helpers;
 using SmartCare.Application.Handlers.ResponseHandler;
+using Microsoft.AspNetCore.Authorization;
+using Newtonsoft.Json.Linq;
+using System.Net;
+using System.Security.Claims;
 
 
 
@@ -32,15 +36,7 @@ namespace SmartCare.API.Controllers
             return ControllersHelperMethods.FinalResponse(result);
         }
 
-        /// <summary>
-        /// Confirm user email.
-        /// </summary>
-        [HttpPost(ApplicationRouting.Authentication.ConfirmEmail)]
-        public async Task<IActionResult> ConfirmEmailAsync([FromQuery] ConfirmEmailRequest dto)
-        {
-            var result = await _authenticationService.ConfirmEmailAsync(dto);
-            return ControllersHelperMethods.FinalResponse(result);
-        }
+
 
         /// <summary>
         /// Login and retrieve access + refresh tokens.
@@ -58,6 +54,7 @@ namespace SmartCare.API.Controllers
         /// </summary>
         [HttpPost(ApplicationRouting.Authentication.RefreshToken)]
         [ProducesResponseType(typeof(Response<TokenResponseDto>), StatusCodes.Status200OK)]
+        [Authorize]
         public async Task<IActionResult> RefreshTokenAsync([FromBody] TokenRequestDto dto)
         {
             var result = await _authenticationService.GetRefreshTokenAsync(dto);
@@ -68,9 +65,11 @@ namespace SmartCare.API.Controllers
         /// Change password for logged-in user.
         /// </summary>
         [HttpPost(ApplicationRouting.Authentication.ChangePassword)]
+        [Authorize]
         public async Task<IActionResult> ChangePasswordAsync([FromBody] ChangePasswordRequestDto dto)
         {
-            var result = await _authenticationService.ChangePasswordAsync(dto);
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var result = await _authenticationService.ChangePasswordAsync(userId,dto);
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -78,7 +77,7 @@ namespace SmartCare.API.Controllers
         /// Send reset password code to user email.
         /// </summary>
         [HttpPost(ApplicationRouting.Authentication.SendResetCode)]
-        public async Task<IActionResult> SendResetPasswordCodeAsync([FromBody] SetNewPasswordRequestDto dto)
+        public async Task<IActionResult> SendResetPasswordCodeAsync([FromBody] ForgetPasswordRequestDto dto)
         {
             var result = await _authenticationService.SendResetPasswordCodeAsync(dto);
             return ControllersHelperMethods.FinalResponse(result);
@@ -98,13 +97,36 @@ namespace SmartCare.API.Controllers
         /// Reset user password.
         /// </summary>
         [HttpPost(ApplicationRouting.Authentication.ResetPassword)]
-        public async Task<IActionResult> ResetPasswordAsync([FromBody] ForgetPasswordRequestDto dto)
+        public async Task<IActionResult> ResetPasswordAsync([FromBody] SetNewPasswordRequestDto dto)
         {
             var result = await _authenticationService.ResetPasswordRequestAsync(dto);
             return ControllersHelperMethods.FinalResponse(result);
         }
+        /// <summary>
+        /// Confirm user email.
+        /// </summary>
+        [HttpGet(ApplicationRouting.Authentication.ConfirmEmail)]
+        public async Task<IActionResult> ConfirmEmailAsync([FromQuery] ConfirmEmailRequest dto)
+        {
 
+            if (string.IsNullOrEmpty(dto.Email) || string.IsNullOrEmpty(dto.Token))
+                return Content(ControllersHelperMethods.HtmlTemplate("Invalid request", "Missing email or token."), "text/html");
+
+            var result = await _authenticationService.ConfirmEmailAsync(dto);
+
+            if (result.Succeeded)
+            {
+                return Content(ControllersHelperMethods.HtmlTemplate(
+                    "Email Confirmed ✅",
+                    "Your email has been successfully confirmed! You can now log in to your account."
+                ), "text/html");
+            }
+
+            return Content(ControllersHelperMethods.HtmlTemplate(
+                "Invalid or Expired Link ❌",
+                "The confirmation link is invalid or has expired. Please request a new verification email."
+            ), "text/html");
+        }
         #endregion
     }
 }
-

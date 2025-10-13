@@ -14,7 +14,7 @@ namespace SmartCare.InfraStructure.Configurations
         {
             builder.ToTable("CartItem");
 
-            builder.HasKey(c => new {c.ProductId,c.CartId});
+            builder.HasKey(c => c.CartItemId);
 
 
             builder.Property(c => c.Quantity)

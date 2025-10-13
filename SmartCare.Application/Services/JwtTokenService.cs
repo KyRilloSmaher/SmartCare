@@ -15,9 +15,9 @@ namespace SmartCare.Application.Services
     {
         private readonly JwtSettings _jwtSettings;
 
-        public TokenService(IOptions<JwtSettings> jwtOptions)
+        public TokenService(JwtSettings jwt)
         {
-            _jwtSettings = jwtOptions.Value;
+            _jwtSettings = jwt;
         }
 
         // Generate Access Token (JWT)

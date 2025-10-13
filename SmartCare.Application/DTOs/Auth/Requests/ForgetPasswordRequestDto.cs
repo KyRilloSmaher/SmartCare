@@ -9,6 +9,5 @@ namespace SmartCare.Application.DTOs.Auth.Requests
     public class ForgetPasswordRequestDto
     {
         public string Email { get; set; }
-        public string NewPassword { get; set; }
     }
 }

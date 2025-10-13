@@ -18,10 +18,7 @@ namespace SmartCare.Application.Validators.Auth
                 .Must(e => Constants.IsValid(Constants.StringType.EMAIL, e))
                 .WithMessage("Invalid email format.");
 
-            RuleFor(x => x.NewPassword)
-                .NotEmpty().WithMessage("New password is required.")
-                .Must(p => Constants.IsValid(Constants.StringType.PASSWORD, p))
-                .WithMessage("Invalid password format.");
+
         }
     }
 }

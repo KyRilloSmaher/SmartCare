@@ -23,9 +23,6 @@ namespace SmartCare.Application.Validators.Auth
                 .Must(p => Constants.IsValid(Constants.StringType.PASSWORD, p))
                 .WithMessage("Invalid password format.");
 
-            RuleFor(x => x.ResetCode)
-                .NotEmpty().WithMessage("Reset code is required.")
-                .Length(6).WithMessage("Reset code must be 6 digits long.");
         }
     }
 }

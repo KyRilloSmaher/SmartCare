@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
+using CloudinaryDotNet;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using SmartCare.Application.DTOs.Auth.Requests;
 using SmartCare.Application.DTOs.Auth.Responses;
@@ -12,7 +14,11 @@ using SmartCare.Domain.Entities;
 using SmartCare.Domain.Enums;
 using SmartCare.Domain.Interfaces.IServices;
 using SmartCare.Domain.IRepositories;
+using SmartCare.API.Helpers;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
+using System.Net;
+using System.Web;
 
 namespace SmartCare.Application.Services
 {
@@ -27,6 +33,7 @@ namespace SmartCare.Application.Services
         private readonly IImageUploaderService _imageUploaderService;
         private readonly LinkGenerator _linkGenerator;
         private readonly IMapper _mapper;
+        private readonly IUrlHelper _urlHelper;
         #endregion
 
         #region Constructor
@@ -38,7 +45,8 @@ namespace SmartCare.Application.Services
             IHttpContextAccessor httpContextAccessor,
             IMapper mapper,
             IImageUploaderService imageUploaderService,
-            LinkGenerator linkGenerator)
+            LinkGenerator linkGenerator,
+            IUrlHelper urlHelper)
         {
             _responseHandler = responseHandler;
             _clientRepository = clientRepository;
@@ -48,6 +56,7 @@ namespace SmartCare.Application.Services
             _mapper = mapper;
             _imageUploaderService = imageUploaderService;
             _linkGenerator = linkGenerator;
+            _urlHelper = urlHelper;
         }
         #endregion
 
@@ -91,16 +100,18 @@ namespace SmartCare.Application.Services
 
         public async Task<Response<bool>> ConfirmEmailAsync(ConfirmEmailRequest dto)
         {
+
             var success = await _clientRepository.ConfirmEmailAsync(dto.Email, dto.Token);
             var message = success ? SystemMessages.VERIFICATION_SUCCESS : SystemMessages.VERIFICATION_FAILED;
-            return _responseHandler.Success(success, message);
+
+            return success ? _responseHandler.Success(success, message) : _responseHandler.Failed<bool>(message);
         }
 
         #endregion
 
         #region Password Management
 
-        public async Task<Response<bool>> SendResetPasswordCodeAsync(SetNewPasswordRequestDto dto)
+        public async Task<Response<bool>> SendResetPasswordCodeAsync(ForgetPasswordRequestDto dto)
         {
             try
             {
@@ -143,7 +154,7 @@ namespace SmartCare.Application.Services
             return _responseHandler.Success(isValidCode, message);
         }
 
-        public async Task<Response<bool>> ResetPasswordRequestAsync(ForgetPasswordRequestDto dto)
+        public async Task<Response<bool>> ResetPasswordRequestAsync(SetNewPasswordRequestDto dto)
         {
             try
             {
@@ -166,13 +177,13 @@ namespace SmartCare.Application.Services
             }
         }
 
-        public async Task<Response<bool>> ChangePasswordAsync(ChangePasswordRequestDto dto)
+        public async Task<Response<bool>> ChangePasswordAsync(string UserId ,ChangePasswordRequestDto dto)
         {
             try
             {
                 await _clientRepository.BeginTransactionAsync();
 
-                var user = await _clientRepository.GetByIdAsync(dto.UserId, true);
+                var user = await _clientRepository.GetByIdAsync(UserId, true);
                 if (user == null)
                     return _responseHandler.Failed<bool>(SystemMessages.USER_NOT_FOUND);
 
@@ -236,7 +247,9 @@ namespace SmartCare.Application.Services
 
                 var user = _mapper.Map<Client>(dto);
                 var address = _mapper.Map<Address>(dto.Address);
+                user.Addresses ??= new List<Address>();
                 user.Addresses.Add(address);
+
                 // Upload profile image if provided
                 if (dto.ProfileImage != null)
                 {
@@ -256,16 +269,17 @@ namespace SmartCare.Application.Services
 
                 await _clientRepository.AddToRoleAsync(user, "CLIENT");
 
+                //Send Confirm Email
                 var token = await _clientRepository.GenerateEmailConfirmationTokenAsync(user);
-                var request = _httpContextAccessor.HttpContext.Request;
-                var confirmUrl = _linkGenerator.GetUriByAction(
-                                    httpContext: _httpContextAccessor.HttpContext!,
-                                    action: "ConfirmEmailAsync",
-                                    controller: "Authentication",
-                                    values: new { email = user.Email, code = token }
-                                );
+                Console.WriteLine($"---------------- Token: {token}");
+                var encodedToken = HttpUtility.UrlEncode(token);
+                Console.WriteLine($"----------------Encoded Token: {encodedToken}");
+                var resquestAccessor = _httpContextAccessor.HttpContext.Request;
+                var baseUrl = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host}";
+                var confirmEmailUrl = $"{baseUrl}/{ApplicationRouting.Authentication.ConfirmEmail}?email={user.Email}&token={encodedToken}";
+                Console.WriteLine($"----------------Confirmation URL: {confirmEmailUrl}");
 
-                await _emailService.SendConfirmationEmailAsync(user.Email, confirmUrl);
+                await _emailService.SendConfirmationEmailAsync(user.Email, confirmEmailUrl);
 
                 await _clientRepository.CommitTransactionAsync();
 

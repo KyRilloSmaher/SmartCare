@@ -23,7 +23,7 @@ namespace SmartCare.InfraStructure.Configurations
                 .IsUnique();
 
             builder.Property(c => c.birthDate)
-                .IsRequired(false);
+                .IsRequired();
 
             builder.Property(c => c.RefreshTokenExpiryTime)
                 .IsRequired(false);

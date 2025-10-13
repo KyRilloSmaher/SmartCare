@@ -6,8 +6,10 @@ using SmartCare.InfraStructure.DbContexts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace SmartCare.InfraStructure.Repositories
 {
@@ -21,7 +23,7 @@ namespace SmartCare.InfraStructure.Repositories
         #region Constructor(s)
         public ClientRepository(UserManager<Client> ClientManager, ApplicationDBContext context) : base(context)
         {
-            _ClientManager = _ClientManager ?? throw new ArgumentNullException(nameof(_ClientManager));
+            _ClientManager = ClientManager ?? throw new ArgumentNullException(nameof(_ClientManager));
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
         #endregion
@@ -50,8 +52,9 @@ namespace SmartCare.InfraStructure.Repositories
 
         public async Task<Client?> GetByEmailAsync(string email, bool trackChanges = false)
         {
+
             return trackChanges
-                ? await _ClientManager.Users.SingleOrDefaultAsync(u => u.Email == email)
+                ? await _ClientManager.FindByEmailAsync(email)
                 : await _ClientManager.Users.AsNoTracking().SingleOrDefaultAsync(u => u.Email == email);
         }
         public async Task<Client?> GetByClientnameAsync(string Clientname, bool trackChanges = false)
@@ -156,18 +159,23 @@ namespace SmartCare.InfraStructure.Repositories
 
             if (Client != null)
             {
-                // _context.Entry(Client).State = EntityState.Detached;
+                token = token.Replace(' ', '+');
+                var decodedToken = HttpUtility.UrlDecode(token);
+                Console.WriteLine($"Descoded Code : {decodedToken}");
+                var result = await _ClientManager.ConfirmEmailAsync(Client, decodedToken);
 
-                var result = await _ClientManager.ConfirmEmailAsync(Client, token);
                 if (result.Succeeded)
                 {
                     Client.EmailConfirmed = true;
                     await _ClientManager.UpdateAsync(Client);
                 }
+
                 return result.Succeeded;
             }
+
             return false;
         }
+
 
         public async Task<bool> IsEmailConfirmedAsync(Client Client)
         {

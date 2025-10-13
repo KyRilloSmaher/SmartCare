@@ -28,7 +28,7 @@ builder.Services.AddSwaggerGen();
 //Swagger Gn
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Eye_Scene_Application_API ", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "SmartCare_Application_API ", Version = "v1" });
     c.EnableAnnotations();
 
     c.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
@@ -71,7 +71,12 @@ builder.Services.AddDbContext<ApplicationDBContext>(
 #region Dependency injections
 builder.Services.AddInfrastructureDependencies(builder.Configuration);
 builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+builder.Services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUrlHelper>(x =>
+    x.GetRequiredService<IUrlHelperFactory>().GetUrlHelper(x.GetRequiredService<IActionContextAccessor>().ActionContext));
+
+
 #endregion
 
 

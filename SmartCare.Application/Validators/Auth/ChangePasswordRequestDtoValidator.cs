@@ -13,9 +13,6 @@ namespace SmartCare.Application.Validators.Auth
     {
         public ChangePasswordRequestDtoValidator()
         {
-            RuleFor(x => x.UserId)
-                .NotEmpty().WithMessage("UserId is required.");
-
             RuleFor(x => x.CurrentPassword)
                 .NotEmpty().WithMessage("Current password is required.");
 

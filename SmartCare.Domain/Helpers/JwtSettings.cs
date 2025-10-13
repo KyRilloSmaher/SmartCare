@@ -8,16 +8,15 @@ namespace SmartCare.Domain.Helpers
 {
     public class JwtSettings
     {
-        public string Key { get; set; }
-        public string Issuer { get; set; }
-        public string Audience { get; set; }
+        public string Key { get; set; } = string.Empty!;
+        public string Issuer { get; set; } = string.Empty!;
+        public string Audience { get; set; } = string.Empty!;
         public bool ValidateIssuer { get; set; }
         public bool ValidateAudience { get; set; }
         public bool ValidateLifeTime { get; set; }
         public bool ValidateIssuerSigningKey { get; set; }
         public int AccessTokenLifetimeDays { get; set; }
         public int RefreshTokenLifetimeHours { get; set; }
-
     }
-   
+
 }

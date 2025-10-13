@@ -13,6 +13,10 @@ using SmartCare.Application.Services;
 using SmartCare.Domain.Interfaces.IServices;
 using SmartCare.Application.IServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using SmartCare.Application.Handlers.ResponsesHandler;
+using SmartCare.Application.ExternalServiceInterfaces;
+using SmartCare.InfraStructure.ExternalServices;
+using SmartCare.Application.Mappers;
 
 
 namespace SmartCare.InfraStructure.Extensions
@@ -56,14 +60,24 @@ namespace SmartCare.InfraStructure.Extensions
             // Register Services
             services.AddTransient<IAuthenticationService, AuthenticationService>();
             services.AddTransient<ITokenService, TokenService>();
+
+            // Register External Services 
+
+            services.AddTransient<IEmailService, EmailService>();
+            services.AddTransient<IImageUploaderService, ImageUploaderService>();
+            //services.AddTransient<IPaymentService, PaymentService>();
+
             // Register Automapper
-            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+            services.AddAutoMapper(typeof(ClientMappingProfile));
+
 
             // Register CloudinaryService
             var cloudinary = new CloudinarySettings();
             configuration.GetSection("cloudinary").Bind(cloudinary);
             services.AddSingleton(cloudinary);
 
+            // Some Classes
+            services.AddTransient<ResponseHandler>();
 
             // Email
             var emailSettings = new EmailSettings();
@@ -72,6 +86,8 @@ namespace SmartCare.InfraStructure.Extensions
 
             // JWT Settings
             var jwtSettings = new JwtSettings();
+            configuration.GetSection("JwtSettings").Bind(jwtSettings);
+            services.AddSingleton(jwtSettings);
             services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

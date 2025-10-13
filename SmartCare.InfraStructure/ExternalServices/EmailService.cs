@@ -43,7 +43,7 @@ namespace SmartCare.InfraStructure.ExternalServices
                     {
                         Body = bodybuilder.ToMessageBody()
                     };
-                    Message.From.Add(new MailboxAddress("Future Team", _emailSettings.FromEmail));
+                    Message.From.Add(new MailboxAddress("SmartCare Team", _emailSettings.FromEmail));
                     Message.To.Add(new MailboxAddress("testing", email));
                     Message.Subject = subject ?? "Not Submitted";
                     await client.SendAsync(Message);
@@ -68,7 +68,10 @@ namespace SmartCare.InfraStructure.ExternalServices
             }
 
             var subject = SystemMessages.SUBJECT_EMAIL_CONFIRMATION;
-            var message = string.Format(SystemMessages.CONFIRMATIONEMAIL_TEMPLATE, user.UserName, callbackUrl, DateTime.Now.Year);
+            var message = SystemMessages.CONFIRMATIONEMAIL_TEMPLATE
+                                            .Replace("{{UserName}}", user.UserName)
+                                            .Replace("{{CallbackUrl}}", callbackUrl)
+                                            .Replace("{{Year}}", DateTime.Now.Year.ToString());
             return await SendEmailAsync(email, subject, message);
         }
 
@@ -82,7 +85,10 @@ namespace SmartCare.InfraStructure.ExternalServices
                 return false;
             }
             var Subject = SystemMessages.SUBJECT_PASSWORD_RESET;
-            var message = string.Format(SystemMessages.RESETPASSWORD_TEMPLATE, user.UserName, code, DateTime.Now.Year);
+            var message = SystemMessages.RESETPASSWORD_TEMPLATE
+                                            .Replace("{{UserName}}", user.UserName)
+                                            .Replace("{{Code}}", code)
+                                            .Replace("{{Year}}", DateTime.Now.Year.ToString());
             return await SendEmailAsync(email, Subject, message);
         }
     }

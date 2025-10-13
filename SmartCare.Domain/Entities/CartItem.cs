@@ -8,6 +8,7 @@ namespace SmartCare.Domain.Entities
 {
     public class CartItem
     {
+        public Guid CartItemId { get; set; }
         public Guid CartId { get; set; }
         public Guid ProductId { get; set; }
         public Guid InventoryId { get; set; }
