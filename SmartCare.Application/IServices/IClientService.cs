@@ -14,8 +14,9 @@ namespace SmartCare.Application.IServices
         Task<Response<ClientResponseDto?>> GetClientByIdAsync(string id);
         Task<Response<ClientResponseDto?>> GetClientByEmailAsync(string email);
         Task<Response<IEnumerable<ClientResponseDto>>> GetAllClientsAsync();
-        Task<Response<ClientResponseDto?>> UpdateClientAsync(UpdateClientRequest ClientDto);
+        Task<Response<ClientResponseDto?>> UpdateClientAsync(string Id ,UpdateClientRequest ClientDto);
         Task<Response<bool>> DeleteClientAsync(string id);
+        Task<Response<string>> ChangeClientProfileImageAsync(string userId ,ChangeClientProfileImageRequestDto dto);
 
     }
 }

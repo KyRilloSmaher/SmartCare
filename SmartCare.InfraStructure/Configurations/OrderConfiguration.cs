@@ -35,10 +35,6 @@ namespace SmartCare.InfraStructure.Configurations
                 .WithOne(o => o.Order)
                 .HasForeignKey<Order>(o => o.PaymentId);
 
-            builder.HasOne(o => o.Client)
-                .WithMany(o => o.Orders)
-                .HasForeignKey(o => o.ClientId);
-
             builder.HasOne(o => o.Store)
                 .WithMany(o => o.Orders)
                 .HasForeignKey(o => o.StoreId);

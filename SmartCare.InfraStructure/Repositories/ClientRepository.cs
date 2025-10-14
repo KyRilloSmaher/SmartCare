@@ -46,8 +46,13 @@ namespace SmartCare.InfraStructure.Repositories
         public async Task<Client?> GetByIdAsync(string ClientId, bool trackChanges = false)
         {
             return trackChanges
-                ? await _ClientManager.Users.SingleOrDefaultAsync(u => u.Id == ClientId)
-                : await _ClientManager.Users.AsNoTracking().SingleOrDefaultAsync(u => u.Id == ClientId);
+                ? await _ClientManager.Users.Include(u=>u.Addresses).SingleOrDefaultAsync(u => u.Id == ClientId)
+                : await _ClientManager.Users.Include(u => u.Addresses).AsNoTracking().SingleOrDefaultAsync(u => u.Id == ClientId);
+        }
+        public async override Task<IEnumerable<Client>> GetAllAsync(bool AsTracking = false){ 
+         return AsTracking
+                ? await _ClientManager.Users.Include(u => u.Addresses).ToListAsync()
+                : await _ClientManager.Users.Include(u => u.Addresses).AsNoTracking().ToListAsync();
         }
 
         public async Task<Client?> GetByEmailAsync(string email, bool trackChanges = false)
@@ -159,10 +164,8 @@ namespace SmartCare.InfraStructure.Repositories
 
             if (Client != null)
             {
-                token = token.Replace(' ', '+');
-                var decodedToken = HttpUtility.UrlDecode(token);
-                Console.WriteLine($"Descoded Code : {decodedToken}");
-                var result = await _ClientManager.ConfirmEmailAsync(Client, decodedToken);
+                var decodedToken = WebUtility.UrlDecode(token);
+                var result = await _ClientManager.ConfirmEmailAsync(Client, token);
 
                 if (result.Succeeded)
                 {

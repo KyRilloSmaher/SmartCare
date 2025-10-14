@@ -13,14 +13,16 @@ namespace SmartCare.Application.DTOs.Client.Responses
             public string Id { get; set; } = string.Empty;
             public string UserName { get; set; } = string.Empty;
             public string Email { get; set; } = string.Empty;
-            public Gender Gender { get; set; }
+            public string Gender { get; set; }
             public string ProfileImageUrl { get; set; } = string.Empty;
             public DateOnly BirthDate { get; set; }
-            public string? Code { get; set; }
-            public AccountType AccountType { get; set; }
+            public string AccountType { get; set; }
+            public int RatesCount { get; set; }
+            public int FavoritesCount { get; set; }
+            public int OrdersCount { get; set; }
 
-            // Nested Collections (Optional summaries)
-            public ICollection<CreateAddressResponseDto>? Addresses { get; set; }
+        // Nested Collections (Optional summaries)
+        public ICollection<AddressResponseDto>? Addresses { get; set; }
         
     }
 }

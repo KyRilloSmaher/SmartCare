@@ -64,8 +64,9 @@ namespace SmartCare.API.Controllers
         /// <summary>
         /// Change password for logged-in user.
         /// </summary>
-        [HttpPost(ApplicationRouting.Authentication.ChangePassword)]
         [Authorize]
+        [HttpPost(ApplicationRouting.Authentication.ChangePassword)]
+        [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> ChangePasswordAsync([FromBody] ChangePasswordRequestDto dto)
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
@@ -77,6 +78,7 @@ namespace SmartCare.API.Controllers
         /// Send reset password code to user email.
         /// </summary>
         [HttpPost(ApplicationRouting.Authentication.SendResetCode)]
+        [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> SendResetPasswordCodeAsync([FromBody] ForgetPasswordRequestDto dto)
         {
             var result = await _authenticationService.SendResetPasswordCodeAsync(dto);
@@ -84,9 +86,21 @@ namespace SmartCare.API.Controllers
         }
 
         /// <summary>
+        /// ReSend reset password code to user email.
+        /// </summary>
+        [HttpPost(ApplicationRouting.Authentication.ReSendResetCode)]
+        [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> ReSendResetPasswordCodeAsync([FromBody] ForgetPasswordRequestDto dto)
+        {
+            var result = await _authenticationService.ReSendResetPasswordCodeAsync(dto);
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+
+        /// <summary>
         /// Confirm the reset password code before setting new password.
         /// </summary>
         [HttpPost(ApplicationRouting.Authentication.ConfirmResetPasswordCode)]
+        [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> ConfirmResetPasswordCodeAsync([FromBody] ConfirmResetPasswordCodeRequestDto dto)
         {
             var result = await _authenticationService.ConfirmResetPasswordAsync(dto);
@@ -97,6 +111,7 @@ namespace SmartCare.API.Controllers
         /// Reset user password.
         /// </summary>
         [HttpPost(ApplicationRouting.Authentication.ResetPassword)]
+        [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> ResetPasswordAsync([FromBody] SetNewPasswordRequestDto dto)
         {
             var result = await _authenticationService.ResetPasswordRequestAsync(dto);
@@ -106,6 +121,7 @@ namespace SmartCare.API.Controllers
         /// Confirm user email.
         /// </summary>
         [HttpGet(ApplicationRouting.Authentication.ConfirmEmail)]
+        [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> ConfirmEmailAsync([FromQuery] ConfirmEmailRequest dto)
         {
 
@@ -113,6 +129,30 @@ namespace SmartCare.API.Controllers
                 return Content(ControllersHelperMethods.HtmlTemplate("Invalid request", "Missing email or token."), "text/html");
 
             var result = await _authenticationService.ConfirmEmailAsync(dto);
+
+            if (result.Succeeded)
+            {
+                return Content(ControllersHelperMethods.HtmlTemplate(
+                    "Email Confirmed ✅",
+                    "Your email has been successfully confirmed! You can now log in to your account."
+                ), "text/html");
+            }
+
+            return Content(ControllersHelperMethods.HtmlTemplate(
+                "Invalid or Expired Link ❌",
+                "The confirmation link is invalid or has expired. Please request a new verification email."
+            ), "text/html");
+        }
+
+        /// <summary>
+        /// Re Send Confirmation user email.
+        /// </summary>
+        [HttpGet(ApplicationRouting.Authentication.ReSendConfirmationEmail)]
+        [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> ReSendConfirmationEmailAsync([FromQuery] ReSendConfirmationEmailRequest dto)
+        {
+
+            var result = await _authenticationService.ReSendConfirmEmailAsync(dto);
 
             if (result.Succeeded)
             {

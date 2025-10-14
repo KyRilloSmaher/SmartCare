@@ -61,7 +61,7 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddLogging();
 #region Connection To SQL SERVER
 
-var connectionString = builder.Configuration.GetConnectionString("Local");
+var connectionString = builder.Configuration.GetConnectionString("Cloud");
 builder.Services.AddDbContext<ApplicationDBContext>(
     opt => { opt.UseSqlServer(connectionString); }
 );

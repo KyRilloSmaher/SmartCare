@@ -308,6 +308,9 @@ namespace SmartCare.InfraStructure.Migrations
                     b.Property<int>("AccountType")
                         .HasColumnType("int");
 
+                    b.Property<DateOnly>("BirthDate")
+                        .HasColumnType("date");
+
                     b.Property<string>("Code")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
@@ -322,6 +325,11 @@ namespace SmartCare.InfraStructure.Migrations
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
+
+                    b.Property<int>("FavoritesCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<int>("Gender")
                         .HasColumnType("int");
@@ -340,6 +348,11 @@ namespace SmartCare.InfraStructure.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
+                    b.Property<int>("OrdersCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
                     b.Property<string>("PasswordHash")
                         .HasColumnType("nvarchar(max)");
 
@@ -354,8 +367,14 @@ namespace SmartCare.InfraStructure.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<int>("RatesCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
                     b.Property<string>("RefreshToken")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<DateTime?>("RefreshTokenExpiryTime")
                         .HasColumnType("datetime2");
@@ -369,9 +388,6 @@ namespace SmartCare.InfraStructure.Migrations
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
-
-                    b.Property<DateOnly>("birthDate")
-                        .HasColumnType("date");
 
                     b.HasKey("Id");
 
@@ -478,7 +494,6 @@ namespace SmartCare.InfraStructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ClientId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedAt")
@@ -558,6 +573,7 @@ namespace SmartCare.InfraStructure.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("CreatedAt")
@@ -879,7 +895,7 @@ namespace SmartCare.InfraStructure.Migrations
                     b.HasOne("SmartCare.Domain.Entities.Client", "Client")
                         .WithMany("Addresses")
                         .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Client");
@@ -890,7 +906,7 @@ namespace SmartCare.InfraStructure.Migrations
                     b.HasOne("SmartCare.Domain.Entities.Client", "Client")
                         .WithOne("Cart")
                         .HasForeignKey("SmartCare.Domain.Entities.Cart", "ClientId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Client");
@@ -928,7 +944,7 @@ namespace SmartCare.InfraStructure.Migrations
                     b.HasOne("SmartCare.Domain.Entities.Client", "Client")
                         .WithMany("Favorites")
                         .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("SmartCare.Domain.Entities.Product", "Product")
@@ -966,14 +982,13 @@ namespace SmartCare.InfraStructure.Migrations
                     b.HasOne("SmartCare.Domain.Entities.Address", "Address")
                         .WithMany("Orders")
                         .HasForeignKey("AddressId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("SmartCare.Domain.Entities.Client", "Client")
                         .WithMany("Orders")
                         .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("SmartCare.Domain.Entities.Store", "Store")
                         .WithMany("Orders")
@@ -1061,7 +1076,7 @@ namespace SmartCare.InfraStructure.Migrations
                     b.HasOne("SmartCare.Domain.Entities.Client", "Client")
                         .WithMany("Rates")
                         .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("SmartCare.Domain.Entities.Product", "Product")

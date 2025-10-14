@@ -19,8 +19,9 @@ namespace SmartCare.InfraStructure.Configurations
             builder.HasKey(x => x.Id);
 
 
-            builder.Property(x => x.Amount)
-                .IsRequired();
+            builder.Property(p => p.Amount)
+                .IsRequired()
+                .HasPrecision(18, 2);
 
             builder.Property(x => x.PaymentMethod)
                 .IsRequired()

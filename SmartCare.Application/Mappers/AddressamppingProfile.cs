@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using SmartCare.Application.DTOs.Address.Requests;
+using SmartCare.Application.DTOs.Address.Responses;
 using SmartCare.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -13,12 +14,17 @@ namespace SmartCare.Application.Mappers
     {
         public AddressamppingProfile()
         {
-            CreateAddressToAddress();
+            CreateAddressRequestToAddress();
+            AddressToAddressResponseDto();
         }
 
-        void CreateAddressToAddress()
+        void CreateAddressRequestToAddress()
         {
             CreateMap<CreateAddressRequestDto, Address>();
+        } 
+        void AddressToAddressResponseDto()
+        {
+            CreateMap<Address, AddressResponseDto>();
         }
     }
 }

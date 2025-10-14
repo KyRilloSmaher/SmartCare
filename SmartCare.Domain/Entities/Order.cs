@@ -10,7 +10,7 @@ namespace SmartCare.Domain.Entities
     public class Order
     {
         public Guid Id { get; set; }
-        public string ClientId { get; set; }
+        public string? ClientId { get; set; }
         public Guid StoreId { get; set; }
         public int PaymentId { get; set; }
         public Guid AddressId { get; set; }

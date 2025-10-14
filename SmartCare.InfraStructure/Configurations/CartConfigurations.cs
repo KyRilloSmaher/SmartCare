@@ -29,11 +29,6 @@ namespace SmartCare.InfraStructure.Configurations
 
 
 
-            builder.HasOne(x => x.Client)
-                .WithOne(x => x.Cart)
-                .HasForeignKey<Cart>(x => x.ClientId)
-                .OnDelete(DeleteBehavior.NoAction);
-
             builder.HasMany(x => x.Items)
                 .WithOne(x => x.Cart)
                 .HasForeignKey(x => x.CartId);

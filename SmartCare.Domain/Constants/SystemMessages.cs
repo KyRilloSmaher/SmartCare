@@ -106,7 +106,7 @@ namespace SmartCare.Domain.Constants
         public const string EMAIL_NOT_SENT = "Failed to send email. Please try again later.";
         public const string VERIFICATION_SUCCESS = "Verification completed successfully.";
         public const string VERIFICATION_FAILED = "Verification failed. Please check the provided information.";
-
+        public const string EMAIL_ALREADY_VERIFIED = "Email is already verified.";
         // =====================
         // 📁 File Upload / Media
         // =====================

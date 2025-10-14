@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SmartCare.InfraStructure.Migrations
 {
     /// <inheritdoc />
-    public partial class initDB : Migration
+    public partial class InitDataBase : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -32,11 +32,14 @@ namespace SmartCare.InfraStructure.Migrations
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Gender = table.Column<int>(type: "int", nullable: false),
                     ProfileImageUrl = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    birthDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    BirthDate = table.Column<DateOnly>(type: "date", nullable: false),
                     Code = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
-                    RefreshToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    RefreshToken = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     RefreshTokenExpiryTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     AccountType = table.Column<int>(type: "int", nullable: false),
+                    RatesCount = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    OrdersCount = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    FavoritesCount = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -222,7 +225,8 @@ namespace SmartCare.InfraStructure.Migrations
                         name: "FK_Cart_AspNetUsers_ClientId",
                         column: x => x.ClientId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -245,7 +249,8 @@ namespace SmartCare.InfraStructure.Migrations
                         name: "FK_UserAddress_AspNetUsers_ClientId",
                         column: x => x.ClientId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -294,7 +299,7 @@ namespace SmartCare.InfraStructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ClientId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ClientId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     StoreId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PaymentId = table.Column<int>(type: "int", nullable: false),
                     AddressId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -309,7 +314,8 @@ namespace SmartCare.InfraStructure.Migrations
                         name: "FK_Order_AspNetUsers_ClientId",
                         column: x => x.ClientId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_Order_Store_StoreId",
                         column: x => x.StoreId,
@@ -320,8 +326,7 @@ namespace SmartCare.InfraStructure.Migrations
                         name: "FK_Order_UserAddress_AddressId",
                         column: x => x.AddressId,
                         principalTable: "UserAddress",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -339,7 +344,8 @@ namespace SmartCare.InfraStructure.Migrations
                         name: "FK_Favorite_AspNetUsers_ClientId",
                         column: x => x.ClientId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Favorite_Products_ProductId",
                         column: x => x.ProductId,
@@ -408,7 +414,8 @@ namespace SmartCare.InfraStructure.Migrations
                         name: "FK_Rate_AspNetUsers_ClientId",
                         column: x => x.ClientId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Rate_Products_ProductId",
                         column: x => x.ProductId,
@@ -423,7 +430,7 @@ namespace SmartCare.InfraStructure.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     OrderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     PaymentMethod = table.Column<int>(type: "int", nullable: false, defaultValue: 1),
                     Status = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     TransactionId = table.Column<string>(type: "nvarchar(450)", nullable: true),
