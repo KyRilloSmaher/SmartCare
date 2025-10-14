@@ -8,7 +8,9 @@ namespace SmartCare.Application.IServices
     {
         Task<Response<TokenResponseDto>> GetRefreshTokenAsync(TokenRequestDto dto);
         Task<Response<bool>> ConfirmEmailAsync(ConfirmEmailRequest dto);
+        Task<Response<bool>> ReSendConfirmEmailAsync(ReSendConfirmationEmailRequest dto);
         Task<Response<bool>> SendResetPasswordCodeAsync(ForgetPasswordRequestDto dto);
+        Task<Response<bool>> ReSendResetPasswordCodeAsync(ForgetPasswordRequestDto dto);
         Task<Response<bool>> ResetPasswordRequestAsync(SetNewPasswordRequestDto dto);
         Task<Response<bool>> ConfirmResetPasswordAsync(ConfirmResetPasswordCodeRequestDto dto);
         Task<Response<bool>> ChangePasswordAsync(string UserId ,ChangePasswordRequestDto dto);

@@ -22,38 +22,47 @@ namespace SmartCare.InfraStructure.Configurations
             builder.HasIndex(c => c.Code)
                 .IsUnique();
 
-            builder.Property(c => c.birthDate)
+            builder.Property(c => c.BirthDate)
                 .IsRequired();
 
             builder.Property(c => c.RefreshTokenExpiryTime)
                 .IsRequired(false);
+
+            builder.Property(c => c.RefreshToken)
+                .IsRequired(false)
+                .HasMaxLength(500);
+
+            builder.Property(c=>c.RatesCount).HasDefaultValue(0);
+            builder.Property(c => c.FavoritesCount).HasDefaultValue(0);
+            builder.Property(c=>c.OrdersCount).HasDefaultValue(0);
+
 
             //Relations
 
             builder.HasMany(c => c.Favorites)
                 .WithOne(c => c.Client)
                 .HasForeignKey(c => c.ClientId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasMany(c => c.Addresses)
                 .WithOne(c => c.Client)
                 .HasForeignKey(c => c.ClientId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasMany(c => c.Orders)
                 .WithOne(c => c.Client)
                 .HasForeignKey(c => c.ClientId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.SetNull);
 
             builder.HasMany(c => c.Rates)
                 .WithOne(c => c.Client)
                 .HasForeignKey(c => c.ClientId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasOne(c => c.Cart)
                 .WithOne(c => c.Client)
                 .HasForeignKey<Cart>(c => c.ClientId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

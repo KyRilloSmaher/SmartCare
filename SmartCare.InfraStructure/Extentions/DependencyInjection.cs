@@ -60,6 +60,7 @@ namespace SmartCare.InfraStructure.Extensions
             // Register Services
             services.AddTransient<IAuthenticationService, AuthenticationService>();
             services.AddTransient<ITokenService, TokenService>();
+            services.AddTransient<IClientService, ClientService>();
 
             // Register External Services 
 
@@ -102,7 +103,7 @@ namespace SmartCare.InfraStructure.Extensions
                    ValidateIssuer = jwtSettings.ValidateIssuer,
                    ValidIssuers = new[] { jwtSettings.Issuer },
                    ValidateIssuerSigningKey = jwtSettings.ValidateIssuerSigningKey,
-                   IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtSettings.Key)),
+                   IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key)),
                    ValidAudience = jwtSettings.Audience,
                    ValidateAudience = jwtSettings.ValidateAudience,
                    ValidateLifetime = jwtSettings.ValidateLifeTime,

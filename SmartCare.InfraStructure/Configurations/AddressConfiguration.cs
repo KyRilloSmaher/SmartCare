@@ -31,13 +31,10 @@ namespace SmartCare.InfraStructure.Configurations
                  .IsRequired();
 
             //Relations
-
-            builder.HasOne(a => a.Client)
-                    .WithMany(a => a.Addresses);
-                    
             builder.HasMany(a => a.Orders)
-                   .WithOne(a => a.Address)
-                   .HasForeignKey(a => a.AddressId);
+                    .WithOne(o => o.Address)
+                    .HasForeignKey(o => o.AddressId)
+                    .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasIndex(a => a.IsPrimary);
             builder.HasIndex(a => new { a.Latitude, a.Longitude });

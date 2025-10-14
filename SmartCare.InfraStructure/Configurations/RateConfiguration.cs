@@ -26,10 +26,6 @@ namespace SmartCare.InfraStructure.Configurations
             builder.Property(x => x.IsDeleted)
                 .HasDefaultValue(false);
 
-            builder.HasOne(x => x.Client)
-                .WithMany(x => x.Rates)
-                .HasForeignKey(x => x.ClientId)
-                .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasOne(x => x.Product)
                 .WithMany(x => x.Rates)

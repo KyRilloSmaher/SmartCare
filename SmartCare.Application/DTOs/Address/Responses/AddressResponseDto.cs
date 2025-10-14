@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SmartCare.Application.DTOs.Address.Responses
 {
-    public class CreateAddressResponseDto
+    public class AddressResponseDto
     {
         public string address { get; set; }
         public string Label { get; set; }

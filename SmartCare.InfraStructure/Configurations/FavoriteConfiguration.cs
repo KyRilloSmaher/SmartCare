@@ -17,10 +17,6 @@ namespace SmartCare.InfraStructure.Configurations
 
             builder.HasKey(x => x.Id);
 
-            builder.HasOne(x => x.Client)
-                .WithMany(x => x.Favorites)
-                .HasForeignKey(x => x.ClientId)
-                .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasOne(x => x.Product)
                 .WithMany(x => x.Favorites)

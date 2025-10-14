@@ -14,11 +14,11 @@ using SmartCare.Domain.Entities;
 using SmartCare.Domain.Enums;
 using SmartCare.Domain.Interfaces.IServices;
 using SmartCare.Domain.IRepositories;
-using SmartCare.API.Helpers;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using System.Net;
 using System.Web;
+using SmartCare.API.Helpers;
 
 namespace SmartCare.Application.Services
 {
@@ -106,7 +106,22 @@ namespace SmartCare.Application.Services
 
             return success ? _responseHandler.Success(success, message) : _responseHandler.Failed<bool>(message);
         }
-
+        public async Task<Response<bool>> ReSendConfirmEmailAsync(ReSendConfirmationEmailRequest dto)
+        {
+            var user = await _clientRepository.GetByEmailAsync(dto.Email, true);
+            if (user == null)
+                return _responseHandler.Failed<bool>(SystemMessages.USER_NOT_FOUND);
+            if (user.EmailConfirmed)
+                return _responseHandler.Failed<bool>(SystemMessages.EMAIL_ALREADY_VERIFIED);
+            //Generate email confirmation token and link
+            var token = await _clientRepository.GenerateEmailConfirmationTokenAsync(user);
+            var encodedToken = WebUtility.UrlEncode(token);
+            var request = _httpContextAccessor.HttpContext!.Request;
+            var baseUrl = $"{request.Scheme}://{request.Host}";
+            var confirmEmailUrl = $"{baseUrl}/{ApplicationRouting.Authentication.ConfirmEmail}?email={user.Email}&token={encodedToken}";
+            bool success = await _emailService.SendConfirmationEmailAsync(user.Email, confirmEmailUrl);
+            return success ? _responseHandler.Success(success,SystemMessages.FAILED) : _responseHandler.Failed<bool>(SystemMessages.FAILED);
+        }
         #endregion
 
         #region Password Management
@@ -138,6 +153,22 @@ namespace SmartCare.Application.Services
                 await _clientRepository.RollbackTransactionAsync();
                 return _responseHandler.Failed<bool>(SystemMessages.GENERATING_CODE_FAILED);
             }
+        }
+
+
+        public async Task<Response<bool>> ReSendResetPasswordCodeAsync(ForgetPasswordRequestDto dto)
+        {
+            var user = await _clientRepository.GetByEmailAsync(dto.Email, true);
+            if (user == null)
+                return _responseHandler.Failed<bool>(SystemMessages.USER_NOT_FOUND);
+            user.Code = new Random().Next(0, 1_000_000).ToString("D6");
+            await _clientRepository.UpdateAsync(user);
+            await _emailService.SendPasswordResetEmailAsync(
+                user.Email,
+                SystemMessages.SUBJECT_PASSWORD_RESET,
+                user.Code);
+
+            return _responseHandler.Success(true, SystemMessages.RESET_PASSWORD_CODE_SENT);
         }
 
         public async Task<Response<bool>> ConfirmResetPasswordAsync(ConfirmResetPasswordCodeRequestDto dto)
@@ -232,66 +263,66 @@ namespace SmartCare.Application.Services
 
         public async Task<Response<bool>> SignUpAsync(SignUpRequest dto)
         {
+            string? uploadedImageUrl = null;
+
             try
             {
-                if (dto is null)
-                    return _responseHandler.BadRequest<bool>(SystemMessages.NULL_PARAMETER);
+                //  Upload profile image
+                if (dto.ProfileImage is not null)
+                {
+                    var uploadResult = await _imageUploaderService.UploadImageAsync(dto.ProfileImage, ImageFolder.UserProfiles);
+
+                    if (uploadResult.Error != null)
+                        return _responseHandler.Failed<bool>(SystemMessages.FILE_UPLOAD_FAILED);
+
+                    uploadedImageUrl = uploadResult.Url.ToString();
+                }
 
                 await _clientRepository.BeginTransactionAsync();
 
-                if (await _clientRepository.GetByEmailAsync(dto.Email) != null)
-                    return _responseHandler.Failed<bool>(SystemMessages.EMAIL_ALREADY_EXISTS);
-
-                if (await _clientRepository.GetByClientnameAsync(dto.UserName) != null)
-                    return _responseHandler.Failed<bool>(SystemMessages.USERNAME_ALREADY_EXISTS);
-
                 var user = _mapper.Map<Client>(dto);
+                user.ProfileImageUrl = uploadedImageUrl;
+
                 var address = _mapper.Map<Address>(dto.Address);
-                user.Addresses ??= new List<Address>();
-                user.Addresses.Add(address);
+                user.Addresses = new List<Address> { address };
 
-                // Upload profile image if provided
-                if (dto.ProfileImage != null)
+                //Create user account
+                var createResult = await _clientRepository.CreateClientAsync(user, dto.Password);
+                if (!createResult.Succeeded)
                 {
-                    var uploadResult = await _imageUploaderService.UploadImageAsync(dto.ProfileImage, ImageFolder.UserProfiles);
-                    if (uploadResult.Error != null)
-                    {
-                        await _clientRepository.RollbackTransactionAsync();
-                        return _responseHandler.Failed<bool>(SystemMessages.FILE_UPLOAD_FAILED);
-                    }
-                    user.ProfileImageUrl = uploadResult.Url.ToString();
-                }
-
-                var result = await _clientRepository.CreateClientAsync(user, dto.Password);
-                if (!result.Succeeded)
+                    await _clientRepository.RollbackTransactionAsync();
                     return _responseHandler.Failed<bool>(
-                        string.Join(", ", result.Errors.Select(e => e.Description)));
+                        string.Join(", ", createResult.Errors.Select(e => e.Description))
+                    );
+                }
 
                 await _clientRepository.AddToRoleAsync(user, "CLIENT");
 
-                //Send Confirm Email
+                //Generate email confirmation token and link
                 var token = await _clientRepository.GenerateEmailConfirmationTokenAsync(user);
-                Console.WriteLine($"---------------- Token: {token}");
-                var encodedToken = HttpUtility.UrlEncode(token);
-                Console.WriteLine($"----------------Encoded Token: {encodedToken}");
-                var resquestAccessor = _httpContextAccessor.HttpContext.Request;
-                var baseUrl = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host}";
+                var encodedToken = WebUtility.UrlEncode(token);
+                var request = _httpContextAccessor.HttpContext!.Request;
+                var baseUrl = $"{request.Scheme}://{request.Host}";
                 var confirmEmailUrl = $"{baseUrl}/{ApplicationRouting.Authentication.ConfirmEmail}?email={user.Email}&token={encodedToken}";
-                Console.WriteLine($"----------------Confirmation URL: {confirmEmailUrl}");
-
                 await _emailService.SendConfirmationEmailAsync(user.Email, confirmEmailUrl);
-
                 await _clientRepository.CommitTransactionAsync();
 
                 return _responseHandler.Success(true, SystemMessages.SUCCESS);
             }
-            catch
-            {
+            catch (Exception ex)
+            { 
                 await _clientRepository.RollbackTransactionAsync();
+
+                if (!string.IsNullOrEmpty(uploadedImageUrl))
+                    await _imageUploaderService.DeleteImageByUrlAsync(uploadedImageUrl);
+
                 return _responseHandler.Failed<bool>(SystemMessages.FAILED);
             }
         }
 
+
         #endregion
+
+        
     }
 }
