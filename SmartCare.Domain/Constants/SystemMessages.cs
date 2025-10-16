@@ -136,270 +136,82 @@ namespace SmartCare.Domain.Constants
         // ✉️ Email Templates
         // =====================
         public const string CONFIRMATIONEMAIL_TEMPLATE = @"
-<html>
-<head>
-    <style>
-        body {{
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background-color: #f9f9f9;
-            margin: 0;
-            padding: 20px;
-        }}
-        .container {{
-            max-width: 600px;
-            margin: 0 auto;
-            background-color: #ffffff;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-        }}
-        .header {{
-            text-align: center;
-            border-bottom: 3px solid #007bff;
-            padding-bottom: 10px;
-        }}
-        .header h1 {{
-            color: #007bff;
-            margin: 0;
-        }}
-        .content {{
-            font-size: 16px;
-            color: #333;
-            margin-top: 20px;
-            line-height: 1.6;
-        }}
-        .btn {{
-            display: inline-block;
-            margin-top: 25px;
-            padding: 14px 30px;
-            background-color: #007bff;
-            color: #ffffff !important;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: bold;
-            text-align: center;
-        }}
-        .btn:hover {{
-            background-color: #0056b3;
-        }}
-        .footer {{
-            margin-top: 40px;
-            font-size: 12px;
-            text-align: center;
-            color: #888;
-        }}
-    </style>
-</head>
-<body>
-    <div class='container'>
-        <div class='header'>
-            <h1>Confirm Your Email</h1>
-        </div>
-        <div class='content'>
-            <p>Hi {{UserName}},</p>
-            <p>Thank you for joining <strong>SmartCare Pharmacy</strong>! Please confirm your email address by clicking the button below:</p>
-            <p style='text-align:center;'>
-                <a href='{{CallbackUrl}}' class='btn'>Confirm Email</a>
-            </p>
-            <p>If you didn’t create an account, you can safely ignore this email.</p>
-        </div>
-        <div class='footer'>
-            &copy; {{Year}} SmartCare Pharmacy. All rights reserved.
-        </div>
-    </div>
-</body>
-</html>";
-
+                                                                <html>
+                                                                  <body style='margin:0; padding:20px; background-color:#f9f9f9; font-family:Segoe UI,Arial,sans-serif;'>
+                                                                    <div style='max-width:600px; margin:auto; background-color:#ffffff; padding:30px; border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,0.1);'>
+                                                                      <div style='text-align:center; border-bottom:3px solid #007bff; padding-bottom:10px;'>
+                                                                        <h1 style='color:#007bff; margin:0;'>Confirm Your Email</h1>
+                                                                      </div>
+                                                                      <div style='font-size:16px; color:#333; margin-top:20px; line-height:1.6;'>
+                                                                        <p>Hi {{UserName}},</p>
+                                                                        <p>Thank you for joining <strong>SmartCare Pharmacy</strong>! Please confirm your email address by clicking the button below:</p>
+                                                                        <div style='text-align:center; margin-top:25px;'>
+                                                                          <a href='{{CallbackUrl}}' style='display:inline-block; padding:14px 30px; background-color:#007bff; color:#ffffff; text-decoration:none; border-radius:6px; font-weight:bold;'>Confirm Email</a>
+                                                                        </div>
+                                                                        <p style='margin-top:20px;'>If you didn’t create an account, you can safely ignore this email.</p>
+                                                                      </div>
+                                                                      <div style='margin-top:40px; font-size:12px; text-align:center; color:#888;'>&copy; {{Year}} SmartCare Pharmacy. All rights reserved.</div>
+                                                                    </div>
+                                                                  </body>
+                                                                </html>";
 
 
         public const string RESETPASSWORD_TEMPLATE = @"
-<html>
-<head>
-    <style>
-        body {{
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background-color: #f9f9f9;
-            padding: 20px;
-        }}
-        .container {{
-            max-width: 600px;
-            margin: 0 auto;
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-        }}
-        .header {{
-            text-align: center;
-            border-bottom: 3px solid #dc3545;
-            padding-bottom: 10px;
-        }}
-        .header h1 {{
-            color: #dc3545;
-            margin: 0;
-        }}
-        .content {{
-            font-size: 16px;
-            color: #333;
-            margin-top: 20px;
-            line-height: 1.6;
-        }}
-        .code {{
-            display: inline-block;
-            background-color: #f0f0f0;
-            padding: 12px 25px;
-            border-radius: 5px;
-            font-weight: bold;
-            font-size: 20px;
-            letter-spacing: 2px;
-            color: #d9534f;
-        }}
-        .footer {{
-            margin-top: 40px;
-            font-size: 12px;
-            text-align: center;
-            color: #888;
-        }}
-    </style>
-</head>
-<body>
-    <div class='container'>
-        <div class='header'>
-            <h1>Password Reset Request</h1>
-        </div>
-        <div class='content'>
-            <p>Hi {{UserName}},</p>
-            <p>We received a request to reset your password. Use the code below to complete your password reset:</p>
-            <p style='text-align:center;'>
-                <span class='code'>{{Code}}</span>
-            </p>
-            <p>If you didn’t request this, you can safely ignore this email.</p>
-        </div>
-        <div class='footer'>
-            &copy; {{Year}} SmartCare Pharmacy. All rights reserved.
-        </div>
-    </div>
-</body>
-</html>";
-
-
+                                                        <html>
+                                                          <body style='margin:0; padding:20px; background-color:#f9f9f9; font-family:Segoe UI,Arial,sans-serif;'>
+                                                            <div style='max-width:600px; margin:auto; background-color:#ffffff; padding:30px; border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,0.1);'>
+                                                              <div style='text-align:center; border-bottom:3px solid #dc3545; padding-bottom:10px;'>
+                                                                <h1 style='color:#dc3545; margin:0;'>Password Reset Request</h1>
+                                                              </div>
+                                                              <div style='font-size:16px; color:#333; margin-top:20px; line-height:1.6;'>
+                                                                <p>Hi {{UserName}},</p>
+                                                                <p>We received a request to reset your password. Use the code below to complete your password reset:</p>
+                                                                <div style='text-align:center; margin-top:25px;'>
+                                                                  <span style='display:inline-block; background-color:#f8f9fa; padding:12px 25px; border-radius:5px; font-weight:bold; font-size:20px; letter-spacing:2px; color:#dc3545;'>{{Code}}</span>
+                                                                </div>
+                                                                <p style='margin-top:20px;'>If you didn’t request this, you can safely ignore this email.</p>
+                                                              </div>
+                                                              <div style='margin-top:40px; font-size:12px; text-align:center; color:#888;'>&copy; {{Year}} SmartCare Pharmacy. All rights reserved.</div>
+                                                            </div>
+                                                          </body>
+                                                        </html>";
 
         public const string WELCOMEEMAIL_TEMPLATE = @"
-                                                                    <html>
-                                                                    <head>
-                                                                        <style>
-                                                                            body {{
-                                                                                font-family: Arial, sans-serif;
-                                                                                background-color: #f4f4f4;
-                                                                                margin: 0;
-                                                                                padding: 0;
-                                                                            }}
-                                                                            .container {{
-                                                                                max-width: 600px;
-                                                                                margin: 40px auto;
-                                                                                background-color: #ffffff;
-                                                                                padding: 30px;
-                                                                                border-radius: 8px;
-                                                                                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-                                                                            }}
-                                                                            .header {{
-                                                                                text-align: center;
-                                                                                padding-bottom: 20px;
-                                                                            }}
-                                                                            .header h1 {{
-                                                                                color: #28a745;
-                                                                            }}
-                                                                            .content {{
-                                                                                font-size: 16px;
-                                                                                line-height: 1.6;
-                                                                                color: #555;
-                                                                            }}
-                                                                            .footer {{
-                                                                                margin-top: 30px;
-                                                                                font-size: 12px;
-                                                                                text-align: center;
-                                                                                color: #888;
-                                                                            }}
-                                                                        </style>
-                                                                    </head>
-                                                                    <body>
-                                                                        <div class='container'>
-                                                                            <div class='header'>
-                                                                                <h1>Welcome to Smart Pharmacy</h1>
-                                                                            </div>
-                                                                            <div class='content'>
-                                                                                <p>Hi {{UserName}},</p>
-                                                                                <p>We’re thrilled to have you join <strong>Smart Pharmacy</strong>! You can now browse medicines, manage prescriptions, and enjoy convenient online orders.</p>
-                                                                                <p>Explore our platform and discover the easiest way to manage your health and medications.</p>
-                                                                                <p>Stay safe and healthy,</p>
-                                                                                <p><strong>The Smart Pharmacy Team</strong></p>
-                                                                            </div>
-                                                                            <div class='footer'>
-                                                                                &copy; {{Year}} Smart Pharmacy. All rights reserved.
-                                                                            </div>
-                                                                        </div>
-                                                                    </body>
-                                                                    </html>";
-
+                                                        <html>
+                                                          <body style='margin:0; padding:20px; background-color:#f4f4f4; font-family:Arial, sans-serif;'>
+                                                            <div style='max-width:600px; margin:40px auto; background-color:#ffffff; padding:30px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1);'>
+                                                              <div style='text-align:center; padding-bottom:20px;'>
+                                                                <h1 style='color:#28a745; margin:0;'>Welcome to SmartCare Pharmacy</h1>
+                                                              </div>
+                                                              <div style='font-size:16px; line-height:1.6; color:#555;'>
+                                                                <p>Hi {{UserName}},</p>
+                                                                <p>We’re thrilled to have you join <strong>SmartCare Pharmacy</strong>! You can now browse medicines, manage prescriptions, and enjoy convenient online orders.</p>
+                                                                <p>Explore our platform and discover the easiest way to manage your health and medications.</p>
+                                                                <p>Stay safe and healthy,</p>
+                                                                <p><strong>The SmartCare Pharmacy Team</strong></p>
+                                                              </div>
+                                                              <div style='margin-top:30px; font-size:12px; text-align:center; color:#888;'>&copy; {{Year}} SmartCare Pharmacy. All rights reserved.</div>
+                                                            </div>
+                                                          </body>
+                                                        </html>";
 
         public const string ORDERCONFIRMATION_TEMPLATE = @"
-<html>
-<head>
-    <style>
-        body {{
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background-color: #f9f9f9;
-            padding: 20px;
-        }}
-        .container {{
-            max-width: 600px;
-            margin: 0 auto;
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-        }}
-        .header {{
-            text-align: center;
-            border-bottom: 3px solid #17a2b8;
-            padding-bottom: 10px;
-        }}
-        .header h1 {{
-            color: #17a2b8;
-            margin: 0;
-        }}
-        .content {{
-            font-size: 16px;
-            color: #333;
-            margin-top: 20px;
-            line-height: 1.6;
-        }}
-        .footer {{
-            margin-top: 40px;
-            font-size: 12px;
-            text-align: center;
-            color: #888;
-        }}
-    </style>
-</head>
-<body>
-    <div class='container'>
-        <div class='header'>
-            <h1>Order Confirmation</h1>
-        </div>
-        <div class='content'>
-            <p>Hi {{UserName}},</p>
-            <p>Thank you for your order! Your order <strong>#{{OrderId}}</strong> has been successfully placed and is now being processed.</p>
-            <p>We’ll notify you once your items are shipped.</p>
-            <p>Thank you for choosing <strong>SmartCare Pharmacy</strong>!</p>
-        </div>
-        <div class='footer'>
-            &copy; {{Year}} SmartCare Pharmacy. All rights reserved.
-        </div>
-    </div>
-</body>
-</html>";
-
+                                                            <html>
+                                                              <body style='margin:0; padding:20px; background-color:#f9f9f9; font-family:Segoe UI,Arial,sans-serif;'>
+                                                                <div style='max-width:600px; margin:auto; background-color:#ffffff; padding:30px; border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,0.1);'>
+                                                                  <div style='text-align:center; border-bottom:3px solid #17a2b8; padding-bottom:10px;'>
+                                                                    <h1 style='color:#17a2b8; margin:0;'>Order Confirmation</h1>
+                                                                  </div>
+                                                                  <div style='font-size:16px; color:#333; margin-top:20px; line-height:1.6;'>
+                                                                    <p>Hi {{UserName}},</p>
+                                                                    <p>Thank you for your order! Your order <strong>#{{OrderId}}</strong> has been successfully placed and is now being processed.</p>
+                                                                    <p>We’ll notify you once your items are shipped.</p>
+                                                                    <p>Thank you for choosing <strong>SmartCare Pharmacy</strong>!</p>
+                                                                  </div>
+                                                                  <div style='margin-top:40px; font-size:12px; text-align:center; color:#888;'>&copy; {{Year}} SmartCare Pharmacy. All rights reserved.</div>
+                                                                </div>
+                                                              </body>
+                                                            </html>";
 
     }
 }

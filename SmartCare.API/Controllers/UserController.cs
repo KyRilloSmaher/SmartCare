@@ -58,7 +58,7 @@ namespace SmartCare.API.Controllers
         /// Update A Client
         /// </summary>
 
-        [HttpPut(ApplicationRouting.Client.UpdateClient)]
+        [HttpPatch(ApplicationRouting.Client.UpdateClient)]
         [ProducesResponseType(typeof(Response<ClientResponseDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateClientProfileAsync(UpdateClientRequest dto)
         {

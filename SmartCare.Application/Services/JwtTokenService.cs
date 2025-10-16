@@ -30,7 +30,7 @@ namespace SmartCare.Application.Services
                 issuer: _jwtSettings.Issuer,
                 audience: _jwtSettings.Audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddDays(_jwtSettings.AccessTokenLifetimeDays),
+                expires: DateTime.UtcNow.AddHours(_jwtSettings.AccessTokenLifetimeHours),
                 signingCredentials: creds
             );
 
@@ -49,7 +49,7 @@ namespace SmartCare.Application.Services
         // Calculate refresh token expiry
         public DateTime GetRefreshTokenExpiryTime()
         {
-            return DateTime.UtcNow.AddHours(_jwtSettings.RefreshTokenLifetimeHours);
+            return DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenLifetimeDays);
         }
 
         // Build claims for the JWT
