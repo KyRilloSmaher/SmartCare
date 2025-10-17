@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SmartCare.Application.Handlers.ResponsesHandler
 {
-    public class ResponseHandler
+    public class ResponseHandler : IResponseHandler
     {
         #region Feilds
 

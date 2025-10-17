@@ -25,7 +25,7 @@ namespace SmartCare.Application.Services
     public class AuthenticationService : IAuthenticationService
     {
         #region Fields
-        private readonly ResponseHandler _responseHandler;
+        private readonly IResponseHandler _responseHandler;
         private readonly IClientRepository _clientRepository;
         private readonly ITokenService _tokenService;
         private readonly IEmailService _emailService;
@@ -38,7 +38,7 @@ namespace SmartCare.Application.Services
 
         #region Constructor
         public AuthenticationService(
-            ResponseHandler responseHandler,
+            IResponseHandler responseHandler,
             IClientRepository clientRepository,
             ITokenService tokenService,
             IEmailService emailService,

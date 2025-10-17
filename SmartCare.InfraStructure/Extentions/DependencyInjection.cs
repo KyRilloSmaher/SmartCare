@@ -17,6 +17,7 @@ using SmartCare.Application.Handlers.ResponsesHandler;
 using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.InfraStructure.ExternalServices;
 using SmartCare.Application.Mappers;
+using SmartCare.Application.Handlers.ResponseHandler;
 
 
 namespace SmartCare.InfraStructure.Extensions
@@ -29,6 +30,9 @@ namespace SmartCare.InfraStructure.Extensions
             services.AddTransient(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddTransient<IClientRepository, ClientRepository>();
             services.AddTransient<IAdressRepository, AdressRepository>();
+            services.AddTransient<ICategoryRepository, CategoryRepository>();
+            services.AddTransient<ICompanyRepository, CompanyRepository>();
+            services.AddTransient<IStoreRepository, StoreRepository>();
 
             // Configure Identity
             services.AddIdentity<Client, IdentityRole>(options =>
@@ -59,13 +63,17 @@ namespace SmartCare.InfraStructure.Extensions
 
             // Register Services
             services.AddTransient<IAuthenticationService, AuthenticationService>();
-            services.AddTransient<ITokenService, TokenService>();
+            services.AddTransient<ICategoryService, CategoryService>();
+            services.AddTransient<ICompanyService, CompanyService>();
             services.AddTransient<IClientService, ClientService>();
+            services.AddTransient<ITokenService, TokenService>();
+            services.AddTransient<IStoreService, StoreService>();
 
             // Register External Services 
 
             services.AddTransient<IEmailService, EmailService>();
             services.AddTransient<IImageUploaderService, ImageUploaderService>();
+            services.AddTransient<IMapService, MapService>();
             //services.AddTransient<IPaymentService, PaymentService>();
 
             // Register Automapper
@@ -78,7 +86,7 @@ namespace SmartCare.InfraStructure.Extensions
             services.AddSingleton(cloudinary);
 
             // Some Classes
-            services.AddTransient<ResponseHandler>();
+            services.AddTransient<IResponseHandler , ResponseHandler>();
 
             // Email
             var emailSettings = new EmailSettings();

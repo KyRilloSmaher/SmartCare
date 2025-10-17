@@ -108,6 +108,13 @@ namespace SmartCare.InfraStructure.Repositories
             var Client = await _ClientManager.FindByNameAsync(Clientname);
             return Client == null;
         }
+        public async Task<bool> IsClientPhoneNumberUniqueAsync(string phone)
+        {
+        
+            bool exists = await _ClientManager.Users.AnyAsync(u => u.PhoneNumber == phone);
+            return !exists; 
+        }
+
 
         public async Task<bool> CheckPasswordAsync(Client Client, string password)
         {

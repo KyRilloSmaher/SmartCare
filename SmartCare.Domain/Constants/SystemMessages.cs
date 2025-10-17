@@ -29,6 +29,7 @@ namespace SmartCare.Domain.Constants
         public const string SERVER_ERROR = "Internal server error.";
         public const string BAD_REQUEST = "Bad request. Please verify the input data.";
         public const string NULL_PARAMETER = "Null Parameter to the Function";
+        public const string NOT_FOUND = "The requested resource was not found.";
         // =====================
         // 👤 User & Auth
         // =====================
