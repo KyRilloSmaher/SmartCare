@@ -7,6 +7,8 @@ namespace SmartCare.Domain.Entities
 {
     public class Client: IdentityUser
     {
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
         public Gender Gender { get; set; }
         public string ProfileImageUrl { get; set; }
         public DateOnly BirthDate { get; set; }

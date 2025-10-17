@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -38,6 +39,13 @@ namespace SmartCare.Domain.Constants
             };
 
             return Regex.IsMatch(checkString, pattern);
+        }
+        public static bool BeAValidImage(IFormFile file)
+        {
+            if (file == null) return true;
+
+            var ext = Path.GetExtension(file.FileName).ToLower();
+            return AllowedImageExtensions.Contains(ext) && file.Length <= MaxImgSize;
         }
     }
 }

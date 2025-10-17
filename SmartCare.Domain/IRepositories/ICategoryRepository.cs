@@ -1,0 +1,17 @@
+﻿using SmartCare.Domain.Entities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace SmartCare.Domain.IRepositories
+{
+    public interface ICategoryRepository : IGenericRepository<Category>
+    {
+        Task<IEnumerable<Category>> GetAllCategoriesAsync();
+        Task<IEnumerable<Category>> GetAllCategoriesForAdminAsync();
+        Task<IEnumerable<Category>> SearchCategoryByNameAsync(string name);
+
+    }
+}

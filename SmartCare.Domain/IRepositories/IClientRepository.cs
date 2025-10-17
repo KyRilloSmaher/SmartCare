@@ -29,6 +29,7 @@ namespace SmartCare.Domain.IRepositories
         // Client Verification
         Task<bool> IsEmailUniqueAsync(string email);
         Task<bool> IsClientnameUniqueAsync(string Clientname);
+        Task<bool> IsClientPhoneNumberUniqueAsync(string phone);
 
         // Password Management
         Task<bool> CheckPasswordAsync(Client Client, string password);

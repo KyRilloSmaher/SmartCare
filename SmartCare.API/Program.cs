@@ -59,12 +59,20 @@ builder.Services.AddSwaggerGen(c =>
 
 
 builder.Services.AddLogging();
+builder.Services.AddHttpClient();
+
 #region Connection To SQL SERVER
 
 var connectionString = builder.Configuration.GetConnectionString("Cloud");
-builder.Services.AddDbContext<ApplicationDBContext>(
-    opt => { opt.UseSqlServer(connectionString); }
-);
+
+builder.Services.AddDbContext<ApplicationDBContext>(options =>
+{
+    options.UseSqlServer(connectionString, sqlOptions =>
+    {
+        sqlOptions.UseNetTopologySuite();
+    });
+});
+
 
 #endregion
 
