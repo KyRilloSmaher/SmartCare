@@ -45,8 +45,8 @@
         {
             public const string Prefix = Rule + "Companies";
             public const string GetCompanyById = Prefix + SignleRoute;
-            public const string SearchCompanyByName = Prefix;
-            public const string GetAllCompanies = Prefix + "/search";
+            public const string SearchCompanyByName = Prefix + "/search";
+            public const string GetAllCompanies = Prefix;
             public const string GetAllCompaniesForAdmin = Rule + "admin/" + Prefix;
             public const string UpdateCompany = Prefix + "/update-company";
             public const string ChangeCompanyImage = Prefix + "/change-company-logo";
@@ -77,8 +77,8 @@
 
             public const string GetStoreById = Prefix + SignleRoute;
             public const string GetNearestStore = Prefix + "/nearest";
-            public const string SearchStoresByName = Prefix;
-            public const string GetAllStores = Prefix + "/search";
+            public const string SearchStoresByName = Prefix + "/search";
+            public const string GetAllStores = Prefix ;
             public const string GetAllStoresForAdmin = Rule + "admin/" + "Stores";
 
             public const string CreateStore = Prefix + "/create-store";

@@ -114,17 +114,16 @@ namespace SmartCare.Application.Services
             return _responseHandler.Success(updateResult.LogoUrl);
         }
 
-        public async Task<Response<CompanyResponseForAdminDto>> CreateCompanyAsync(CreateCompanyRequestDto CompanyDto)
+        public async Task<Response<CompanyResponseForAdminDto>> CreateCompanyAsync(CreateCompanyRequestDto companyDto)
         {
-
             string? uploadedImageUrl = null;
 
             try
             {
-                //  Upload profile image
-                if (CompanyDto.Logo is not null)
+                // Upload profile image if provided
+                if (companyDto.Logo is not null)
                 {
-                    var uploadResult = await _imageUploaderService.UploadImageAsync(CompanyDto.Logo, ImageFolder.BrandLogos);
+                    var uploadResult = await _imageUploaderService.UploadImageAsync(companyDto.Logo, ImageFolder.BrandLogos);
 
                     if (uploadResult.Error != null)
                         return _responseHandler.Failed<CompanyResponseForAdminDto>(SystemMessages.FILE_UPLOAD_FAILED);
@@ -134,32 +133,37 @@ namespace SmartCare.Application.Services
 
                 await _CompanyRepository.BeginTransactionAsync();
 
-                var company = _mapper.Map<Company>(CompanyDto);
+                var company = _mapper.Map<Company>(companyDto);
                 company.LogoUrl = uploadedImageUrl;
 
-                //Create user account
-                var createResult = await _CompanyRepository.AddAsync(company);
-                if (createResult is null)
+                // Add to repository
+                var createdEntity = await _CompanyRepository.AddAsync(company);
+
+                if (createdEntity is null)
                 {
                     await _CompanyRepository.RollBackAsync();
-                    return _responseHandler.Failed<CompanyResponseForAdminDto>(
-                       SystemMessages.FAILED
-                    );
+                    return _responseHandler.Failed<CompanyResponseForAdminDto>(SystemMessages.FAILED);
                 }
-                var createdCompanyDto = _mapper.Map<CompanyResponseForAdminDto>(createResult);
 
+                // Commit changes
+                await _CompanyRepository.SaveChangesAsync();
+                await _CompanyRepository.CommitTransactionAsync();
+
+                var createdCompanyDto = _mapper.Map<CompanyResponseForAdminDto>(createdEntity);
                 return _responseHandler.Success(createdCompanyDto, SystemMessages.SUCCESS);
             }
             catch (Exception ex)
             {
                 await _CompanyRepository.RollBackAsync();
 
+                // Delete uploaded image if something went wrong
                 if (!string.IsNullOrEmpty(uploadedImageUrl))
                     await _imageUploaderService.DeleteImageByUrlAsync(uploadedImageUrl);
 
                 return _responseHandler.Failed<CompanyResponseForAdminDto>(SystemMessages.FAILED);
             }
         }
+
 
         public async Task<Response<IEnumerable<CompanyResponseDto>>> SearchCompaniesByNameAsync(string name)
         {

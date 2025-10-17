@@ -241,7 +241,7 @@ namespace SmartCare.Application.Services
             if (user == null || !await _clientRepository.CheckPasswordAsync(user, dto.Password))
                 return _responseHandler.Unauthorized<TokenResponseDto>(SystemMessages.INVALID_CREDENTIALS);
 
-            var claims = _tokenService.GetClaims(user);
+            var claims = await _tokenService.GetClaimsAsync(user);
             var accessToken = _tokenService.GenerateAccessToken(claims);
             var refreshToken = _tokenService.GenerateRefreshToken();
 

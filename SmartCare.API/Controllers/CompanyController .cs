@@ -9,7 +9,7 @@ using SmartCare.Application.IServices;
 namespace SmartCare.API.Controllers
 {
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class CompanyController : ControllerBase
     {
         private readonly ICompanyService _CompanyService;
@@ -54,7 +54,7 @@ namespace SmartCare.API.Controllers
         /// <summary>
         /// Get All Companies (Admin)
         /// </summary>
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [HttpGet(ApplicationRouting.Company.GetAllCompaniesForAdmin)]
         [ProducesResponseType(typeof(Response<IEnumerable<CompanyResponseForAdminDto>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllCompaniesForAdminAsync()
@@ -66,7 +66,7 @@ namespace SmartCare.API.Controllers
         /// <summary>
         /// Create a New Company
         /// </summary>
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [HttpPost(ApplicationRouting.Company.CreateCompany)]
         [ProducesResponseType(typeof(Response<CompanyResponseForAdminDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> CreateCompanyAsync([FromForm] CreateCompanyRequestDto dto)
@@ -78,7 +78,7 @@ namespace SmartCare.API.Controllers
         /// <summary>
         /// Update a Company
         /// </summary>
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [HttpPut(ApplicationRouting.Company.UpdateCompany)]
         [ProducesResponseType(typeof(Response<CompanyResponseDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateCompanyAsync(Guid id, [FromBody] UpdateCompanyRequest dto)
@@ -90,7 +90,7 @@ namespace SmartCare.API.Controllers
         /// <summary>
         /// Change Company Logo
         /// </summary>
-        [Authorize(Roles = "Admin")]
+       // [Authorize(Roles = "Admin")]
         [HttpPatch(ApplicationRouting.Company.ChangeCompanyImage)]
         [ProducesResponseType(typeof(Response<string>), StatusCodes.Status200OK)]
         public async Task<IActionResult> ChangeCompanyLogoAsync(Guid id, [FromForm] ChangeCompanyLogoRequestDto dto)
@@ -102,7 +102,7 @@ namespace SmartCare.API.Controllers
         /// <summary>
         /// Delete Company
         /// </summary>
-        [Authorize(Roles = "Admin")]
+       // [Authorize(Roles = "Admin")]
         [HttpDelete(ApplicationRouting.Company.DeleteCompany)]
         [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> DeleteCompanyAsync(Guid id)
