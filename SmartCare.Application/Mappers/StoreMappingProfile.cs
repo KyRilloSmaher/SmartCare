@@ -14,7 +14,13 @@ namespace SmartCare.Application.Mappers
 {
     public class StoreMappingProfile :Profile
     {
-        public StoreMappingProfile() { }
+        public StoreMappingProfile() {
+            CreateStoreRequestDtoToStore();
+            UpdateStoreRequestDtoToStore();
+            StoreToStoreResponseDto();
+            StoreToStoreResponseForAdminDto();
+
+        }
 
 
         void CreateStoreRequestDtoToStore()

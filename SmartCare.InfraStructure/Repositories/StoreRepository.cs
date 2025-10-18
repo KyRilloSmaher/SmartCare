@@ -61,7 +61,7 @@ namespace SmartCare.InfraStructure.Repositories
                         Fuzz.Ratio(s.Address?.ToLower() ?? "", searchTerm)
                     )
                 })
-                .Where(x => x.Score >= 70)
+                .Where(x => x.Score >= 70 || x.Store.Name.Contains(searchTerm) || x.Store.Address.Contains(searchTerm))
                 .Select(x => x.Store)
                 .ToList();
 

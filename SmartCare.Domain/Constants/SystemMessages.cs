@@ -41,6 +41,7 @@ namespace SmartCare.Domain.Constants
         public const string UNAUTHORIZED = "Invalid or expired refresh token";
         public const string EMAIL_ALREADY_EXISTS = "The email address is already registered.";
         public const string USERNAME_ALREADY_EXISTS = "The username is already taken.";
+        public const string PHONE_ALREADY_EXISTS = "The phone number is already registered.";
         public const string PASSWORD_CHANGED = "Password changed successfully.";
         public const string PASSWORD_RESET_SUCCESS = "Password reset successfully.";
         public const string INVALID_CREDENTIALS = "Invalid username or password.";

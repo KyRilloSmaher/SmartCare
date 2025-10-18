@@ -27,31 +27,18 @@ namespace SmartCare.Application.Validators.Auth
                 .NotEmpty().WithMessage("Username is required.")
                 .Must(u => Constants.IsValid(Constants.StringType.USERNAME, u))
                 .WithMessage("Username must be 3–20 characters (letters, digits, underscores, or dots).")
-                .MustAsync(async (u, cancellation) =>
-                {
-                    return await _clientRepository.IsClientnameUniqueAsync(u);
-                })
-                .WithMessage("Username is already taken!");
+              ;
 
             RuleFor(x => x.Email)
                 .NotEmpty().WithMessage("Email is required.")
                 .Must(e => Constants.IsValid(Constants.StringType.EMAIL, e))
                 .WithMessage("Invalid email format.")
-                .MustAsync(async (email, cancellation) =>
-                {
-                    return await _clientRepository.IsEmailUniqueAsync(email);
-                })
-                .WithMessage("Email is already in use.");
+                ;
 
             RuleFor(x => x.PhoneNumber)
                 .NotEmpty().WithMessage("Phone number is required.")
                 .Must(p => Constants.IsValid(Constants.StringType.PHONE_NO, p))
-                .WithMessage("Invalid phone number format.")
-                .MustAsync(async (phone, cancellation) =>
-                {
-                    return await _clientRepository.IsClientPhoneNumberUniqueAsync(phone);
-                })
-                .WithMessage("Phone number is already in use.");
+                .WithMessage("Invalid phone number format.");
 
             RuleFor(x => x.Password)
                 .NotEmpty().WithMessage("Password is required.")

@@ -36,7 +36,7 @@ namespace SmartCare.API.Controllers
         /// </summary>
         [HttpGet(ApplicationRouting.Store.GetNearestStore)]
         [ProducesResponseType(typeof(Response<StoreResponseDto>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetNearestStoreAsync([FromBody] AddressValuesDto dto)
+        public async Task<IActionResult> GetNearestStoreAsync([FromQuery] AddressValuesDto dto)
         {
             var store = await _storeService.GetNearestStoreAsync(dto);
             return ControllersHelperMethods.FinalResponse(store);

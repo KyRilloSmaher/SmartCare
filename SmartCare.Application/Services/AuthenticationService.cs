@@ -265,6 +265,16 @@ namespace SmartCare.Application.Services
         {
             string? uploadedImageUrl = null;
 
+            var isEmailExists = await _clientRepository.GetByEmailAsync(dto.Email);
+            if (isEmailExists != null)
+                return _responseHandler.Failed<bool>(SystemMessages.EMAIL_ALREADY_EXISTS);
+            var isUserNameExists = await _clientRepository.GetByClientnameAsync(dto.UserName);
+            if (isUserNameExists != null)
+                return _responseHandler.Failed<bool>(SystemMessages.USERNAME_ALREADY_EXISTS);
+            var isPhoneNumberExists = await _clientRepository.IsClientPhoneNumberUniqueAsync(dto.PhoneNumber);
+            if (!isPhoneNumberExists)
+                return _responseHandler.Failed<bool>(SystemMessages.PHONE_ALREADY_EXISTS);
+
             try
             {
                 //  Upload profile image
