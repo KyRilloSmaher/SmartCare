@@ -100,6 +100,10 @@ namespace SmartCare.Domain.Constants
         public const string PRESCRIPTION_VALIDATED = "Prescription validated successfully.";
         public const string PRESCRIPTION_REJECTED = "Prescription validation failed.";
 
+        // =======================
+        //  RATES
+        // =======================
+        public const string RATE_NOT_FOUND = "No Rate Found by This Id";
 
         // =====================
         // 📧 Email Operations

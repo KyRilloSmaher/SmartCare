@@ -33,6 +33,7 @@ namespace SmartCare.InfraStructure.Extensions
             services.AddTransient<ICategoryRepository, CategoryRepository>();
             services.AddTransient<ICompanyRepository, CompanyRepository>();
             services.AddTransient<IStoreRepository, StoreRepository>();
+            services.AddTransient<IRateRepository, RateRepository>();
 
             // Configure Identity
             services.AddIdentity<Client, IdentityRole>(options =>
@@ -68,6 +69,7 @@ namespace SmartCare.InfraStructure.Extensions
             services.AddTransient<IClientService, ClientService>();
             services.AddTransient<ITokenService, TokenService>();
             services.AddTransient<IStoreService, StoreService>();
+            services.AddTransient<IRateService, RateService>();
 
             // Register External Services 
 
