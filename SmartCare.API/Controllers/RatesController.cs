@@ -86,7 +86,8 @@ namespace SmartCare.API.Controllers
         [HttpDelete(ApplicationRouting.Rate.DeleteRate)]
         public async Task<IActionResult> DeleteRateAsync(Guid id)
         {
-            var result = await _ratesService.DeleteRateAsync(id);
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var result = await _ratesService.DeleteRateAsync(userId,id);
             return ControllersHelperMethods.FinalResponse(result);
         }
     }

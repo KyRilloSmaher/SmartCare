@@ -99,6 +99,8 @@ namespace SmartCare.Application.Services
             var rate = _mapper.Map<Rate>(Dto);
             rate.ClientId = userId;
             var savedRate = await _rateRepository.AddAsync(rate);
+            user.RatesCount++;
+            await _clientRepository.UpdateAsync(user);
             var rateDto = _mapper.Map<RateResponseDto>(savedRate);
             return _responseHandler.Success(rateDto);
         }
@@ -127,11 +129,16 @@ namespace SmartCare.Application.Services
 
         }
 
-        public async Task<Response<bool>> DeleteRateAsync(Guid Id)
+        public async Task<Response<bool>> DeleteRateAsync(string userId ,Guid Id)
         {
-            if (Id == Guid.Empty)
+            if (string.IsNullOrEmpty(userId) || Id == Guid.Empty)
             {
                 return _responseHandler.Failed<bool>(SystemMessages.INVALID_INPUT);
+            }
+            var user = await _clientRepository.GetByIdAsync(userId);
+            if (user == null)
+            {
+                return _responseHandler.Failed<bool>(SystemMessages.USER_NOT_FOUND);
             }
             var existingRate = await _rateRepository.GetByIdAsync(Id);
             if (existingRate == null)
@@ -139,6 +146,8 @@ namespace SmartCare.Application.Services
                 return _responseHandler.Failed<bool>(SystemMessages.RATE_NOT_FOUND);
             }
             await _rateRepository.DeleteAsync(existingRate);
+            user.RatesCount++;
+            await _clientRepository.UpdateAsync(user);
             return _responseHandler.Success(true);
         }
         #endregion

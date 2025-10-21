@@ -18,6 +18,7 @@ namespace SmartCare.Application.IServices
         Task<Response<IEnumerable<RateResponseDto>>> GetAllRatesForProductAsync(Guid Id);
         Task<Response<RateResponseDto>> CreateRateAsync(string Id,CreateRateRequestDto Dto);
         Task<Response<RateResponseDto>> UpdateRateAsync(string Id, UpdateRateRequestDto Dto);
-        Task<Response<bool>> DeleteRateAsync(Guid Id);
+        Task<Response<bool>> DeleteRateAsync(string userId ,Guid Id);
     }
 }
+
