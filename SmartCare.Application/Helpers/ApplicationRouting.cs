@@ -87,5 +87,20 @@
         }
         #endregion
 
+        #region EndPoints-Rate
+        public static class Rate
+        {
+            public const string Prefix = Rule + "Rates";
+
+            public const string GetRateById = Prefix + SignleRoute;
+            public const string GetAllRatesForUser = Rule + "me/Rates";
+            public const string GetAllRateForProduct = Rule + "Products" + SignleRoute+ "/rates";
+
+            public const string CreateRate = Prefix + "/create-rate";
+            public const string UpdateRate = Prefix + "/update-rate";
+            public const string DeleteRate = Prefix + "/Delete" + SignleRoute;
+        }
+        #endregion
+
     }
 }
