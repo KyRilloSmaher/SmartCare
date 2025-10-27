@@ -11,6 +11,7 @@ namespace SmartCare.Domain.Entities
         public Guid Id { get; set; }
         public string Name { get; set; }
         public string LogoUrl { get; set; }
+        public int ProductsCount { get; set; }
         public bool IsDeleted { get; set; } = false;
         public  ICollection<Product> Products { get; set; }
     }

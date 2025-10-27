@@ -10,6 +10,7 @@ namespace SmartCare.Application.DTOs.Caregory.Response
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
+        public int ProductsCount { get; set; }
         public string LogoUrl { get; set; }
     }
 }
