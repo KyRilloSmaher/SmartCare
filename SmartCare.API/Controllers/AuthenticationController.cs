@@ -88,7 +88,7 @@ namespace SmartCare.API.Controllers
         /// <summary>
         /// ReSend reset password code to user email.
         /// </summary>
-        [HttpPost(ApplicationRouting.Authentication.ReSendResetCode)]
+        [HttpPost(ApplicationRouting.Authentication.ResendResetCode)]
         [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> ReSendResetPasswordCodeAsync([FromBody] ForgetPasswordRequestDto dto)
         {
@@ -147,7 +147,7 @@ namespace SmartCare.API.Controllers
         /// <summary>
         /// Re Send Confirmation user email.
         /// </summary>
-        [HttpGet(ApplicationRouting.Authentication.ReSendConfirmationEmail)]
+        [HttpGet(ApplicationRouting.Authentication.ResendConfirmationEmail)]
         [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> ReSendConfirmationEmailAsync([FromQuery] ReSendConfirmationEmailRequest dto)
         {

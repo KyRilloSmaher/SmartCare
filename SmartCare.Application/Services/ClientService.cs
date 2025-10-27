@@ -15,14 +15,14 @@ namespace SmartCare.Application.Services
     public class ClientService : IClientService
     {
         #region Fields
-        private readonly ResponseHandler _responseHandler;
+        private readonly IResponseHandler _responseHandler;
         private readonly IClientRepository _clientRepository;
         private readonly IImageUploaderService _imageUploaderService;
         private readonly IMapper _mapper;
         #endregion
 
         #region Constructor
-        public ClientService(IClientRepository clientRepository, IImageUploaderService imageUploaderService, IMapper mapper, ResponseHandler responseHandler)
+        public ClientService(IClientRepository clientRepository, IImageUploaderService imageUploaderService, IMapper mapper, IResponseHandler responseHandler)
         {
             _responseHandler = responseHandler;
             _clientRepository = clientRepository;

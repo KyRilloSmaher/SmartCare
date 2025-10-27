@@ -24,6 +24,15 @@ namespace SmartCare.InfraStructure.Configurations
             builder.Property(s => s.Address)
                    .IsRequired()
                    .HasMaxLength(300);
+            builder.Property(s => s.Latitude)
+                   .IsRequired();
+
+            builder.Property(s => s.Longitude)
+                  .IsRequired();
+
+            // If using GeoLocation with SQL Server geography type
+            builder.Property(s => s.GeoLocation)
+                  .HasColumnType("geography");
 
             builder.Property(s => s.Phone)
                    .IsRequired()

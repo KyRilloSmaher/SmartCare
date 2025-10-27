@@ -15,8 +15,8 @@ namespace SmartCare.Domain.Helpers
         public bool ValidateAudience { get; set; }
         public bool ValidateLifeTime { get; set; }
         public bool ValidateIssuerSigningKey { get; set; }
-        public int AccessTokenLifetimeDays { get; set; }
-        public int RefreshTokenLifetimeHours { get; set; }
+        public int AccessTokenLifetimeHours { get; set; }
+        public int RefreshTokenLifetimeDays { get; set; }
     }
 
 }

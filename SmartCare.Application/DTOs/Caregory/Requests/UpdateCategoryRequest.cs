@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application
+namespace SmartCare.Application.DTOs.Caregory.Requests
 {
-    internal class ApplicationLayerDI
+    public class UpdateCategoryRequest
     {
+        public string Name { get; set; }
     }
 }

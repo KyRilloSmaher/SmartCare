@@ -16,14 +16,8 @@ namespace SmartCare.Application.Validators.Client
 
             RuleFor(x => x.ProfileImage)
                     .NotNull().WithMessage("Profile image is required.")
-                    .Must(BeAValidImage).WithMessage("Invalid image file. Allowed extensions: .jpg, .jpeg, .png, max size 5 MB.");
+                    .Must(Constants.BeAValidImage).WithMessage("Invalid image file. Allowed extensions: .jpg, .jpeg, .png, max size 5 MB.");
         }
-        private bool BeAValidImage(IFormFile file)
-        {
-            if (file == null) return true;
-
-            var ext = Path.GetExtension(file.FileName).ToLower();
-            return Constants.AllowedImageExtensions.Contains(ext) && file.Length <= Constants.MaxImgSize;
-        }
+       
     }
 }

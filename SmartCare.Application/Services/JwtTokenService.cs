@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SmartCare.Domain.Entities;
 using SmartCare.Domain.Helpers;
@@ -14,10 +15,12 @@ namespace SmartCare.Application.Services
     public class TokenService : ITokenService
     {
         private readonly JwtSettings _jwtSettings;
+        private readonly UserManager<Client> _userManager;
 
-        public TokenService(JwtSettings jwt)
+        public TokenService(JwtSettings jwt, UserManager<Client> userManager)
         {
             _jwtSettings = jwt;
+            _userManager = userManager;
         }
 
         // Generate Access Token (JWT)
@@ -30,7 +33,7 @@ namespace SmartCare.Application.Services
                 issuer: _jwtSettings.Issuer,
                 audience: _jwtSettings.Audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddDays(_jwtSettings.AccessTokenLifetimeDays),
+                expires: DateTime.UtcNow.AddHours(_jwtSettings.AccessTokenLifetimeHours),
                 signingCredentials: creds
             );
 
@@ -49,18 +52,27 @@ namespace SmartCare.Application.Services
         // Calculate refresh token expiry
         public DateTime GetRefreshTokenExpiryTime()
         {
-            return DateTime.UtcNow.AddHours(_jwtSettings.RefreshTokenLifetimeHours);
+            return DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenLifetimeDays);
         }
 
         // Build claims for the JWT
-        public IEnumerable<Claim> GetClaims(Client user)
+        public async Task<IEnumerable<Claim>> GetClaimsAsync(Client user)
         {
-            return new List<Claim>
+            var userRoles = await _userManager.GetRolesAsync(user);
+
+            var authClaims = new List<Claim>
+                                {
+                                    new Claim(ClaimTypes.NameIdentifier, user.Id),
+                                    new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
+                                    new Claim(ClaimTypes.Name, user.UserName ?? string.Empty)
+                                };
+
+            // Add role claims
+            foreach (var role in userRoles)
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
-                new Claim(ClaimTypes.Name, user.UserName ?? string.Empty)
-            };
+                authClaims.Add(new Claim(ClaimTypes.Role, role));
+            }
+            return authClaims;
         }
 
         // Extract principal from an expired JWT (used during refresh)

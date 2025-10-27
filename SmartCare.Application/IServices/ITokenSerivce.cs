@@ -31,7 +31,7 @@ namespace SmartCare.Domain.Interfaces.IServices
         /// </summary>
         /// <param name="user">The application user to extract claims from.</param>
         /// <returns>A list of claims representing the user identity.</returns>
-        IEnumerable<Claim> GetClaims(Client user);
+        Task<IEnumerable<Claim>> GetClaimsAsync(Client user);
 
         /// <summary>
         /// Extracts a ClaimsPrincipal from an expired access token.

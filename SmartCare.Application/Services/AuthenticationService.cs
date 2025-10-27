@@ -25,7 +25,7 @@ namespace SmartCare.Application.Services
     public class AuthenticationService : IAuthenticationService
     {
         #region Fields
-        private readonly ResponseHandler _responseHandler;
+        private readonly IResponseHandler _responseHandler;
         private readonly IClientRepository _clientRepository;
         private readonly ITokenService _tokenService;
         private readonly IEmailService _emailService;
@@ -38,7 +38,7 @@ namespace SmartCare.Application.Services
 
         #region Constructor
         public AuthenticationService(
-            ResponseHandler responseHandler,
+            IResponseHandler responseHandler,
             IClientRepository clientRepository,
             ITokenService tokenService,
             IEmailService emailService,
@@ -267,6 +267,16 @@ namespace SmartCare.Application.Services
         public async Task<Response<bool>> SignUpAsync(SignUpRequest dto)
         {
             string? uploadedImageUrl = null;
+
+            var isEmailExists = await _clientRepository.GetByEmailAsync(dto.Email);
+            if (isEmailExists != null)
+                return _responseHandler.Failed<bool>(SystemMessages.EMAIL_ALREADY_EXISTS);
+            var isUserNameExists = await _clientRepository.GetByClientnameAsync(dto.UserName);
+            if (isUserNameExists != null)
+                return _responseHandler.Failed<bool>(SystemMessages.USERNAME_ALREADY_EXISTS);
+            var isPhoneNumberExists = await _clientRepository.IsClientPhoneNumberUniqueAsync(dto.PhoneNumber);
+            if (!isPhoneNumberExists)
+                return _responseHandler.Failed<bool>(SystemMessages.PHONE_ALREADY_EXISTS);
 
             try
             {
