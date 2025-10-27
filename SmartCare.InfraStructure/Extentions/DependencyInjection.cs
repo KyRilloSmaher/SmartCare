@@ -34,6 +34,7 @@ namespace SmartCare.InfraStructure.Extensions
             services.AddTransient<ICompanyRepository, CompanyRepository>();
             services.AddTransient<IStoreRepository, StoreRepository>();
             services.AddTransient<IRateRepository, RateRepository>();
+            services.AddTransient<IProductRepository, ProductRepository>();
 
             // Configure Identity
             services.AddIdentity<Client, IdentityRole>(options =>

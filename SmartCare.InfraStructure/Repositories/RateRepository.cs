@@ -45,6 +45,24 @@ namespace SmartCare.InfraStructure.Repositories
                                       .ToListAsync();
             return  rates;
         }
+
+        public async Task<float> UpdateAverageRateForProductAsync(Guid productId)
+        {
+            var rates = await GetRatesByProductIdAsync(productId);
+            if (rates == null || !rates.Any())
+            {
+                return 0;
+            }
+            float averageRate = (float)rates.Average(r => r.Value);
+            var product = await _context.Products.FindAsync(productId);
+            if (product != null)
+            {
+                product.AverageRating = averageRate;
+                _context.Products.Update(product);
+                await _context.SaveChangesAsync();
+            }
+            return averageRate;  
+        }
         #endregion
     }
 }

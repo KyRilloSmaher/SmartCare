@@ -11,6 +11,7 @@ namespace SmartCare.Domain.IRepositories
     {
         Task<IEnumerable<Rate>> GetRatesByUserIdAsync(string userId);
         Task<IEnumerable<Rate>> GetRatesByProductIdAsync(Guid productId);
+        Task<float> UpdateAverageRateForProductAsync(Guid productId);
 
     }
 }

@@ -23,7 +23,7 @@ namespace SmartCare.API.Controllers
         /// <summary>
         /// Get A Client By Id
         /// </summary>
-        [HttpGet(ApplicationRouting.Client.GetClientById)]
+        [HttpGet(ApplicationRouting.Client.GetById)]
         [ProducesResponseType(typeof(Response<ClientResponseDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetClientByIdAsync(string id)
         {
@@ -35,7 +35,7 @@ namespace SmartCare.API.Controllers
         /// Get A Client By Email
         /// </summary>
         
-        [HttpGet(ApplicationRouting.Client.GetClientByEmail)]
+        [HttpGet(ApplicationRouting.Client.GetByEmail)]
         [ProducesResponseType(typeof(Response<ClientResponseDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetClientByEmailAsync(string email)
         {
@@ -46,7 +46,7 @@ namespace SmartCare.API.Controllers
         /// <summary>
         /// Get All Clients 
         /// </summary>
-        [HttpGet(ApplicationRouting.Client.GetAllClients)]
+        [HttpGet(ApplicationRouting.Client.GetAll)]
         [ProducesResponseType(typeof(Response<IEnumerable<ClientResponseDto>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllClientsAsync()
         {
@@ -58,7 +58,7 @@ namespace SmartCare.API.Controllers
         /// Update A Client
         /// </summary>
 
-        [HttpPatch(ApplicationRouting.Client.UpdateClient)]
+        [HttpPatch(ApplicationRouting.Client.UpdateProfile)]
         [ProducesResponseType(typeof(Response<ClientResponseDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateClientProfileAsync(UpdateClientRequest dto)
         {
@@ -82,7 +82,7 @@ namespace SmartCare.API.Controllers
         /// Delete A Client
         /// </summary>
 
-        [HttpDelete(ApplicationRouting.Client.DeleteClient)]
+        [HttpDelete(ApplicationRouting.Client.Delete)]
         [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> DeleteClientAsync(string id)
         {

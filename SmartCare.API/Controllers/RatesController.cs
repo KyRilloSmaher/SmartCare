@@ -24,7 +24,7 @@ namespace SmartCare.API.Controllers
         /// Get Rate By Id
         /// </summary>
         [ProducesResponseType(typeof(Response<RateResponseDto>), StatusCodes.Status200OK)]
-        [HttpGet(ApplicationRouting.Rate.GetRateById)]
+        [HttpGet(ApplicationRouting.Rate.GetById)]
         public async Task<IActionResult> GetRateByIdAsync(Guid id)
         {
             var result = await _ratesService.GetRateByIdAsync(id);
@@ -35,7 +35,7 @@ namespace SmartCare.API.Controllers
         /// Get Rates By User
         /// </summary>
         [ProducesResponseType(typeof(Response<RateResponseDto>), StatusCodes.Status200OK)]
-        [HttpGet(ApplicationRouting.Rate.GetAllRatesForUser)]
+        [HttpGet(ApplicationRouting.Rate.GetAllForUser)]
         public async Task<IActionResult> GetRatesbyUserAsync()
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
@@ -47,7 +47,7 @@ namespace SmartCare.API.Controllers
         /// Get Rates For Product
         /// </summary>
         [ProducesResponseType(typeof(Response<RateResponseDto>), StatusCodes.Status200OK)]
-        [HttpGet(ApplicationRouting.Rate.GetAllRateForProduct)]
+        [HttpGet(ApplicationRouting.Rate.GetAllForProduct)]
         public async Task<IActionResult> GetProductRatesAsync(Guid id)
         {
             var result = await _ratesService.GetAllRatesForProductAsync(id);
@@ -59,7 +59,7 @@ namespace SmartCare.API.Controllers
         /// Create rate by User
         /// </summary>
         [ProducesResponseType(typeof(Response<RateResponseDto>), StatusCodes.Status200OK)]
-        [HttpPost(ApplicationRouting.Rate.CreateRate)]
+        [HttpPost(ApplicationRouting.Rate.Create)]
         public async Task<IActionResult> CreateRateAsync(CreateRateRequestDto dto)
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
@@ -71,7 +71,7 @@ namespace SmartCare.API.Controllers
         ///Update Rate By Id
         /// </summary>
         [ProducesResponseType(typeof(Response<RateResponseDto>), StatusCodes.Status200OK)]
-        [HttpPut(ApplicationRouting.Rate.UpdateRate)]
+        [HttpPut(ApplicationRouting.Rate.Update)]
         public async Task<IActionResult> UpdateRateAsync(UpdateRateRequestDto dto)
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
@@ -83,7 +83,7 @@ namespace SmartCare.API.Controllers
         /// Delete Rate By Id
         /// </summary>
         [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
-        [HttpDelete(ApplicationRouting.Rate.DeleteRate)]
+        [HttpDelete(ApplicationRouting.Rate.Delete)]
         public async Task<IActionResult> DeleteRateAsync(Guid id)
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;

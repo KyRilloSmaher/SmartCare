@@ -18,6 +18,7 @@ namespace SmartCare.Application.Services
     {
         #region Feilds
         private readonly IRateRepository _rateRepository;
+        private readonly IProductRepository _productRepository;
         private readonly IClientRepository _clientRepository;
         private readonly IMapper _mapper;
         private readonly IResponseHandler _responseHandler;
@@ -26,12 +27,13 @@ namespace SmartCare.Application.Services
 
 
         #region Constructors
-        public RateService(IRateRepository rateRepository, IMapper mapper, IResponseHandler responseHandler, IClientRepository clientRepository)
+        public RateService(IRateRepository rateRepository, IMapper mapper, IResponseHandler responseHandler, IClientRepository clientRepository, IProductRepository productRepository)
         {
             _rateRepository = rateRepository;
             _mapper = mapper;
             _responseHandler = responseHandler;
             _clientRepository = clientRepository;
+            _productRepository = productRepository;
         }
         #endregion 
 
@@ -73,11 +75,11 @@ namespace SmartCare.Application.Services
             {
                 return _responseHandler.Failed<IEnumerable<RateResponseDto>>(SystemMessages.INVALID_INPUT);
             }
-            //var product = await _productRepository.GetByIdAsync(Id);
-            //if (product == null)
-            //{
-            //    return _responseHandler.Failed<IEnumerable<RateResponseDto>>(SystemMessages.PRODUCT_NOT_FOUND);
-            //}
+            var product = await _productRepository.GetByIdAsync(Id);
+            if (product == null)
+            {
+                return _responseHandler.Failed<IEnumerable<RateResponseDto>>(SystemMessages.PRODUCT_NOT_FOUND);
+            }
             var rates = await _rateRepository.GetRatesByProductIdAsync(Id);
             var rateDtos = _mapper.Map<IEnumerable<RateResponseDto>>(rates);
             return _responseHandler.Success(rateDtos);
@@ -91,16 +93,17 @@ namespace SmartCare.Application.Services
             {
                 return _responseHandler.Failed<RateResponseDto>(SystemMessages.USER_NOT_FOUND);
             }
-            //var product = await _productRepository.GetByIdAsync(Dto.ProductId);
-            //if (product == null)
-            //{
-            //    return _responseHandler.Failed<RateResponseDto>(SystemMessages.PRODUCT_NOT_FOUND);
-            //}
+            var product = await _productRepository.GetByIdAsync(Dto.ProductId);
+            if (product == null)
+            {
+                return _responseHandler.Failed<RateResponseDto>(SystemMessages.PRODUCT_NOT_FOUND);
+            }
             var rate = _mapper.Map<Rate>(Dto);
             rate.ClientId = userId;
             var savedRate = await _rateRepository.AddAsync(rate);
             user.RatesCount++;
             await _clientRepository.UpdateAsync(user);
+            await _rateRepository.UpdateAverageRateForProductAsync(Dto.ProductId);
             var rateDto = _mapper.Map<RateResponseDto>(savedRate);
             return _responseHandler.Success(rateDto);
         }
@@ -123,10 +126,9 @@ namespace SmartCare.Application.Services
             }
             _mapper.Map(Dto, existingRate);
             await _rateRepository.UpdateAsync(existingRate);
+            await _rateRepository.UpdateAverageRateForProductAsync(Dto.ProductId);
             var rateDto = _mapper.Map<RateResponseDto>(existingRate);
             return _responseHandler.Success(rateDto);
-
-
         }
 
         public async Task<Response<bool>> DeleteRateAsync(string userId ,Guid Id)
@@ -145,8 +147,9 @@ namespace SmartCare.Application.Services
             {
                 return _responseHandler.Failed<bool>(SystemMessages.RATE_NOT_FOUND);
             }
+            await _rateRepository.UpdateAverageRateForProductAsync(existingRate.ProductId);
             await _rateRepository.DeleteAsync(existingRate);
-            user.RatesCount++;
+            user.RatesCount--;
             await _clientRepository.UpdateAsync(user);
             return _responseHandler.Success(true);
         }

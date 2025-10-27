@@ -39,7 +39,12 @@ namespace SmartCare.InfraStructure.Repositories
         {
             return await base.GetAllAsync();
         }
-
+        public async override Task<bool> DeleteAsync(Company entity) {
+            entity.IsDeleted = true;
+            _context.Companies.Update(entity);
+            await _context.SaveChangesAsync();
+            return true;
+        }
         public async Task<IEnumerable<Company>> SearchCompaniesByNameAsync(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
