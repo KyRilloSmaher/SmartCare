@@ -87,16 +87,19 @@ namespace SmartCare.Application.Services
                     return _responseHandler.NotFound<bool>(SystemMessages.USER_NOT_FOUND);
                 // Get profile image URl 
                 var imageUrl = client.ProfileImageUrl;
-                var deleteResult = await _clientRepository.DeleteAsync(client);
+                var deleteResult = await _clientRepository.DeleteClientAsync(client);
 
-                if (deleteResult)
+                if (deleteResult.Succeeded)
                 {
                     var DeleteImageResult = await _imageUploaderService.DeleteImageByUrlAsync(imageUrl);
                     if (DeleteImageResult)
+                    {
+                        await _clientRepository.CommitTransactionAsync();
                         return _responseHandler.Success<bool>(true, SystemMessages.SUCCESS);
+                    }
                 }
                 throw new Exception();
-               
+
             }
             catch(Exception ex)
             {

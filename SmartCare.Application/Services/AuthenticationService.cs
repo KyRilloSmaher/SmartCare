@@ -240,8 +240,11 @@ namespace SmartCare.Application.Services
             var user = await _clientRepository.GetByEmailAsync(dto.Email);
             if (user == null || !await _clientRepository.CheckPasswordAsync(user, dto.Password))
                 return _responseHandler.Unauthorized<TokenResponseDto>(SystemMessages.INVALID_CREDENTIALS);
-
-            var claims = await _tokenService.GetClaimsAsync(user);
+            if (!user.EmailConfirmed)
+            {
+                return _responseHandler.Unauthorized<TokenResponseDto>(SystemMessages.EMAIL_NOT_CONFIRMED);
+            }
+            var claims = _tokenService.GetClaims(user);
             var accessToken = _tokenService.GenerateAccessToken(claims);
             var refreshToken = _tokenService.GenerateRefreshToken();
 
