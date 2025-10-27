@@ -81,10 +81,8 @@ namespace SmartCare.Application.Services
             var category = await _categoryRepository.GetByIdAsync(Id);
             if (category == null)
                 return _responseHandler.Failed<bool>(SystemMessages.NOT_FOUND);
-            category.IsDeleted = true;
-            await _categoryRepository.UpdateAsync(category);
-            await _categoryRepository.SaveChangesAsync();
-            return _responseHandler.Success(true, SystemMessages.RECORD_DELETED);
+            var result = await _categoryRepository.DeleteAsync(category);
+            return result ? _responseHandler.Success(true, SystemMessages.RECORD_DELETED) : _responseHandler.Failed<bool>(SystemMessages.FAILED);
         }
 
         public async Task<Response<string>> ChangeCategoryLogoAsync(Guid Id, ChangeCategoryLogoRequestDto CategoryDto)

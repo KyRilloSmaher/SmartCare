@@ -23,7 +23,7 @@ namespace SmartCare.API.Controllers
         /// <summary>
         /// Get Store By Id
         /// </summary>
-        [HttpGet(ApplicationRouting.Store.GetStoreById)]
+        [HttpGet(ApplicationRouting.Store.GetById)]
         [ProducesResponseType(typeof(Response<StoreResponseDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetStoreByIdAsync(Guid id)
         {
@@ -34,7 +34,7 @@ namespace SmartCare.API.Controllers
         /// <summary>
         /// Get Nearest Store By Coordinates
         /// </summary>
-        [HttpGet(ApplicationRouting.Store.GetNearestStore)]
+        [HttpGet(ApplicationRouting.Store.GetNearest)]
         [ProducesResponseType(typeof(Response<StoreResponseDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetNearestStoreAsync([FromQuery] AddressValuesDto dto)
         {
@@ -45,7 +45,7 @@ namespace SmartCare.API.Controllers
         /// <summary>
         /// Search Stores By Name
         /// </summary>
-        [HttpGet(ApplicationRouting.Store.SearchStoresByName)]
+        [HttpGet(ApplicationRouting.Store.SearchByName)]
         [ProducesResponseType(typeof(Response<IEnumerable<StoreResponseDto>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> SearchStoresByNameAsync([FromQuery] string name)
         {
@@ -56,7 +56,7 @@ namespace SmartCare.API.Controllers
         /// <summary>
         /// Get All Stores
         /// </summary>
-        [HttpGet(ApplicationRouting.Store.GetAllStores)]
+        [HttpGet(ApplicationRouting.Store.GetAll)]
         [ProducesResponseType(typeof(Response<IEnumerable<StoreResponseDto>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllStoresAsync()
         {
@@ -67,8 +67,8 @@ namespace SmartCare.API.Controllers
         /// <summary>
         /// Get All Stores (Admin)
         /// </summary>
-        [Authorize(Roles = "Admin")]
-        [HttpGet(ApplicationRouting.Store.GetAllStoresForAdmin)]
+        [Authorize(Roles = "DASHBOARD_ADMIN")]
+        [HttpGet(ApplicationRouting.Store.GetAllForAdmin)]
         [ProducesResponseType(typeof(Response<IEnumerable<StoreResponseForAdminDto>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllStoresForAdminAsync()
         {
@@ -79,8 +79,8 @@ namespace SmartCare.API.Controllers
         /// <summary>
         /// Create a New Store
         /// </summary>
-        [Authorize(Roles = "Admin")]
-        [HttpPost(ApplicationRouting.Store.CreateStore)]
+        [Authorize(Roles = "DASHBOARD_ADMIN")]
+        [HttpPost(ApplicationRouting.Store.Create)]
         [ProducesResponseType(typeof(Response<StoreResponseForAdminDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> CreateStoreAsync([FromBody] CreateStoreRequestDto dto)
         {
@@ -91,8 +91,8 @@ namespace SmartCare.API.Controllers
         /// <summary>
         /// Update a Store
         /// </summary>
-        [Authorize(Roles = "Admin")]
-        [HttpPut(ApplicationRouting.Store.UpdateStore)]
+        [Authorize(Roles = "DASHBOARD_ADMIN")]
+        [HttpPut(ApplicationRouting.Store.Update)]
         [ProducesResponseType(typeof(Response<StoreResponseForAdminDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateStoreAsync(Guid id, [FromBody] UpdateStoreRequestDto dto)
         {
@@ -103,8 +103,8 @@ namespace SmartCare.API.Controllers
         /// <summary>
         /// Delete Store
         /// </summary>
-        [Authorize(Roles = "Admin")]
-        [HttpDelete(ApplicationRouting.Store.DeleteStore)]
+        [Authorize(Roles = "DASHBOARD_ADMIN")]
+        [HttpDelete(ApplicationRouting.Store.Delete)]
         [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> DeleteStoreAsync(Guid id)
         {

@@ -85,10 +85,8 @@ namespace SmartCare.Application.Services
             var Company = await _CompanyRepository.GetByIdAsync(Id);
             if (Company == null)
                 return _responseHandler.NotFound<bool>(SystemMessages.NOT_FOUND);
-            Company.IsDeleted = true;
-            await _CompanyRepository.UpdateAsync(Company);
-            await _CompanyRepository.SaveChangesAsync();
-            return _responseHandler.Success(true, SystemMessages.RECORD_DELETED);
+            var result = await _CompanyRepository.DeleteAsync(Company);
+            return result ? _responseHandler.Success(true, SystemMessages.RECORD_DELETED) : _responseHandler.Failed<bool>(SystemMessages.FAILED);
         }
 
         public async Task<Response<string>> ChangeCompanyLogoAsync(Guid Id, ChangeCompanyLogoRequestDto CompanyDto)

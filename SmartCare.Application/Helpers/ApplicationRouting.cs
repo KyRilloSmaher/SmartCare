@@ -1,106 +1,111 @@
 ﻿namespace SmartCare.API.Helpers
 {
+    /// <summary>
+    /// Defines the API route constants used throughout the application.
+    /// Provides a single source of truth for all endpoint paths.
+    /// </summary>
     public static class ApplicationRouting
     {
-        public const string SignleRoute = "/{id:guid}";
-        public const string root = "api";
-        public const string Rule = root + "/";
+        public const string Root = "api";
+        public const string SingleRoute = "/{id:guid}";
+        public const string Rule = Root + "/";
 
-        #region EndPoints-Authentication
+        #region Authentication Endpoints
         public static class Authentication
         {
-            public const string Prefix = Rule + "auth/";
+            private const string Prefix = Rule + "auth/";
+
             public const string Login = Prefix + "login";
             public const string SignUp = Prefix + "sign-up";
             public const string ConfirmEmail = Prefix + "confirm-email";
-            public const string ReSendConfirmationEmail = Prefix + "resend-confirmation-email";
+            public const string ResendConfirmationEmail = Prefix + "resend-confirmation-email";
             public const string ForgotPassword = Prefix + "forgot-password";
             public const string ConfirmResetPasswordCode = Prefix + "confirm-reset-password-code";
             public const string ChangePassword = Prefix + "change-password";
             public const string SendResetCode = Prefix + "send-reset-code";
-            public const string ReSendResetCode = Prefix + "resend-reset-code";
+            public const string ResendResetCode = Prefix + "resend-reset-code";
             public const string ResetPassword = Prefix + "reset-password";
-            public const string RefreshToken = Prefix + "refresh-token";  
+            public const string RefreshToken = Prefix + "refresh-token";
         }
         #endregion
 
-        #region EndPoints-Category
+        #region Category Endpoints
         public static class Category
         {
-            public const string Prefix = Rule + "categories";
-            public const string GetCategoryById = Prefix + SignleRoute;
-            public const string SearchCategoryByName = Prefix+ "/search";
-            public const string GetAllCategories = Prefix ;
-            public const string GetAllCategoriesForAdmin = Rule+ "admin/"+Prefix;
-            public const string UpdateCategory = Prefix + "/update-category";
-            public const string ChangeCategoryImage = Prefix + "/change-category-logo";
-            public const string CreateCategory = Prefix + "/create-category";
-            public const string DeleteCategory = Prefix + "/Delete" + SignleRoute;
+            private const string Prefix = Rule + "categories";
+            private const string AdminPrefix = Rule + "admin/categories";
 
+            public const string GetById = Prefix + SingleRoute;
+            public const string SearchByName = Prefix + "/search";
+            public const string GetAll = Prefix;
+            public const string GetAllForAdmin = AdminPrefix;
+            public const string Create = AdminPrefix + "/create";
+            public const string Update = AdminPrefix + "/update";
+            public const string ChangeImage = AdminPrefix + "/change-image";
+            public const string Delete = AdminPrefix + "/delete" + SingleRoute;
         }
         #endregion
 
-        #region EndPoints-Company
+        #region Company Endpoints
         public static class Company
         {
-            public const string Prefix = Rule + "Companies";
-            public const string GetCompanyById = Prefix + SignleRoute;
-            public const string SearchCompanyByName = Prefix + "/search";
-            public const string GetAllCompanies = Prefix;
-            public const string GetAllCompaniesForAdmin = Rule + "admin/" + Prefix;
-            public const string UpdateCompany = Prefix + "/update-company";
-            public const string ChangeCompanyImage = Prefix + "/change-company-logo";
-            public const string CreateCompany = Prefix + "/create-company";
-            public const string DeleteCompany = Prefix + "/Delete" + SignleRoute;
+            private const string Prefix = Rule + "companies";
+            private const string AdminPrefix = Rule + "admin/companies";
 
+            public const string GetById = Prefix + SingleRoute;
+            public const string SearchByName = Prefix + "/search";
+            public const string GetAll = Prefix;
+            public const string GetAllForAdmin = AdminPrefix;
+            public const string Create = AdminPrefix + "/create";
+            public const string Update = AdminPrefix + "/update";
+            public const string ChangeImage = AdminPrefix + "/change-logo";
+            public const string Delete = AdminPrefix + "/delete" + SingleRoute;
         }
-        #endregion 
+        #endregion
 
-        #region EndPoints-Client
+        #region Client Endpoints
         public static class Client
         {
-            public const string Prefix = Rule + "Users/clients";
-            public const string GetClientById = Prefix + SignleRoute;
-            public const string GetClientByEmail = Prefix + "/{email}";
-            public const string GetAllClients = Prefix;
-            public const string UpdateClient = Prefix + "/update-profile";
-            public const string ChangeProfileImage = Prefix + "/me/change-profile-image";
-            public const string DeleteClient = Prefix + "/Delete"+SignleRoute;
+            private const string Prefix = Rule + "users/clients";
 
+            public const string GetById = Prefix + SingleRoute;
+            public const string GetByEmail = Prefix + "/{email}";
+            public const string GetAll = Prefix;
+            public const string UpdateProfile = Prefix + "/me/update-profile";
+            public const string ChangeProfileImage = Prefix + "/me/change-profile-image";
+            public const string Delete = Prefix + "/delete" + SingleRoute;
         }
         #endregion
 
-        #region EndPoints-Store
+        #region Store Endpoints
         public static class Store
         {
-            public const string Prefix = Rule + "Stores";
+            private const string Prefix = Rule + "stores";
+            private const string AdminPrefix = Rule + "admin/stores";
 
-            public const string GetStoreById = Prefix + SignleRoute;
-            public const string GetNearestStore = Prefix + "/nearest";
-            public const string SearchStoresByName = Prefix + "/search";
-            public const string GetAllStores = Prefix ;
-            public const string GetAllStoresForAdmin = Rule + "admin/" + "Stores";
-
-            public const string CreateStore = Prefix + "/create-store";
-            public const string UpdateStore = Prefix + "/update-store";
-            public const string DeleteStore = Prefix + "/Delete" + SignleRoute;
+            public const string GetById = Prefix + SingleRoute;
+            public const string GetNearest = Prefix + "/nearest";
+            public const string SearchByName = Prefix + "/search";
+            public const string GetAll = Prefix;
+            public const string GetAllForAdmin = AdminPrefix;
+            public const string Create = AdminPrefix + "/create";
+            public const string Update = AdminPrefix + "/update";
+            public const string Delete = AdminPrefix + "/delete" + SingleRoute;
         }
         #endregion
 
-        #region EndPoints-Rate
+        #region Rate Endpoints
         public static class Rate
         {
-            public const string Prefix = Rule + "Rates";
+            private const string Prefix = Rule + "rates";
 
-            public const string GetRateById = Prefix + SignleRoute;
-            public const string GetAllRatesForUser = Rule + "me/Rates";
-            public const string GetAllRateForProduct = Rule + "Products" + SignleRoute+ "/rates";
-
-            public const string CreateRate = Prefix + "/create-rate";
-            public const string UpdateRate = Prefix + "/update-rate";
-            public const string DeleteRate = Prefix + "/Delete" + SignleRoute;
+            public const string GetById = Prefix + SingleRoute;
+            public const string GetAllForUser = Rule + "me/rates";
+            public const string GetAllForProduct = Rule + "products" + SingleRoute + "/rates";
+            public const string Create = Prefix + "/create";
+            public const string Update = Prefix + "/update";
+            public const string Delete = Prefix + "/delete" + SingleRoute;
         }
         #endregion
-
     }
 }

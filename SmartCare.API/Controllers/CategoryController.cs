@@ -23,7 +23,7 @@ namespace SmartCare.API.Controllers
         /// <summary>
         /// Get Category By Id
         /// </summary>
-        [HttpGet(ApplicationRouting.Category.GetCategoryById)]
+        [HttpGet(ApplicationRouting.Category.GetById)]
         [ProducesResponseType(typeof(Response<CategoryResponseDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetCategoryByIdAsync(Guid id)
         {
@@ -34,7 +34,7 @@ namespace SmartCare.API.Controllers
         /// <summary>
         /// Search Categories By Name
         /// </summary>
-        [HttpGet(ApplicationRouting.Category.SearchCategoryByName)]
+        [HttpGet(ApplicationRouting.Category.SearchByName)]
         [ProducesResponseType(typeof(Response<IEnumerable<CategoryResponseDto>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> SearchCategoriesByNameAsync([FromQuery]string name)
         {
@@ -44,7 +44,7 @@ namespace SmartCare.API.Controllers
         /// <summary>
         /// Get All Categories
         /// </summary>
-        [HttpGet(ApplicationRouting.Category.GetAllCategories)]
+        [HttpGet(ApplicationRouting.Category.GetAll)]
         [ProducesResponseType(typeof(Response<IEnumerable<CategoryResponseDto>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllCategoriesAsync()
         {
@@ -55,8 +55,8 @@ namespace SmartCare.API.Controllers
         /// <summary>
         /// Get All Categories (Admin)
         /// </summary>
-        [Authorize(Roles = "Admin")]
-        [HttpGet(ApplicationRouting.Category.GetAllCategoriesForAdmin)]
+        [Authorize(Roles = "DASHBOARD_ADMIN")]
+        [HttpGet(ApplicationRouting.Category.GetAllForAdmin)]
         [ProducesResponseType(typeof(Response<IEnumerable<CategoryResponseForAdminDto>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllCategoriesForAdminAsync()
         {
@@ -67,8 +67,8 @@ namespace SmartCare.API.Controllers
         /// <summary>
         /// Create a New Category
         /// </summary>
-        [Authorize(Roles = "Admin")]
-        [HttpPost(ApplicationRouting.Category.CreateCategory)]
+        [Authorize(Roles = "DASHBOARD_ADMIN")]
+        [HttpPost(ApplicationRouting.Category.Create)]
         [ProducesResponseType(typeof(Response<CategoryResponseForAdminDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> CreateCategoryAsync([FromForm] CreateCategoryRequestDto dto)
         {
@@ -79,8 +79,8 @@ namespace SmartCare.API.Controllers
         /// <summary>
         /// Update a Category
         /// </summary>
-        [Authorize(Roles = "Admin")]
-        [HttpPut(ApplicationRouting.Category.UpdateCategory)]
+        [Authorize(Roles = "DASHBOARD_ADMIN")]
+        [HttpPut(ApplicationRouting.Category.Update)]
         [ProducesResponseType(typeof(Response<CategoryResponseDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateCategoryAsync(Guid id, [FromBody] UpdateCategoryRequest dto)
         {
@@ -91,8 +91,8 @@ namespace SmartCare.API.Controllers
         /// <summary>
         /// Change Category Logo
         /// </summary>
-        [Authorize(Roles = "Admin")]
-        [HttpPatch(ApplicationRouting.Category.ChangeCategoryImage)]
+        [Authorize(Roles = "DASHBOARD_ADMIN")]
+        [HttpPatch(ApplicationRouting.Category.ChangeImage)]
         [ProducesResponseType(typeof(Response<string>), StatusCodes.Status200OK)]
         public async Task<IActionResult> ChangeCategoryLogoAsync(Guid id, [FromForm] ChangeCategoryLogoRequestDto dto)
         {
@@ -103,8 +103,8 @@ namespace SmartCare.API.Controllers
         /// <summary>
         /// Delete Category
         /// </summary>
-        [Authorize(Roles = "Admin")]
-        [HttpDelete(ApplicationRouting.Category.DeleteCategory)]
+        [Authorize(Roles = "DASHBOARD_ADMIN")]
+        [HttpDelete(ApplicationRouting.Category.Delete)]
         [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> DeleteCategoryAsync(Guid id)
         {
