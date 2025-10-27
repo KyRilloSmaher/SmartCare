@@ -29,7 +29,16 @@ namespace SmartCare.InfraStructure.Repositories
             await _context.SaveChangesAsync();
             return true;
         }
+        public async override Task<Rate?> GetByIdAsync(Guid id, bool asTracking = false)
+        {
+            var entity = await _dbContext.Rates.FirstOrDefaultAsync(r=>r.Id ==id);
+            if (entity == null) return null;
 
+            if (!asTracking)
+                _dbContext.Entry(entity).State = EntityState.Detached;
+
+            return entity;
+        }
         public async Task<IEnumerable<Rate>> GetRatesByProductIdAsync(Guid productId)
         {
             var rates = await _context.Rates
@@ -42,6 +51,8 @@ namespace SmartCare.InfraStructure.Repositories
         {
            var rates = await _context.Rates
                                       .Where(r => r.ClientId == userId && !r.IsDeleted)
+                                      .Include(r => r.Product)
+                                          .ThenInclude(p => p.Images)
                                       .ToListAsync();
             return  rates;
         }
