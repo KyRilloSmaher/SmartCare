@@ -21,7 +21,11 @@ namespace SmartCare.Application.Mappers
 
         void RateToRateResponseDto()
         {
-            CreateMap<Rate, RateResponseDto>();
+            CreateMap<Rate, RateResponseDto>()
+                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.NameEn))
+                .ForMember(dest => dest.ProductDescription, opt => opt.MapFrom(src => src.Product.Description))
+                .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Product.Price))
+                .ForMember(dest => dest.imageUrl, opt => opt.MapFrom(src => src.Product.Images.FirstOrDefault(i=>i.IsPrimary)));
         }
 
         void CreateRateRequestDtoToRate()
