@@ -107,5 +107,16 @@
             public const string Delete = Prefix + "/delete" + SingleRoute;
         }
         #endregion
+
+        #region Favourite
+        public static class Favourite
+        {
+            private const string Prefix = Rule + "favourites";
+
+            public const string GetAllForUser = Rule + "me/favourites";
+            public const string Create = Prefix + "/create";
+            public const string Delete = Prefix + "/delete" + SingleRoute;
+        }
+        #endregion
     }
 }
