@@ -9,6 +9,6 @@ namespace SmartCare.Domain.IRepositories
 {
     public interface IFavouriteRepository : IGenericRepository<Favorite>
     {
-        Task<IEnumerable<FavoriteResponseDtoR>> GetFavouritesByUserIdAsync(string userId);
+        Task<IEnumerable<ProductProjectionDTO>> GetFavouritesByUserIdAsync(string userId);
     }
 }

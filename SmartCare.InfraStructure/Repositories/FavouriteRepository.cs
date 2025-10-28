@@ -28,16 +28,16 @@ namespace SmartCare.InfraStructure.Repositories
 
         #region Custom Methods
 
-        public async Task<IEnumerable<FavoriteResponseDtoR>> GetFavouritesByUserIdAsync(string userId)
+        public async Task<IEnumerable<ProductProjectionDTO>> GetFavouritesByUserIdAsync(string userId)
         {
             var Favourites = await _context.Favorites
                                 .Where(f => f.ClientId == userId && !f.Product.IsDeleted && f.Product.IsAvailable)
-                                .Select(f => new FavoriteResponseDtoR
+                                .Select(f => new ProductProjectionDTO
                                    {
                                      ProductId = f.Product.ProductId,
                                      ProductNameAr = f.Product.NameAr,
                                      ProductNameEn = f.Product.NameEn,
-                                     Description_Of_Product = f.Product.Description,
+                                     Description = f.Product.Description,
                                      TotalRatings = f.Product.TotalRatings,
                                      Price = f.Product.Price,
                                      IsAvailable = f.Product.IsAvailable

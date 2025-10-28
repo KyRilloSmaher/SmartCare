@@ -24,7 +24,6 @@
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
 	<ItemGroup>
-	  <Folder Include="DTOs\Favorites\Requets\" />
 	  <Folder Include="DTOs\Product\Requests\" />
 	</ItemGroup>
 </Project>

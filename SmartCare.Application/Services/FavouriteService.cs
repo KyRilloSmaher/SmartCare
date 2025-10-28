@@ -40,9 +40,9 @@ namespace SmartCare.Application.Services
         #endregion
 
         #region Methods
-        public async Task<Response<FavoriteResponseDto>> CreateFavouriteAsync(string userId, CreateFavouriteRequestDto Dto)
+        public async Task<Response<FavoriteResponseDto>> CreateFavouriteAsync(CreateFavouriteRequestDto Dto)
         {
-            var user = await _clientRepository.GetByIdAsync(userId);
+            var user = await _clientRepository.GetByIdAsync(Dto.ClientId);
             if (user == null)
             {
                 return _responseHandler.Failed<FavoriteResponseDto>(SystemMessages.USER_NOT_FOUND);
@@ -53,7 +53,6 @@ namespace SmartCare.Application.Services
                 return _responseHandler.Failed<FavoriteResponseDto>(SystemMessages.PRODUCT_NOT_FOUND);
             }
             var Favourite = _mapper.Map<Favorite>(Dto);
-            Favourite.ClientId = userId;
             var savedFavourite = await _favouriteRepository.AddAsync(Favourite);
             user.FavoritesCount++;
             await _clientRepository.UpdateAsync(user);
@@ -73,7 +72,7 @@ namespace SmartCare.Application.Services
             {
                return _responseHandler.Failed<bool>(SystemMessages.NOT_FOUND);
             }
-            var FavouriteExist = await _favouriteRepository.GetByIdAsync(Id);
+            var FavouriteExist = await _favouriteRepository.GetByIdAsync(Id,true);
             if(FavouriteExist == null)
             {
                 return _responseHandler.Failed<bool>(SystemMessages.NOT_FOUND);

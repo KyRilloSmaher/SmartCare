@@ -12,7 +12,7 @@ namespace SmartCare.Application.IServices
 {
     public interface IFavouriteService
     {
-        Task<Response<FavoriteResponseDto>> CreateFavouriteAsync(string Id, CreateFavouriteRequestDto Dto);
+        Task<Response<FavoriteResponseDto>> CreateFavouriteAsync(CreateFavouriteRequestDto Dto);
         Task<Response<bool>> DeleteFavouriteAsync(string userId, Guid Id);
         Task<Response<IEnumerable<FavoriteResponseDto>>> GetAllFavouritesForUserAsync(string userId);
     }
