@@ -25,7 +25,7 @@ namespace SmartCare.Application.Mappers
                 .ForMember(sour => sour.ProductId, res => res.MapFrom(re => re.Product.ProductId))
                 .ForMember(sour => sour.ProductNameEn, res => res.MapFrom(re => re.Product.NameEn))
                 .ForMember(sour => sour.ProductNameAr, res => res.MapFrom(re => re.Product.NameAr))
-                .ForMember(sour => sour.Description_Of_Product, res => res.MapFrom(re => re.Product.Description))
+                .ForMember(sour => sour.Description, res => res.MapFrom(re => re.Product.Description))
                 .ForMember(sour => sour.TotalRatings, res => res.MapFrom(re => re.Product.TotalRatings))
                 .ForMember(sour => sour.Price, res => res.MapFrom(re => re.Product.Price))
                 .ForMember(sour => sour.IsAvailable, res => res.MapFrom(re => re.Product.IsAvailable));

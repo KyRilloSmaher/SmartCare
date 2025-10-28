@@ -29,18 +29,23 @@ namespace SmartCare.API.Controllers
         }
 
         [HttpPost(ApplicationRouting.Favourite.Create)]
-        public async Task<IActionResult> CreateFavouriteAsync(CreateFavouriteRequestDto Dto)
+        public async Task<IActionResult> CreateFavouriteAsync(Guid productId)
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            var result = await _favouriteService.CreateFavouriteAsync(userId, Dto);
+            var Dto = new CreateFavouriteRequestDto
+            {
+                ClientId = userId,
+                ProductId = productId
+            };
+            var result = await _favouriteService.CreateFavouriteAsync(Dto);
             return ControllersHelperMethods.FinalResponse(result);
         }
 
         [HttpDelete(ApplicationRouting.Favourite.Delete)]
-        public async Task<IActionResult> DeleteFavourite(Guid Id)
+        public async Task<IActionResult> DeleteFavourite(Guid productId)
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            var result = await _favouriteService.DeleteFavouriteAsync(userId, Id);
+            var result = await _favouriteService.DeleteFavouriteAsync(userId, productId);
             return ControllersHelperMethods.FinalResponse(result);
         }
     

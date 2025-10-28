@@ -114,8 +114,8 @@
             private const string Prefix = Rule + "favourites";
 
             public const string GetAllForUser = Rule + "me/favourites";
-            public const string Create = Prefix + "/create";
-            public const string Delete = Prefix + "/delete" + SingleRoute;
+            public const string Create = Prefix + "/add-to-my-favourites"+ "/{productId}";
+            public const string Delete = Prefix + "/remove-from-my-favourites" + "/{productId}";
         }
         #endregion
     }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SmartCare.Application.DTOs.Favorites.Responses
 {
-    public class FavoriteResponseDto : FavoriteResponseDtoR
+    public class FavoriteResponseDto : ProductProjectionDTO
     {
 
     }

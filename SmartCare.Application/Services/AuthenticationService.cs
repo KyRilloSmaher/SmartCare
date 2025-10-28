@@ -244,7 +244,7 @@ namespace SmartCare.Application.Services
             {
                 return _responseHandler.Unauthorized<TokenResponseDto>(SystemMessages.EMAIL_NOT_CONFIRMED);
             }
-            var claims = _tokenService.GetClaims(user);
+            var claims = await _tokenService.GetClaimsAsync(user);
             var accessToken = _tokenService.GenerateAccessToken(claims);
             var refreshToken = _tokenService.GenerateRefreshToken();
 
