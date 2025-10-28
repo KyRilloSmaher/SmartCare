@@ -66,6 +66,12 @@ namespace SmartCare.InfraStructure.Repositories
                                          .ToList();
             return matchedCompanies;
         }
+        public IQueryable<Company> GetAllCompaniesQuerable()
+        {
+            return _context.Companies
+                .Where(c => !c.IsDeleted)
+                .AsNoTracking();
+        }
         #endregion
 
 

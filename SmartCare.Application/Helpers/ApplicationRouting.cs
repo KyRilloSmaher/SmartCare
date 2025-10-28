@@ -38,6 +38,7 @@
             public const string GetById = Prefix + SingleRoute;
             public const string SearchByName = Prefix + "/search";
             public const string GetAll = Prefix;
+            public const string GetAllPaginated = Prefix + "/paginated";
             public const string GetAllForAdmin = AdminPrefix;
             public const string Create = AdminPrefix + "/create";
             public const string Update = AdminPrefix + "/update";
@@ -55,6 +56,7 @@
             public const string GetById = Prefix + SingleRoute;
             public const string SearchByName = Prefix + "/search";
             public const string GetAll = Prefix;
+            public const string GetAllPaginated = Prefix + "/paginated";
             public const string GetAllForAdmin = AdminPrefix;
             public const string Create = AdminPrefix + "/create";
             public const string Update = AdminPrefix + "/update";

@@ -2,9 +2,11 @@
 using Microsoft.AspNetCore.Mvc;
 using SmartCare.API.Helpers;
 using SmartCare.Application.Companies.Requests;
+using SmartCare.Application.DTOs.Caregory.Response;
 using SmartCare.Application.DTOs.Companies.Responses;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Application.IServices;
+using SmartCare.Application.Services;
 
 namespace SmartCare.API.Controllers
 {
@@ -50,7 +52,16 @@ namespace SmartCare.API.Controllers
             var result = await _CompanyService.GetAllCompaniesAsync();
             return ControllersHelperMethods.FinalResponse(result);
         }
-
+        /// <summary>
+        /// Get All Companies By Pagination
+        /// </summary>
+        [HttpGet(ApplicationRouting.Company.GetAllPaginated)]
+        [ProducesResponseType(typeof(Response<IEnumerable<CategoryResponseDto>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAllPaginatedAsync([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            var result = await _CompanyService.GetAllCompaniesPaginatedAsync(pageNumber, pageSize);
+            return ControllersHelperMethods.FinalResponse(result);
+        }
         /// <summary>
         /// Get All Companies (Admin)
         /// </summary>
