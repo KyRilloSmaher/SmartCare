@@ -14,6 +14,7 @@ namespace SmartCare.Domain.Projection_Models
         public string Description { get; set; }
         public float AverageRating { get; set; }
         public int TotalRatings { get; set; }
+        public string MainImageUrl { get; set; }
         public decimal Price { get; set; }
         public bool IsAvailable { get; set; }
     }

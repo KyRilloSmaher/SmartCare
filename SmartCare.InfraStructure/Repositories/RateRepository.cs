@@ -31,7 +31,8 @@ namespace SmartCare.InfraStructure.Repositories
         }
         public async override Task<Rate?> GetByIdAsync(Guid id, bool asTracking = false)
         {
-            var entity = await _dbContext.Rates.FirstOrDefaultAsync(r=>r.Id ==id);
+            var entity = await _dbContext.Rates.Include(r =>r.Product)
+                                               .FirstOrDefaultAsync(r=>r.Id ==id);
             if (entity == null) return null;
 
             if (!asTracking)
