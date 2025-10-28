@@ -10,7 +10,7 @@ namespace SmartCare.Domain.Entities
         public class Product
         {
             public Guid ProductId { get; set; }
-            public string NameAr { get; set; }
+            public string? NameAr { get; set; }
 
             public string NameEn { get; set; }
             public Guid CategoryId { get; set; }
@@ -27,9 +27,9 @@ namespace SmartCare.Domain.Entities
             public float DiscountPercentage { get; set; }
             public string ActiveIngredients { get; set; }
 
-            public string SideEffects { get; set; }
+            public string? SideEffects { get; set; }
 
-            public string Contraindications { get; set; }
+            public string? Contraindications { get; set; }
 
             public decimal Price { get; set; }
 
@@ -37,8 +37,8 @@ namespace SmartCare.Domain.Entities
 
             public bool IsAvailable { get; set; }
 
-        //these might represent text search or AI embedding fields
-        public string? SearchVector { get; set; }
+            //these might represent text search or AI embedding fields
+            public string? SearchVector { get; set; }
 
             public string? EmbeddingVector { get; set; }
 

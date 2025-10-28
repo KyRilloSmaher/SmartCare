@@ -288,6 +288,9 @@ namespace SmartCare.InfraStructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<int>("ProductsCount")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Id");
@@ -635,7 +638,6 @@ namespace SmartCare.InfraStructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Contraindications")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
@@ -689,7 +691,6 @@ namespace SmartCare.InfraStructure.Migrations
                         .HasColumnType("nvarchar(1000)");
 
                     b.Property<string>("SideEffects")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
