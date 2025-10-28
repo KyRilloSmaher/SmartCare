@@ -40,30 +40,32 @@ namespace SmartCare.Application.Services
         #endregion
 
         #region Methods
-        public async Task<Response<FavoriteResponseDto>> CreateFavouriteAsync(CreateFavouriteRequestDto Dto)
+        public async Task<Response<bool>> CreateFavouriteAsync(CreateFavouriteRequestDto Dto)
         {
-            var user = await _clientRepository.GetByIdAsync(Dto.ClientId);
+            var user = await _clientRepository.GetByIdAsync(Dto.ClientId , true);
             if (user == null)
             {
-                return _responseHandler.Failed<FavoriteResponseDto>(SystemMessages.USER_NOT_FOUND);
+                return _responseHandler.Failed<bool>(SystemMessages.USER_NOT_FOUND);
             }
             var product = await _productRepository.GetByIdAsync(Dto.ProductId);
             if (product == null)
             {
-                return _responseHandler.Failed<FavoriteResponseDto>(SystemMessages.PRODUCT_NOT_FOUND);
+                return _responseHandler.Failed<bool>(SystemMessages.PRODUCT_NOT_FOUND);
+            }
+            if (await _favouriteRepository.IsProductFavoritedByUserAsync(Dto.ClientId, Dto.ProductId))
+            {
+                return _responseHandler.Failed<bool>(SystemMessages.FAVOURITE_ALREADY_EXISTS);
             }
             var Favourite = _mapper.Map<Favorite>(Dto);
             var savedFavourite = await _favouriteRepository.AddAsync(Favourite);
             user.FavoritesCount++;
             await _clientRepository.UpdateAsync(user);
-            var favouriteDto = _mapper.Map<FavoriteResponseDto>(savedFavourite);
-            return _responseHandler.Success(favouriteDto);
+            return _responseHandler.Created<bool>(true);
         }
 
-
-        public async Task<Response<bool>> DeleteFavouriteAsync(string userId, Guid Id)
+        public async Task<Response<bool>> DeleteFavouriteAsync(string userId, Guid ProductId)
         {
-            if (string.IsNullOrEmpty(userId) || Id == Guid.Empty)
+            if (string.IsNullOrEmpty(userId) || ProductId == Guid.Empty)
             {
               return  _responseHandler.Failed<bool>(SystemMessages.INVALID_INPUT);
             }
@@ -72,11 +74,12 @@ namespace SmartCare.Application.Services
             {
                return _responseHandler.Failed<bool>(SystemMessages.NOT_FOUND);
             }
-            var FavouriteExist = await _favouriteRepository.GetByIdAsync(Id,true);
+            var FavouriteExist = await _favouriteRepository.checkFavoriteExists(userId , ProductId);
             if(FavouriteExist == null)
             {
                 return _responseHandler.Failed<bool>(SystemMessages.NOT_FOUND);
             }
+            client.FavoritesCount--;
             await _favouriteRepository.DeleteAsync(FavouriteExist);
             return _responseHandler.Success(true);
 

@@ -105,6 +105,9 @@ namespace SmartCare.Domain.Constants
         //  RATES
         // =======================
         public const string RATE_NOT_FOUND = "No Rate Found by This Id";
+        public const string RATE_ADDED_SUCCESSFULLY = "Rate Added Successfully";
+        public const string FAVOURITE_ALREADY_EXISTS = "Already Added Before";
+        public const string RATE_ALREADY_EXISTS = "Rate already Exits";
 
         // =====================
         // 📧 Email Operations

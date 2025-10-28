@@ -22,6 +22,7 @@ namespace SmartCare.InfraStructure.Configurations
                 .WithMany(x => x.Favorites)
                 .HasForeignKey(x => x.ProductId)
                 .OnDelete(DeleteBehavior.NoAction);
+            builder.HasIndex(x => new { x.ProductId, x.ClientId }).IsUnique();
         }
     }
 }

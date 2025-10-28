@@ -66,14 +66,20 @@ namespace SmartCare.InfraStructure.Repositories
                 return 0;
             }
             float averageRate = (float)rates.Average(r => r.Value);
+            int ratesCount = rates.Where(r=>r.ProductId == productId).Count();
             var product = await _context.Products.FindAsync(productId);
             if (product != null)
             {
                 product.AverageRating = averageRate;
+                product.TotalRatings = ratesCount;
                 _context.Products.Update(product);
                 await _context.SaveChangesAsync();
             }
             return averageRate;  
+        }
+        public async Task<bool> IsProductRatedByUserAsync(string userId, Guid productId)
+        {
+            return await _context.Rates.AnyAsync(r => r.ClientId == userId && r.ProductId == productId && !r.IsDeleted);
         }
         #endregion
     }
