@@ -4,6 +4,7 @@ using SmartCare.Application.DTOs.Favorites.Requests;
 using SmartCare.Application.DTOs.Favorites.Responses;
 using SmartCare.Application.DTOs.Rates.Responses;
 using SmartCare.Domain.Entities;
+using SmartCare.Domain.Projection_Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,8 +19,9 @@ namespace SmartCare.Application.Mappers
         {
             FavoriteToFavoriteResponseDto();
             CreateFavouriteRequestDtoToFavorite();
+            ProductProjectionToFavoriteResponse();
         }
-        
+
         void FavoriteToFavoriteResponseDto()
         {
             CreateMap<Favorite, FavoriteResponseDto>()
@@ -43,5 +45,10 @@ namespace SmartCare.Application.Mappers
 
 
         }
+
+        void ProductProjectionToFavoriteResponse()
+            {
+            CreateMap<ProductProjectionDTO, FavoriteResponseDto>();
+            }
     }
 }

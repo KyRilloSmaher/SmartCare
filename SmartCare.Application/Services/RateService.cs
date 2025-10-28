@@ -98,6 +98,10 @@ namespace SmartCare.Application.Services
             {
                 return _responseHandler.Failed<RateResponseDto>(SystemMessages.PRODUCT_NOT_FOUND);
             }
+            if (await _rateRepository.IsProductRatedByUserAsync(userId, Dto.ProductId))
+            {
+                return _responseHandler.Failed<RateResponseDto>(SystemMessages.RATE_ALREADY_EXISTS);
+            }
             var rate = _mapper.Map<Rate>(Dto);
             rate.ClientId = userId;
             var savedRate = await _rateRepository.AddAsync(rate);
@@ -142,7 +146,7 @@ namespace SmartCare.Application.Services
             {
                 return _responseHandler.Failed<bool>(SystemMessages.USER_NOT_FOUND);
             }
-            var existingRate = await _rateRepository.GetByIdAsync(Id);
+            var existingRate = await _rateRepository.GetByIdAsync(Id,true);
             if (existingRate == null)
             {
                 return _responseHandler.Failed<bool>(SystemMessages.RATE_NOT_FOUND);

@@ -31,21 +31,33 @@ namespace SmartCare.InfraStructure.Repositories
         public async Task<IEnumerable<ProductProjectionDTO>> GetFavouritesByUserIdAsync(string userId)
         {
             var Favourites = await _context.Favorites
-                                .Where(f => f.ClientId == userId && !f.Product.IsDeleted && f.Product.IsAvailable)
-                                .Select(f => new ProductProjectionDTO
-                                   {
-                                     ProductId = f.Product.ProductId,
-                                     ProductNameAr = f.Product.NameAr,
-                                     ProductNameEn = f.Product.NameEn,
-                                     Description = f.Product.Description,
-                                     TotalRatings = f.Product.TotalRatings,
-                                     Price = f.Product.Price,
-                                     IsAvailable = f.Product.IsAvailable
-                                    })
-                                   .ToListAsync();
+                                            .Include(f=>f.Product)
+                                               .ThenInclude(p=>p.Images)
+                                            .Where(f => f.ClientId == userId && !f.Product.IsDeleted)
+                                            .Select(f => new ProductProjectionDTO
+                                               {
+                                                 ProductId = f.Product.ProductId,
+                                                 ProductNameAr = f.Product.NameAr,
+                                                 ProductNameEn = f.Product.NameEn,
+                                                 Description = f.Product.Description,
+                                                 TotalRatings = f.Product.TotalRatings,
+                                                 Price = f.Product.Price,
+                                                 IsAvailable = f.Product.IsAvailable
+                                                })
+                                               .ToListAsync();
 
 
             return Favourites;
+        }
+
+        public async Task<bool> IsProductFavoritedByUserAsync(string userId, Guid productId)
+        {
+            return await _context.Favorites.AnyAsync(f => f.ClientId == userId && f.ProductId == productId);
+        }
+
+        public async Task<Favorite?> checkFavoriteExists(string userId , Guid productId)
+        {
+            return await _context.Favorites.FirstOrDefaultAsync(r => r.ProductId == productId && r.ClientId == userId);
         }
         #endregion
 
