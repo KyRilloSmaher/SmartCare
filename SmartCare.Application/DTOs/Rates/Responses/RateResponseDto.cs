@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SmartCare.Domain.Projection_Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,11 +10,7 @@ namespace SmartCare.Application.DTOs.Rates.Responses
     public class RateResponseDto
     {
         public Guid Id { get; set; }
-        public Guid ProductId { get; set; }
-        public string ProductName { get; set; }
-        public string ProductDescription { get; set; }
-        public decimal Price { get; set; }
-        public string imageUrl { get; set; }
+        public ProductProjectionDTO product { get; set; }
         public int Value { get; set; }
         public DateTime CreatedAt { get; set; }
     }

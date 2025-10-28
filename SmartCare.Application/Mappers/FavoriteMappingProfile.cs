@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Design;
 using SmartCare.Application.DTOs.Favorites.Requests;
 using SmartCare.Application.DTOs.Favorites.Responses;
+using SmartCare.Application.DTOs.Rates.Responses;
 using SmartCare.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -22,13 +23,15 @@ namespace SmartCare.Application.Mappers
         void FavoriteToFavoriteResponseDto()
         {
             CreateMap<Favorite, FavoriteResponseDto>()
-                .ForMember(sour => sour.ProductId, res => res.MapFrom(re => re.Product.ProductId))
-                .ForMember(sour => sour.ProductNameEn, res => res.MapFrom(re => re.Product.NameEn))
-                .ForMember(sour => sour.ProductNameAr, res => res.MapFrom(re => re.Product.NameAr))
-                .ForMember(sour => sour.Description, res => res.MapFrom(re => re.Product.Description))
-                .ForMember(sour => sour.TotalRatings, res => res.MapFrom(re => re.Product.TotalRatings))
-                .ForMember(sour => sour.Price, res => res.MapFrom(re => re.Product.Price))
-                .ForMember(sour => sour.IsAvailable, res => res.MapFrom(re => re.Product.IsAvailable));
+                                 .ForMember(dest => dest.ProductId, opt => opt.MapFrom(src => src.Product.ProductId))
+                                 .ForMember(dest => dest.ProductNameEn, opt => opt.MapFrom(src => src.Product.NameEn))
+                                 .ForMember(dest => dest.ProductNameAr, opt => opt.MapFrom(src => src.Product.NameAr))
+                                 .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Product.Description))
+                                 .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Product.Price))
+                                 .ForMember(dest => dest.AverageRating, opt => opt.MapFrom(src => src.Product.AverageRating))
+                                 .ForMember(dest => dest.TotalRatings, opt => opt.MapFrom(src => src.Product.TotalRatings))
+                                 .ForMember(dest => dest.IsAvailable, opt => opt.MapFrom(src => src.Product.IsAvailable))
+                                 .ForMember(dest => dest.MainImageUrl, opt => opt.MapFrom(src => src.Product.Images.FirstOrDefault(i => i.IsPrimary).Url));
 
         }
 
