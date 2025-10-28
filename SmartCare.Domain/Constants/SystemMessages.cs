@@ -30,6 +30,7 @@ namespace SmartCare.Domain.Constants
         public const string BAD_REQUEST = "Bad request. Please verify the input data.";
         public const string NULL_PARAMETER = "Null Parameter to the Function";
         public const string NOT_FOUND = "The requested resource was not found.";
+        public const string INVALID_PAGINATION_PARAMETERS = " Page Number and Page Size Should be Greater than 0";
         // =====================
         // 👤 User & Auth
         // =====================

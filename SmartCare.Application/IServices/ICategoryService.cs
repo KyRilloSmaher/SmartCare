@@ -14,6 +14,7 @@ namespace SmartCare.Application.IServices
         Task<Response<CategoryResponseDto>> GetCategoryByIdAsync(Guid Id);
         Task<Response<IEnumerable<CategoryResponseDto>>> SearchCategoriesByNameAsync(string name);
         Task<Response<IEnumerable<CategoryResponseDto>>> GetAllCategorysAsync();
+        Task<Response<PaginatedResult<CategoryResponseDto>>> GetAllCategoriesPaginatedAsync(int pageNumber, int pageSize);
         Task<Response<IEnumerable<CategoryResponseForAdminDto>>> GetAllCategorysForAdminAsync();
         Task<Response<CategoryResponseForAdminDto>> CreateCategoryAsync(CreateCategoryRequestDto CategoryDto);
         Task<Response<CategoryResponseDto>> UpdateCategoryAsync(Guid Id ,UpdateCategoryRequest CategoryDto);

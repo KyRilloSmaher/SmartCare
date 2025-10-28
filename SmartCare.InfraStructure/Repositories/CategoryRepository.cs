@@ -67,6 +67,13 @@ namespace SmartCare.InfraStructure.Repositories
                                          .ToList();
             return matchedCategories;
         }
+
+        public IQueryable<Category> GetAllCategoriesQuerable()
+        {
+            return _context.Categories
+                .Where(c => !c.IsDeleted)
+                .AsNoTracking();
+        }
         #endregion
     }
 }

@@ -3,6 +3,7 @@ using SmartCare.Application.Companies.Requests;
 using SmartCare.Application.DTOs.Caregory.Requests;
 using SmartCare.Application.DTOs.Caregory.Response;
 using SmartCare.Application.DTOs.Companies.Responses;
+using SmartCare.Application.Extentions;
 using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Application.IServices;
@@ -88,7 +89,19 @@ namespace SmartCare.Application.Services
             var result = await _CompanyRepository.DeleteAsync(Company);
             return result ? _responseHandler.Success(true, SystemMessages.RECORD_DELETED) : _responseHandler.Failed<bool>(SystemMessages.FAILED);
         }
+        public async Task<Response<PaginatedResult<CompanyResponseDto>>> GetAllCompaniesPaginatedAsync(int pageNumber, int pageSize)
+        {
+            if (pageNumber <= 0 || pageSize <= 0)
+                return _responseHandler.BadRequest<PaginatedResult<CompanyResponseDto>>(SystemMessages.INVALID_PAGINATION_PARAMETERS);
 
+            var query = _CompanyRepository.GetAllCompaniesQuerable();
+
+            var projectedQuery = _mapper.ProjectTo<CompanyResponseDto>(query);
+
+            var paginatedResult = await projectedQuery.ToPaginatedListAsync(pageNumber, pageSize);
+
+            return _responseHandler.Success(paginatedResult);
+        }
         public async Task<Response<string>> ChangeCompanyLogoAsync(Guid Id, ChangeCompanyLogoRequestDto CompanyDto)
         {
             if (Id == Guid.Empty)

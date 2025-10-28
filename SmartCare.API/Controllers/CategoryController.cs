@@ -10,7 +10,7 @@ using SmartCare.Application.IServices;
 namespace SmartCare.API.Controllers
 {
     [ApiController]
-    [Authorize]
+   [Authorize]
     public class CategoryController : ControllerBase
     {
         private readonly ICategoryService _categoryService;
@@ -49,6 +49,16 @@ namespace SmartCare.API.Controllers
         public async Task<IActionResult> GetAllCategoriesAsync()
         {
             var result = await _categoryService.GetAllCategorysAsync();
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+        /// <summary>
+        /// Get All Categories By Pagination
+        /// </summary>
+        [HttpGet(ApplicationRouting.Category.GetAllPaginated)]
+        [ProducesResponseType(typeof(Response<IEnumerable<CategoryResponseDto>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAllPaginatedAsync([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            var result = await _categoryService.GetAllCategoriesPaginatedAsync(pageNumber, pageSize);
             return ControllersHelperMethods.FinalResponse(result);
         }
 

@@ -4,7 +4,7 @@ using SmartCare.Application.DTOs.Caregory.Requests;
 using SmartCare.Application.DTOs.Caregory.Response;
 using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.Handlers.ResponseHandler;
-using SmartCare.Application.Handlers.ResponsesHandler;
+using SmartCare.Application.Extentions;
 using SmartCare.Application.IServices;
 using SmartCare.Domain.Constants;
 using SmartCare.Domain.Entities;
@@ -159,6 +159,21 @@ namespace SmartCare.Application.Services
             var categoriesDto = _mapper.Map<IEnumerable<CategoryResponseDto>>(categories);
             return _responseHandler.Success(categoriesDto);
         }
+
+        public async Task<Response<PaginatedResult<CategoryResponseDto>>> GetAllCategoriesPaginatedAsync(int pageNumber, int pageSize)
+        {
+            if (pageNumber <= 0 || pageSize <= 0)
+                return _responseHandler.BadRequest<PaginatedResult<CategoryResponseDto>>(SystemMessages.INVALID_PAGINATION_PARAMETERS);
+
+            var query = _categoryRepository.GetAllCategoriesQuerable();
+
+            var projectedQuery = _mapper.ProjectTo<CategoryResponseDto>(query);
+
+            var paginatedResult = await projectedQuery.ToPaginatedListAsync(pageNumber, pageSize);
+
+            return _responseHandler.Success(paginatedResult);
+        }
+
         #endregion
     }
 }

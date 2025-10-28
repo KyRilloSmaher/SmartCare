@@ -10,6 +10,7 @@ namespace SmartCare.Domain.IRepositories
     public interface ICategoryRepository : IGenericRepository<Category>
     {
         Task<IEnumerable<Category>> GetAllCategoriesAsync();
+        IQueryable<Category> GetAllCategoriesQuerable();
         Task<IEnumerable<Category>> GetAllCategoriesForAdminAsync();
         Task<IEnumerable<Category>> SearchCategoryByNameAsync(string name);
 
