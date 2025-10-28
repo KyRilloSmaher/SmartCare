@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Newtonsoft.Json.Linq;
 using System.Net;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 
 
 
@@ -48,7 +49,20 @@ namespace SmartCare.API.Controllers
             var result = await _authenticationService.LoginAsync(dto);
             return ControllersHelperMethods.FinalResponse(result);
         }
+        /// <summary>
+        ///  LogOut User
+        /// </summary>
+        [Authorize]
+        [HttpPost(ApplicationRouting.Authentication.Logout)]
+        [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> LogoutAsync()
+        {
+            // Get current user ID from JWT
+            var userId = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var result = await _authenticationService.LogoutAsync(userId);
+            return ControllersHelperMethods.FinalResponse(result);
 
+        }
         /// <summary>
         /// Refresh access token using refresh token.
         /// </summary>

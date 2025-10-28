@@ -16,5 +16,6 @@ namespace SmartCare.Application.IServices
         Task<Response<bool>> ChangePasswordAsync(string UserId ,ChangePasswordRequestDto dto);
         Task<Response<TokenResponseDto>> LoginAsync(LoginRequestDto dto);
         Task<Response<bool>> SignUpAsync(SignUpRequest dto);
+        Task<Response<bool>> LogoutAsync(string userId);
     }
 }

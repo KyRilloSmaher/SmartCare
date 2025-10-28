@@ -59,12 +59,13 @@ namespace SmartCare.Application.Services
         public async Task<IEnumerable<Claim>> GetClaimsAsync(Client user)
         {
             var userRoles = await _userManager.GetRolesAsync(user);
-
+            var securityStamp = await _userManager.GetSecurityStampAsync(user);
             var authClaims = new List<Claim>
                                 {
                                     new Claim(ClaimTypes.NameIdentifier, user.Id),
                                     new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
-                                    new Claim(ClaimTypes.Name, user.UserName ?? string.Empty)
+                                    new Claim(ClaimTypes.Name, user.UserName ?? string.Empty),
+                                    new Claim("security_stamp", securityStamp ?? "")
                                 };
 
             // Add role claims

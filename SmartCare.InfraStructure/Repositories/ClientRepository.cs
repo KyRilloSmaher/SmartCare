@@ -164,7 +164,10 @@ namespace SmartCare.InfraStructure.Repositories
         {
             return await _ClientManager.GenerateEmailConfirmationTokenAsync(Client);
         }
-
+        public async Task<IdentityResult> UpdateSecurityStampAsync(Client client)
+        {
+            return await _ClientManager.UpdateSecurityStampAsync(client);
+        }
         public async Task<bool> ConfirmEmailAsync(string email, string token)
         {
             var Client = await GetByEmailAsync(email, true);

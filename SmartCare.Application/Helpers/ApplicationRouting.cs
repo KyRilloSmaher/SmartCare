@@ -26,6 +26,7 @@
             public const string ResendResetCode = Prefix + "resend-reset-code";
             public const string ResetPassword = Prefix + "reset-password";
             public const string RefreshToken = Prefix + "refresh-token";
+            public const string Logout = Prefix + "logout";
         }
         #endregion
 

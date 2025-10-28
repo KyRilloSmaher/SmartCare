@@ -57,6 +57,7 @@ namespace SmartCare.Domain.IRepositories
         Task<bool> SetLockoutEndDateAsync(Client Client, DateTimeOffset? lockoutEnd);
         Task<int> GetAccessFailedCountAsync(Client Client);
         Task<bool> ResetAccessFailedCountAsync(Client Client);
+        Task<IdentityResult> UpdateSecurityStampAsync(Client client);
 
     }
 }

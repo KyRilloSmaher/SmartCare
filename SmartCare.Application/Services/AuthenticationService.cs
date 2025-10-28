@@ -333,9 +333,21 @@ namespace SmartCare.Application.Services
             }
         }
 
+        public async Task<Response<bool>> LogoutAsync(string userId)
+        {
+            var user = await _clientRepository.GetByIdAsync(userId);
+            if (user == null)
+                return _responseHandler.Failed<bool>(SystemMessages.USER_NOT_FOUND);
 
+            user.RefreshToken = null;
+            user.RefreshTokenExpiryTime = null;
+            await _clientRepository.UpdateSecurityStampAsync(user);
+            await _clientRepository.UpdateAsync(user);
+
+            return _responseHandler.Success(true, SystemMessages.LOGOUT_SUCCESS);
+        }
         #endregion
 
-        
+
     }
 }

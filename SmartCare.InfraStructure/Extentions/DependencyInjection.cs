@@ -18,6 +18,8 @@ using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.InfraStructure.ExternalServices;
 using SmartCare.Application.Mappers;
 using SmartCare.Application.Handlers.ResponseHandler;
+using Microsoft.Extensions.Options;
+using System.Security.Claims;
 
 
 namespace SmartCare.InfraStructure.Extensions
@@ -109,18 +111,55 @@ namespace SmartCare.InfraStructure.Extensions
             })
             .AddJwtBearer(x =>
             {
-               x.RequireHttpsMetadata = false;
-               x.SaveToken = true;
-               x.TokenValidationParameters = new TokenValidationParameters
-               {
-                   ValidateIssuer = jwtSettings.ValidateIssuer,
-                   ValidIssuers = new[] { jwtSettings.Issuer },
-                   ValidateIssuerSigningKey = jwtSettings.ValidateIssuerSigningKey,
-                   IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key)),
-                   ValidAudience = jwtSettings.Audience,
-                   ValidateAudience = jwtSettings.ValidateAudience,
-                   ValidateLifetime = jwtSettings.ValidateLifeTime,
-               };
+                x.RequireHttpsMetadata = false;
+                x.SaveToken = true;
+                x.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = jwtSettings.ValidateIssuer,
+                    ValidIssuers = new[] { jwtSettings.Issuer },
+                    ValidateIssuerSigningKey = jwtSettings.ValidateIssuerSigningKey,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key)),
+                    ValidAudience = jwtSettings.Audience,
+                    ValidateAudience = jwtSettings.ValidateAudience,
+                    ValidateLifetime = jwtSettings.ValidateLifeTime,
+                    ClockSkew = TimeSpan.FromSeconds(30)
+                };
+                x.Events = new JwtBearerEvents
+                {
+                    OnTokenValidated = async context =>
+                    {
+                        var userId = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                        if (string.IsNullOrEmpty(userId))
+                        {
+                            context.Fail("No user id in token.");
+                            return;
+                        }
+
+                        var tokenStamp = context.Principal?.FindFirst("security_stamp")?.Value;
+                        if (string.IsNullOrEmpty(tokenStamp))
+                        {
+                            context.Fail("No security stamp in token.");
+                            return;
+                        }
+
+                        var userManager = context.HttpContext.RequestServices.GetRequiredService<UserManager<Client>>();
+                        var user = await userManager.FindByIdAsync(userId);
+                        if (user == null)
+                        {
+                            context.Fail("User not found.");
+                            return;
+                        }
+
+                        var currentStamp = await userManager.GetSecurityStampAsync(user);
+                        if (!string.Equals(tokenStamp, currentStamp, StringComparison.Ordinal))
+                        {
+                            context.Fail("Security stamp mismatch - token revoked.");
+                            return;
+                        }
+
+                    }
+                };
             });
 
             return services;
