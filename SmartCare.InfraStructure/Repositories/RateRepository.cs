@@ -43,7 +43,7 @@ namespace SmartCare.InfraStructure.Repositories
         public async Task<IEnumerable<Rate>> GetRatesByProductIdAsync(Guid productId)
         {
             var rates = await _context.Rates
-                                      .Where(r => r.ProductId == productId && !r.IsDeleted)
+                                      .Where(r => r.ProductId == productId && !r.IsDeleted).AsNoTracking()
                                       .ToListAsync();
             return rates;
         }
@@ -54,6 +54,7 @@ namespace SmartCare.InfraStructure.Repositories
                                       .Where(r => r.ClientId == userId && !r.IsDeleted)
                                       .Include(r => r.Product)
                                           .ThenInclude(p => p.Images)
+                                      .AsNoTracking()
                                       .ToListAsync();
             return  rates;
         }
