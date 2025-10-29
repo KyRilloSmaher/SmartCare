@@ -22,6 +22,8 @@ using Microsoft.Extensions.Options;
 using System.Security.Claims;
 using Hangfire;
 using SmartCare.InfraStructure.BackgroundJobImplemantations;
+using System;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace SmartCare.InfraStructure.Extensions
@@ -151,15 +153,16 @@ namespace SmartCare.InfraStructure.Extensions
                             return;
                         }
 
-                        var userManager = context.HttpContext.RequestServices.GetRequiredService<UserManager<Client>>();
-                        var user = await userManager.FindByIdAsync(userId);
+                        var dbContext = context.HttpContext.RequestServices.GetRequiredService<ApplicationDBContext>();
+                        var user = await dbContext.Users
+                                                    .AsNoTracking()
+                                                    .FirstOrDefaultAsync(u => u.Id == userId);
                         if (user == null)
                         {
                             context.Fail("User not found.");
                             return;
                         }
-
-                        var currentStamp = await userManager.GetSecurityStampAsync(user);
+                        var currentStamp = user.SecurityStamp;
                         if (!string.Equals(tokenStamp, currentStamp, StringComparison.Ordinal))
                         {
                             context.Fail("Security stamp mismatch - token revoked.");
