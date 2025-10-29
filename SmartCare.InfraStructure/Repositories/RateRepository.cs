@@ -25,13 +25,19 @@ namespace SmartCare.InfraStructure.Repositories
         public async override Task<bool> DeleteAsync(Rate entity)
         {
             entity.IsDeleted = true;
+            var product = await _context.Products.FindAsync(entity.ProductId);
+            if (product != null) {
+                if (product.TotalRatings > 0)
+                    product.TotalRatings -= 1;
+            }
             _context.Rates.Update(entity);
             await _context.SaveChangesAsync();
             return true;
         }
         public async override Task<Rate?> GetByIdAsync(Guid id, bool asTracking = false)
         {
-            var entity = await _dbContext.Rates.Include(r =>r.Product)
+            var entity = await _dbContext.Rates.Include(r => r.Product)
+                                                    .ThenInclude(p => p.Images)
                                                .FirstOrDefaultAsync(r=>r.Id ==id);
             if (entity == null) return null;
 
@@ -43,6 +49,8 @@ namespace SmartCare.InfraStructure.Repositories
         public async Task<IEnumerable<Rate>> GetRatesByProductIdAsync(Guid productId)
         {
             var rates = await _context.Rates
+                                      .Include(r => r.Product)
+                                          .ThenInclude(p => p.Images)
                                       .Where(r => r.ProductId == productId && !r.IsDeleted).AsNoTracking()
                                       .ToListAsync();
             return rates;
@@ -51,9 +59,9 @@ namespace SmartCare.InfraStructure.Repositories
         public async Task<IEnumerable<Rate>> GetRatesByUserIdAsync(string userId)
         {
            var rates = await _context.Rates
-                                      .Where(r => r.ClientId == userId && !r.IsDeleted)
                                       .Include(r => r.Product)
                                           .ThenInclude(p => p.Images)
+                                      .Where(r => r.ClientId == userId && !r.IsDeleted)
                                       .AsNoTracking()
                                       .ToListAsync();
             return  rates;
@@ -94,6 +102,7 @@ namespace SmartCare.InfraStructure.Repositories
             }
             foreach (var rate in rates)
             {
+                await UpdateAverageRateForProductAsync(rate.ProductId);
                 rate.IsDeleted = true;
             }
             _context.Rates.UpdateRange(rates);

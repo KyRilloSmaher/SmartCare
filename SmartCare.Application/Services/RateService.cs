@@ -88,7 +88,7 @@ namespace SmartCare.Application.Services
 
         public async Task<Response<RateResponseDto>> CreateRateAsync(string userId , CreateRateRequestDto Dto)
         {
-            var user = await _clientRepository.GetByIdAsync(userId);
+            var user = await _clientRepository.GetByIdAsync(userId ,true);
             if (user == null)
             {
                 return _responseHandler.Failed<RateResponseDto>(SystemMessages.USER_NOT_FOUND);
@@ -141,7 +141,7 @@ namespace SmartCare.Application.Services
             {
                 return _responseHandler.Failed<bool>(SystemMessages.INVALID_INPUT);
             }
-            var user = await _clientRepository.GetByIdAsync(userId);
+            var user = await _clientRepository.GetByIdAsync(userId ,true);
             if (user == null)
             {
                 return _responseHandler.Failed<bool>(SystemMessages.USER_NOT_FOUND);
@@ -151,10 +151,10 @@ namespace SmartCare.Application.Services
             {
                 return _responseHandler.Failed<bool>(SystemMessages.RATE_NOT_FOUND);
             }
-            await _rateRepository.UpdateAverageRateForProductAsync(existingRate.ProductId);
-            await _rateRepository.DeleteAsync(existingRate);
             user.RatesCount--;
             await _clientRepository.UpdateAsync(user);
+            await _rateRepository.DeleteAsync(existingRate);
+            await _rateRepository.UpdateAverageRateForProductAsync(existingRate.ProductId);
             return _responseHandler.Success(true);
         }
         #endregion

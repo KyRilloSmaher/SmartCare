@@ -48,7 +48,9 @@ namespace SmartCare.Application.Mappers
 
         void ProductProjectionToFavoriteResponse()
             {
-            CreateMap<ProductProjectionDTO, FavoriteResponseDto>();
+              CreateMap<ProductProjectionDTO, FavoriteResponseDto>()
+                .ForMember(dest => dest.AverageRating, opt => opt.MapFrom(src => src.AverageRating))
+                .ForMember(dest => dest.MainImageUrl, opt => opt.MapFrom(src => src.MainImageUrl));
             }
     }
 }

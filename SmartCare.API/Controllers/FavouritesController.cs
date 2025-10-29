@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using SmartCare.API.Helpers;
@@ -11,6 +12,7 @@ using System.Security.Claims;
 namespace SmartCare.API.Controllers
 {
     [ApiController]
+    [Authorize]
     public class FavouritesController : ControllerBase
     {
         private readonly IFavouriteService _favouriteService;

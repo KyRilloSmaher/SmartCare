@@ -335,7 +335,7 @@ namespace SmartCare.Application.Services
 
         public async Task<Response<bool>> LogoutAsync(string userId)
         {
-            var user = await _clientRepository.GetByIdAsync(userId);
+            var user = await _clientRepository.GetByIdAsync(userId ,true);
             if (user == null)
                 return _responseHandler.Failed<bool>(SystemMessages.USER_NOT_FOUND);
 
