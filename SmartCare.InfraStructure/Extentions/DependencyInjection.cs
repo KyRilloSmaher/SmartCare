@@ -20,6 +20,8 @@ using SmartCare.Application.Mappers;
 using SmartCare.Application.Handlers.ResponseHandler;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
+using Hangfire;
+using SmartCare.InfraStructure.BackgroundJobImplemantations;
 
 
 namespace SmartCare.InfraStructure.Extensions
@@ -63,8 +65,8 @@ namespace SmartCare.InfraStructure.Extensions
                 // Sign-in settings
                 options.SignIn.RequireConfirmedEmail = true;
             })
-            .AddEntityFrameworkStores<ApplicationDBContext>()
-            .AddDefaultTokenProviders();
+                    .AddEntityFrameworkStores<ApplicationDBContext>()
+                    .AddDefaultTokenProviders();
 
             // Register Services
             services.AddTransient<IAuthenticationService, AuthenticationService>();
@@ -77,11 +79,11 @@ namespace SmartCare.InfraStructure.Extensions
             services.AddTransient<IFavouriteService, FavouriteService>();
 
             // Register External Services 
-
             services.AddTransient<IEmailService, EmailService>();
             services.AddTransient<IImageUploaderService, ImageUploaderService>();
             services.AddTransient<IMapService, MapService>();
             //services.AddTransient<IPaymentService, PaymentService>();
+            services.AddTransient<IBackgroundJobService, HangfireBackgroundJobService>();
 
             // Register Automapper
             services.AddAutoMapper(typeof(ClientMappingProfile));
@@ -91,6 +93,10 @@ namespace SmartCare.InfraStructure.Extensions
             var cloudinary = new CloudinarySettings();
             configuration.GetSection("cloudinary").Bind(cloudinary);
             services.AddSingleton(cloudinary);
+
+            // Hangfire setup
+            services.AddHangfire(x => x.UseSqlServerStorage(configuration.GetConnectionString("Cloud")));
+            services.AddHangfireServer();
 
             // Some Classes
             services.AddTransient<IResponseHandler , ResponseHandler>();
@@ -104,12 +110,14 @@ namespace SmartCare.InfraStructure.Extensions
             var jwtSettings = new JwtSettings();
             configuration.GetSection("JwtSettings").Bind(jwtSettings);
             services.AddSingleton(jwtSettings);
+
+            // Configure Authentication
             services.AddAuthentication(x =>
-            {
-                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(x =>
+                                            {
+                                                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                                                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                                            })
+                    .AddJwtBearer(x =>
             {
                 x.RequireHttpsMetadata = false;
                 x.SaveToken = true;

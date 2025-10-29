@@ -11,16 +11,16 @@ namespace SmartCare.InfraStructure.BackgroundJobImplemantations
 {
     public class HangfireBackgroundJobService : IBackgroundJobService
     {
-        public Task<string> EnqueueAsync(Expression<Action> methodCall)
+        public string Enqueue(Expression<Action> methodCall)
         {
             if (methodCall == null)
                 throw new ArgumentNullException(nameof(methodCall));
 
             string jobId = BackgroundJob.Enqueue(methodCall);
-            return Task.FromResult(jobId);
+            return jobId;
         }
 
-        public Task<string> ScheduleAsync(Expression<Action> methodCall, TimeSpan delay)
+        public string Schedule(Expression<Action> methodCall, TimeSpan delay)
         {
             if (methodCall == null)
                 throw new ArgumentNullException(nameof(methodCall));
@@ -29,7 +29,7 @@ namespace SmartCare.InfraStructure.BackgroundJobImplemantations
                 throw new ArgumentException("Delay must be greater than zero.", nameof(delay));
 
             string jobId = BackgroundJob.Schedule(methodCall, delay);
-            return Task.FromResult(jobId);
+            return jobId;
         }
     }
 }

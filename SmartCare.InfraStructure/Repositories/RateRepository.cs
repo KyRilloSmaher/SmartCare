@@ -81,6 +81,24 @@ namespace SmartCare.InfraStructure.Repositories
         {
             return await _context.Rates.AnyAsync(r => r.ClientId == userId && r.ProductId == productId && !r.IsDeleted);
         }
+
+        public async Task<bool> MarkAllClientRatesAsDeleted(string userId)
+        {
+            var rates = await _context.Rates
+                                      .Where(r => r.ClientId == userId && !r.IsDeleted)
+                                      .ToListAsync();
+            if (rates == null)
+            {
+                return false;
+            }
+            foreach (var rate in rates)
+            {
+                rate.IsDeleted = true;
+            }
+            _context.Rates.UpdateRange(rates);
+            await _context.SaveChangesAsync();
+            return true;
+        }
         #endregion
     }
 }
