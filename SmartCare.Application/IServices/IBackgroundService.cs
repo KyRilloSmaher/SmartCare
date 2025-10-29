@@ -9,7 +9,7 @@ namespace SmartCare.Application.IServices
 {
     public interface IBackgroundJobService
     {
-        Task<string> EnqueueAsync(Expression<Action> methodCall);
-        Task<string> ScheduleAsync(Expression<Action> methodCall, TimeSpan delay);
+        string Enqueue(Expression<Action> methodCall);
+        string Schedule(Expression<Action> methodCall, TimeSpan delay);
     }
 }

@@ -43,7 +43,7 @@ namespace SmartCare.InfraStructure.Repositories
         public async Task<IEnumerable<Rate>> GetRatesByProductIdAsync(Guid productId)
         {
             var rates = await _context.Rates
-                                      .Where(r => r.ProductId == productId && !r.IsDeleted)
+                                      .Where(r => r.ProductId == productId && !r.IsDeleted).AsNoTracking()
                                       .ToListAsync();
             return rates;
         }
@@ -54,6 +54,7 @@ namespace SmartCare.InfraStructure.Repositories
                                       .Where(r => r.ClientId == userId && !r.IsDeleted)
                                       .Include(r => r.Product)
                                           .ThenInclude(p => p.Images)
+                                      .AsNoTracking()
                                       .ToListAsync();
             return  rates;
         }
@@ -80,6 +81,24 @@ namespace SmartCare.InfraStructure.Repositories
         public async Task<bool> IsProductRatedByUserAsync(string userId, Guid productId)
         {
             return await _context.Rates.AnyAsync(r => r.ClientId == userId && r.ProductId == productId && !r.IsDeleted);
+        }
+
+        public async Task<bool> MarkAllClientRatesAsDeleted(string userId)
+        {
+            var rates = await _context.Rates
+                                      .Where(r => r.ClientId == userId && !r.IsDeleted)
+                                      .ToListAsync();
+            if (rates == null)
+            {
+                return false;
+            }
+            foreach (var rate in rates)
+            {
+                rate.IsDeleted = true;
+            }
+            _context.Rates.UpdateRange(rates);
+            await _context.SaveChangesAsync();
+            return true;
         }
         #endregion
     }

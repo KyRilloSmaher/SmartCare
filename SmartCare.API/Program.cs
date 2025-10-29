@@ -14,6 +14,7 @@ using SmartCare.API.Helpers;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.API.Middlewares;
 using SmartCare.InfraStructure.Seed;
+using Hangfire;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -157,6 +158,7 @@ if (app.Environment.IsDevelopment())
 }
 app.UseSwagger();
 app.UseSwaggerUI();
+app.UseHangfireDashboard("/hangfire");
 app.UseMiddleware<ErrorHandlerMiddleware>();
 app.UseHttpsRedirection();
 app.UseAuthentication();

@@ -16,19 +16,23 @@ namespace SmartCare.Application.Services
     {
         #region Fields
         private readonly IResponseHandler _responseHandler;
+        private readonly IBackgroundJobService _backgroundJobService;
         private readonly IClientRepository _clientRepository;
+        private readonly IRateRepository _rateRepository;
         private readonly IImageUploaderService _imageUploaderService;
         private readonly IMapper _mapper;
         #endregion
 
         #region Constructor
-        public ClientService(IClientRepository clientRepository, IImageUploaderService imageUploaderService, IMapper mapper, IResponseHandler responseHandler)
+        public ClientService(IClientRepository clientRepository, IImageUploaderService imageUploaderService, IMapper mapper, IResponseHandler responseHandler, IBackgroundJobService backgroundJobService, IRateRepository rateRepository)
         {
             _responseHandler = responseHandler;
             _clientRepository = clientRepository;
             _imageUploaderService = imageUploaderService;
             _mapper = mapper;
             _responseHandler = responseHandler;
+            _backgroundJobService = backgroundJobService;
+            _rateRepository = rateRepository;
         }
         #endregion
 
@@ -95,6 +99,8 @@ namespace SmartCare.Application.Services
                     if (DeleteImageResult)
                     {
                         await _clientRepository.CommitTransactionAsync();
+                        // Enqueue background job To mark all client Rates as deleted
+                        _backgroundJobService.Enqueue(() => _rateRepository.MarkAllClientRatesAsDeleted(id));
                         return _responseHandler.Success<bool>(true, SystemMessages.SUCCESS);
                     }
                 }

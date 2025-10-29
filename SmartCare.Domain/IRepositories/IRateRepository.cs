@@ -13,6 +13,7 @@ namespace SmartCare.Domain.IRepositories
         Task<IEnumerable<Rate>> GetRatesByProductIdAsync(Guid productId);
         Task<float> UpdateAverageRateForProductAsync(Guid productId);
         Task <bool> IsProductRatedByUserAsync(string userId, Guid productId);
+        Task<bool> MarkAllClientRatesAsDeleted(string userId);
 
     }
 }

@@ -20,6 +20,8 @@ using SmartCare.Application.Mappers;
 using SmartCare.Application.Handlers.ResponseHandler;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
+using Hangfire;
+using SmartCare.InfraStructure.BackgroundJobImplemantations;
 
 
 namespace SmartCare.InfraStructure.Extensions
@@ -29,15 +31,15 @@ namespace SmartCare.InfraStructure.Extensions
         public static IServiceCollection AddInfrastructureDependencies(this IServiceCollection services, IConfiguration configuration)
         {
             // Register Repositories
-            services.AddTransient(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-            services.AddTransient<IClientRepository, ClientRepository>();
-            services.AddTransient<IAdressRepository, AdressRepository>();
-            services.AddTransient<ICategoryRepository, CategoryRepository>();
-            services.AddTransient<ICompanyRepository, CompanyRepository>();
-            services.AddTransient<IStoreRepository, StoreRepository>();
-            services.AddTransient<IRateRepository, RateRepository>();
-            services.AddTransient<IProductRepository, ProductRepository>();
-            services.AddTransient<IFavouriteRepository, FavouriteRepository>();
+            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            services.AddScoped<IClientRepository, ClientRepository>();
+            services.AddScoped<IAdressRepository, AdressRepository>();
+            services.AddScoped<ICategoryRepository, CategoryRepository>();
+            services.AddScoped<ICompanyRepository, CompanyRepository>();
+            services.AddScoped<IStoreRepository, StoreRepository>();
+            services.AddScoped<IRateRepository, RateRepository>();
+            services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<IFavouriteRepository, FavouriteRepository>();
 
             // Configure Identity
             services.AddIdentity<Client, IdentityRole>(options =>
@@ -63,25 +65,25 @@ namespace SmartCare.InfraStructure.Extensions
                 // Sign-in settings
                 options.SignIn.RequireConfirmedEmail = true;
             })
-            .AddEntityFrameworkStores<ApplicationDBContext>()
-            .AddDefaultTokenProviders();
+                    .AddEntityFrameworkStores<ApplicationDBContext>()
+                    .AddDefaultTokenProviders();
 
             // Register Services
-            services.AddTransient<IAuthenticationService, AuthenticationService>();
-            services.AddTransient<ICategoryService, CategoryService>();
-            services.AddTransient<ICompanyService, CompanyService>();
-            services.AddTransient<IClientService, ClientService>();
-            services.AddTransient<ITokenService, TokenService>();
-            services.AddTransient<IStoreService, StoreService>();
-            services.AddTransient<IRateService, RateService>();
-            services.AddTransient<IFavouriteService, FavouriteService>();
+            services.AddScoped<IAuthenticationService, AuthenticationService>();
+            services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<ICompanyService, CompanyService>();
+            services.AddScoped<IClientService, ClientService>();
+            services.AddScoped<ITokenService, TokenService>();
+            services.AddScoped<IStoreService, StoreService>();
+            services.AddScoped<IRateService, RateService>();
+            services.AddScoped<IFavouriteService, FavouriteService>();
 
             // Register External Services 
-
-            services.AddTransient<IEmailService, EmailService>();
-            services.AddTransient<IImageUploaderService, ImageUploaderService>();
-            services.AddTransient<IMapService, MapService>();
-            //services.AddTransient<IPaymentService, PaymentService>();
+            services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<IImageUploaderService, ImageUploaderService>();
+            services.AddScoped<IMapService, MapService>();
+            //services.AddScoped<IPaymentService, PaymentService>();
+            services.AddScoped<IBackgroundJobService, HangfireBackgroundJobService>();
 
             // Register Automapper
             services.AddAutoMapper(typeof(ClientMappingProfile));
@@ -92,8 +94,12 @@ namespace SmartCare.InfraStructure.Extensions
             configuration.GetSection("cloudinary").Bind(cloudinary);
             services.AddSingleton(cloudinary);
 
+            // Hangfire setup
+            services.AddHangfire(x => x.UseSqlServerStorage(configuration.GetConnectionString("Cloud")));
+            services.AddHangfireServer();
+
             // Some Classes
-            services.AddTransient<IResponseHandler , ResponseHandler>();
+            services.AddScoped<IResponseHandler , ResponseHandler>();
 
             // Email
             var emailSettings = new EmailSettings();
@@ -104,12 +110,14 @@ namespace SmartCare.InfraStructure.Extensions
             var jwtSettings = new JwtSettings();
             configuration.GetSection("JwtSettings").Bind(jwtSettings);
             services.AddSingleton(jwtSettings);
+
+            // Configure Authentication
             services.AddAuthentication(x =>
-            {
-                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(x =>
+                                            {
+                                                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                                                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                                            })
+                    .AddJwtBearer(x =>
             {
                 x.RequireHttpsMetadata = false;
                 x.SaveToken = true;
