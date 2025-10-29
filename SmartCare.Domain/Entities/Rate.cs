@@ -9,7 +9,7 @@ namespace SmartCare.Domain.Entities
     public class Rate
     {
         public Guid Id { get; set; }
-        public string ClientId { get; set; }
+        public string? ClientId { get; set; }
         public Guid ProductId { get; set; }
         public int Value { get; set; }
         public DateTime CreatedAt { get; set; }

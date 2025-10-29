@@ -57,7 +57,7 @@ namespace SmartCare.InfraStructure.Configurations
             builder.HasMany(c => c.Rates)
                 .WithOne(c => c.Client)
                 .HasForeignKey(c => c.ClientId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.SetNull);
 
             builder.HasOne(c => c.Cart)
                 .WithOne(c => c.Client)
