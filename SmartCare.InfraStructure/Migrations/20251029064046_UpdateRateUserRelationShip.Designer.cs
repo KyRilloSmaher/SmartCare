@@ -13,7 +13,7 @@ using SmartCare.InfraStructure.DbContexts;
 namespace SmartCare.InfraStructure.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    [Migration("20251029053118_ Update Rate &User RelationShip")]
+    [Migration("20251029064046_UpdateRateUserRelationShip")]
     partial class UpdateRateUserRelationShip
     {
         /// <inheritdoc />

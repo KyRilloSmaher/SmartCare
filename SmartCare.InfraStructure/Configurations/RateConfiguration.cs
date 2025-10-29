@@ -31,7 +31,10 @@ namespace SmartCare.InfraStructure.Configurations
                 .WithMany(x => x.Rates)
                 .HasForeignKey(x => x.ProductId)
                 .OnDelete(DeleteBehavior.NoAction);
-
+            builder.HasOne(r => r.Client)
+                   .WithMany(c => c.Rates)
+                   .HasForeignKey(r => r.ClientId)
+                   .OnDelete(DeleteBehavior.SetNull);
             builder.HasIndex(r => r.ClientId);
             builder.HasIndex(r => r.ProductId);
             builder.HasIndex(r => r.Value);
