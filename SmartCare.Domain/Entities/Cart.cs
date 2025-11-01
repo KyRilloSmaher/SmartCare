@@ -1,4 +1,5 @@
 ﻿
+using SmartCare.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,7 @@ namespace SmartCare.Domain.Entities
     {
         public Guid Id { get; set; }
         public string ClientId { get; set; }
-        public bool IsActive { get; set; }
+        public CartStatus status { get; set; }
         public decimal TotalPrice { get; set; }
         public Client  Client { get; set; }
         public  ICollection<CartItem> Items { get; set; }

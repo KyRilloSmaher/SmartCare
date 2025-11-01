@@ -111,7 +111,7 @@
         }
         #endregion
 
-        #region Favourite
+        #region Favourite Endpoints
         public static class Favourite
         {
             private const string Prefix = Rule + "favourites";
@@ -119,6 +119,22 @@
             public const string GetAllForUser = Rule + "me/favourites";
             public const string Create = Prefix + "/add-to-my-favourites"+ "/{productId}";
             public const string Delete = Prefix + "/remove-from-my-favourites" + "/{productId}";
+        }
+        #endregion
+
+        #region Cart Endpoints
+        public static class Cart
+        {
+            private const string Prefix = Rule + "cart";
+            private const string AdminPrefix = Rule + "admin/cart";
+
+            public const string GetById = Prefix + SingleRoute;
+            public const string GetForUser = Prefix + "/me";
+            public const string AddItem = Prefix + "/add-item";
+            public const string UpdateItem = Prefix + "/update-item";
+            public const string RemoveItem = Prefix + "/remove-item";
+            public const string Clear = Prefix + "/clear";
+            public const string Delete = Prefix + "/{cartId}";
         }
         #endregion
     }

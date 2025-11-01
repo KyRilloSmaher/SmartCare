@@ -34,14 +34,16 @@ namespace SmartCare.InfraStructure.Extensions
         {
             // Register Repositories
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-            services.AddScoped<IClientRepository, ClientRepository>();
             services.AddScoped<IAdressRepository, AdressRepository>();
+            services.AddScoped<ICartRepository, CartRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<ICompanyRepository, CompanyRepository>();
-            services.AddScoped<IStoreRepository, StoreRepository>();
-            services.AddScoped<IRateRepository, RateRepository>();
-            services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<IClientRepository, ClientRepository>();
             services.AddScoped<IFavouriteRepository, FavouriteRepository>();
+            services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<IRateRepository, RateRepository>();
+            services.AddScoped<IReservationRepository, ReservationRepository>();
+            services.AddScoped<IStoreRepository, StoreRepository>();
 
             // Configure Identity
             services.AddIdentity<Client, IdentityRole>(options =>
@@ -73,6 +75,7 @@ namespace SmartCare.InfraStructure.Extensions
             // Register Services
             services.AddScoped<IAuthenticationService, AuthenticationService>();
             services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<ICartService, CartService>();
             services.AddScoped<ICompanyService, CompanyService>();
             services.AddScoped<IClientService, ClientService>();
             services.AddScoped<ITokenService, TokenService>();

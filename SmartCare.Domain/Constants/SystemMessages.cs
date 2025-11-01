@@ -81,6 +81,12 @@ namespace SmartCare.Domain.Constants
         public const string ITEM_ADDED_TO_CART = "Item added to cart.";
         public const string ITEM_REMOVED_FROM_CART = "Item removed from cart.";
         public const string CART_EMPTY = "Cart is empty.";
+        public const string CART_CREATED = "CART CREATED";
+        public const string CART_ALREADY_EXISTS = "An active cart already exists for this user.";
+        public const string INSUFFICIENT_STOCK = "Insufficient stock for the requested product.";
+        public const string ADDED_TO_CART = "Item added to cart successfully.";
+        public const string CART_CLEARED = "Cart Cleared ";
+        public const string RESERVATION_FAILED = "Failed to create reservation for the product.";
 
         // =====================
         // 💳 Payments & Subscriptions
