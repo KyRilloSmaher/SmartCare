@@ -9,7 +9,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
-using static SmartCare.API.Helpers.ApplicationRouting;
+//using static SmartCare.API.Helpers.ApplicationRouting;
 
 namespace SmartCare.InfraStructure.Repositories
 {
@@ -26,7 +26,7 @@ namespace SmartCare.InfraStructure.Repositories
         #endregion
 
         #region Methods
-        public async Task<List<Product>> FilterProductsAsync(FilterProductsDTo filterProductsDTo, Expression<Func<Product, object>> orderBy, bool ascending = true)
+        public IQueryable<Product> FilterProductsAsync(FilterProductsDTo filterProductsDTo)
         {
             IQueryable<Product> query = _context.Products;
 
@@ -59,77 +59,117 @@ namespace SmartCare.InfraStructure.Repositories
             {
                 query = query.Where(p => p.Price <= filterProductsDTo.ToPrice.Value);
             }
-
-            query = ascending ? query.OrderBy(orderBy) : query.OrderByDescending(orderBy);
-
-            return await query.ToListAsync();
+            return query.AsQueryable();
 
         }
 
-        public async Task<Product> SearchProductByNameAsync(string? nameAr, string? nameEn, bool ascending = true)
+        public async Task<Product> SearchProductByNameAsync(string nameEn)
         {
-            if (string.IsNullOrWhiteSpace(nameAr) && string.IsNullOrWhiteSpace(nameEn))
-                return  null;
-            var query = _context.Products.AsQueryable();
+            if (string.IsNullOrWhiteSpace(nameEn))
+                return null;
 
-            query = query.Where(p =>
-                (!string.IsNullOrWhiteSpace(nameAr) && p.NameAr.ToLower() == nameAr.Trim().ToLower()) ||
-                (!string.IsNullOrWhiteSpace(nameEn) && p.NameEn.ToLower() == nameEn.Trim().ToLower()));
+            var trimmedName = nameEn.Trim().ToLower();
 
-            query = ascending
-                ? query.OrderBy(p => p.NameAr).ThenBy(p => p.NameEn)
-                : query.OrderByDescending(p => p.NameAr).ThenByDescending(p => p.NameEn);
+            var result = await _context.Products
+                     .Where(p => p.NameEn.ToLower().Contains(trimmedName))
+                     .FirstOrDefaultAsync();
 
-            return await query.FirstOrDefaultAsync();
+            if (result == null)
+                Console.WriteLine("[GetProductByNameEn] No matching product found.");
+
+            return result;
+
 
 
         }
 
-        public async Task<List<Product>> SearchProductsByDescriptionAsync(string partialDescription)
+        public IQueryable<Product> SearchProductsByDescriptionAsync(string partialDescription)
         {
-            if(partialDescription == null)
-                return new List<Product>();
-            return await _context.Products.Where(
-                p => p.Description.ToLower().Contains(partialDescription.ToLower())
-                ).ToListAsync();
+            if (string.IsNullOrWhiteSpace(partialDescription))
+                return Enumerable.Empty<Product>().AsQueryable();
+
+            string trimmedDescription = partialDescription.Trim().ToLower();
+
+            return _context.Products.Where(
+                p => p.Description != null && p.Description.Trim().ToLower().Contains(trimmedDescription)
+            );
+
         }
 
-        public async Task<List<Product>> SearchProductsByCompanyName(string CompanyName)
+        public  IQueryable<Product> SearchProductsByCompanyName(string CompanyName)
         {
             if (string.IsNullOrWhiteSpace(CompanyName))
-                return new List<Product>();
-            var Company = await _context.Companies.FirstOrDefaultAsync(c => c.Name.ToLower() == CompanyName.Trim().ToLower());
-            if (Company == null)
-                return new List<Product>();
-            var Products = await _context.Products.Where(p => p.CompanyId == Company.Id).ToListAsync();
+                return _context.Products.Where(p => false);
+            var Products = _context.Products
+                .Include(p => p.Company)
+                .Where(p => p.Company.Name.ToLower() == CompanyName.ToLower()).AsQueryable();
             return Products;
         }
 
-        public async Task<List<Product>> SearchProductsByCompanyId(Guid CompanyId)
+        public IQueryable<Product> GetProductsByCompanyId(Guid CompanyId)
         {
             if (CompanyId == Guid.Empty)
-                return new List<Product>();
-            var Products = await _context.Products.Where(p => p.CompanyId == CompanyId).ToListAsync();
+                return Enumerable.Empty<Product>().AsQueryable();
+            var Products =  _context.Products.Where(p => p.CompanyId == CompanyId).AsQueryable();
             return Products;
         }
 
-        public async Task<List<Product>> SearchProductsByCategoryName(string CategoryName)
+        public  IQueryable<Product> SearchProductsByCategoryName(string CategoryName)
         {
             if (string.IsNullOrWhiteSpace(CategoryName))
-                return new List<Product>();
-            var Category = _context.Categories.FirstOrDefault(c => c.Name.ToLower() == CategoryName.ToLower());
-            if(Category == null)
-                return new List<Product>();
-            var Products = await _context.Products.Where(p => p.CategoryId == Category.Id).ToListAsync();
+                return _context.Products.Where(p => false);
+            var Products = _context.Products
+                .Include(p => p.Category)
+                .Where(p => p.Category.Name.ToLower() == CategoryName.ToLower()).AsQueryable();
             return Products;
         }
 
-        public async Task<List<Product>> SearchProductsByCategoryId(Guid CategoryId)
+        public IQueryable<Product> GetProductsByCategoryId(Guid CategoryId)
         {
             if(CategoryId == Guid.Empty)
-                return new List<Product>();
-            var Products = await _context.Products.Where(p => p.CategoryId == CategoryId).ToListAsync();
+                return Enumerable.Empty<Product>().AsQueryable();
+            var Products = _context.Products.Where(p => p.CategoryId == CategoryId).AsQueryable();
             return Products;
+        }
+
+        public async override Task<bool> DeleteAsync(Product product)
+        {
+            product.IsDeleted = true;
+            _context.Products.Update(product);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public IQueryable<Domain.Entities.Product> GetAllProductsQuerable()
+        {
+            return _context.Products
+                .Where(c => !c.IsDeleted)
+                .AsNoTracking();
+        }
+
+        public IQueryable<Product> GetExpiredProducts()
+        {
+            var expiredProducts = _context.Products
+                .Where(p => p.ExpirationDate.HasValue && p.ExpirationDate < DateTime.Now).AsQueryable();
+
+            return expiredProducts;
+        }
+
+        public IQueryable<Product> GetUnExpiredProducts()
+        {
+            var UnexpiredProducts = _context.Products
+                .Where(p => p.ExpirationDate.HasValue && p.ExpirationDate > DateTime.Now).AsQueryable();
+
+            return UnexpiredProducts;
+        }
+
+        public IQueryable<Product> GetMostSelling()
+        {
+            var mostSellingProducts = _context.Products
+                .Include(p => p.OrderItems)
+                .OrderByDescending(p => p.OrderItems.Sum(t => t.Quantity))
+                .AsQueryable();
+            return mostSellingProducts;
         }
         #endregion
     }
