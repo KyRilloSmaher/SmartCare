@@ -1,30 +1,26 @@
-﻿
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
+using SmartCare.Application.ExternalServiceInterfaces;
+using SmartCare.Application.Handlers.ResponseHandler;
+using SmartCare.Application.IServices;
+using SmartCare.Application.Mappers;
+using SmartCare.Application.Services;
 using SmartCare.Domain.Entities;
 using SmartCare.Domain.Helpers;
-using SmartCare.InfraStructure.DbContexts;
-using SmartCare.InfraStructure.Repositories;
 using SmartCare.Domain.IRepositories;
-using SmartCare.Application.Services;
 using SmartCare.Domain.Interfaces.IServices;
-using SmartCare.Application.IServices;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using SmartCare.Application.Handlers.ResponsesHandler;
-using SmartCare.Application.ExternalServiceInterfaces;
-using SmartCare.InfraStructure.ExternalServices;
-using SmartCare.Application.Mappers;
-using SmartCare.Application.Handlers.ResponseHandler;
-using Microsoft.Extensions.Options;
-using System.Security.Claims;
-using Hangfire;
 using SmartCare.InfraStructure.BackgroundJobImplemantations;
-using System;
-using Microsoft.EntityFrameworkCore;
-
+using SmartCare.InfraStructure.DbContexts;
+using SmartCare.InfraStructure.ExternalServices;
+using SmartCare.InfraStructure.Repositories;
+using System.Security.Claims;
+using System.Text;
+using Hangfire;
+using SmartCare.Application.Handlers.ResponsesHandler;
 
 namespace SmartCare.InfraStructure.Extensions
 {
@@ -32,7 +28,7 @@ namespace SmartCare.InfraStructure.Extensions
     {
         public static IServiceCollection AddInfrastructureDependencies(this IServiceCollection services, IConfiguration configuration)
         {
-            // Register Repositories
+            // ---------- Repositories ----------
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddScoped<IClientRepository, ClientRepository>();
             services.AddScoped<IAdressRepository, AdressRepository>();
@@ -42,35 +38,28 @@ namespace SmartCare.InfraStructure.Extensions
             services.AddScoped<IRateRepository, RateRepository>();
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<IFavouriteRepository, FavouriteRepository>();
+            services.AddScoped<ICartRepository, CartRepository>();
+            services.AddScoped<IReservationRepository , ReservationRepository>();
 
-            // Configure Identity
+            // ---------- Identity ----------
             services.AddIdentity<Client, IdentityRole>(options =>
             {
-                // Password settings
                 options.Password.RequireDigit = true;
                 options.Password.RequireLowercase = true;
                 options.Password.RequireNonAlphanumeric = true;
                 options.Password.RequireUppercase = true;
                 options.Password.RequiredLength = 6;
-                options.Password.RequiredUniqueChars = 1;
 
-                // Lockout settings
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
                 options.Lockout.MaxFailedAccessAttempts = 5;
-                options.Lockout.AllowedForNewUsers = true;
 
-                // User settings
-                options.User.AllowedUserNameCharacters =
-                    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
                 options.User.RequireUniqueEmail = true;
-
-                // Sign-in settings
                 options.SignIn.RequireConfirmedEmail = true;
             })
-                    .AddEntityFrameworkStores<ApplicationDBContext>()
-                    .AddDefaultTokenProviders();
+            .AddEntityFrameworkStores<ApplicationDBContext>()
+            .AddDefaultTokenProviders();
 
-            // Register Services
+            // ---------- Application Services ----------
             services.AddScoped<IAuthenticationService, AuthenticationService>();
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<ICompanyService, CompanyService>();
@@ -79,96 +68,83 @@ namespace SmartCare.InfraStructure.Extensions
             services.AddScoped<IStoreService, StoreService>();
             services.AddScoped<IRateService, RateService>();
             services.AddScoped<IFavouriteService, FavouriteService>();
+            services.AddScoped<ICartService, CartService > ();
+            services.AddScoped<IBackgroundJobService, HangfireBackgroundJobService>();
+            services.AddScoped<IResponseHandler, ResponseHandler>();
 
-            // Register External Services 
+            // ---------- External Services ----------
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IImageUploaderService, ImageUploaderService>();
             services.AddScoped<IMapService, MapService>();
-            //services.AddScoped<IPaymentService, PaymentService>();
-            services.AddScoped<IBackgroundJobService, HangfireBackgroundJobService>();
 
-            // Register Automapper
-            services.AddAutoMapper(typeof(ClientMappingProfile));
+            // ---------- Configurations ----------
+            services.Configure<StripeSettings>(configuration.GetSection("StripeSettings"));
+            services.Configure<CloudinarySettings>(configuration.GetSection("cloudinary"));
+            services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
 
-
-            // Register CloudinaryService
-            var cloudinary = new CloudinarySettings();
-            configuration.GetSection("cloudinary").Bind(cloudinary);
-            services.AddSingleton(cloudinary);
-
-            // Hangfire setup
-            services.AddHangfire(x => x.UseSqlServerStorage(configuration.GetConnectionString("Cloud")));
-            services.AddHangfireServer();
-
-            // Some Classes
-            services.AddScoped<IResponseHandler , ResponseHandler>();
-
-            // Email
-            var emailSettings = new EmailSettings();
-            configuration.GetSection(nameof(emailSettings)).Bind(emailSettings);
-            services.AddSingleton(emailSettings);
-
-            // JWT Settings
             var jwtSettings = new JwtSettings();
             configuration.GetSection("JwtSettings").Bind(jwtSettings);
             services.AddSingleton(jwtSettings);
 
-            // Configure Authentication
-            services.AddAuthentication(x =>
-                                            {
-                                                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                                                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                                            })
-                    .AddJwtBearer(x =>
+            // ---------- Hangfire ----------
+            services.AddHangfire(x => x.UseSqlServerStorage(configuration.GetConnectionString("Cloud")));
+            services.AddHangfireServer();
+
+            // ---------- AutoMapper ----------
+            services.AddAutoMapper(typeof(ClientMappingProfile));
+
+            // ---------- JWT Authentication ----------
+            services.AddAuthentication(options =>
             {
-                x.RequireHttpsMetadata = false;
-                x.SaveToken = true;
-                x.TokenValidationParameters = new TokenValidationParameters
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = true;
+
+                options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = jwtSettings.ValidateIssuer,
-                    ValidIssuers = new[] { jwtSettings.Issuer },
+                    ValidIssuer = jwtSettings.Issuer,
+                    ValidateAudience = jwtSettings.ValidateAudience,
+                    ValidAudience = jwtSettings.Audience,
                     ValidateIssuerSigningKey = jwtSettings.ValidateIssuerSigningKey,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key)),
-                    ValidAudience = jwtSettings.Audience,
-                    ValidateAudience = jwtSettings.ValidateAudience,
                     ValidateLifetime = jwtSettings.ValidateLifeTime,
                     ClockSkew = TimeSpan.FromSeconds(30)
                 };
-                x.Events = new JwtBearerEvents
+
+                // -------- Custom JWT validation + SignalR support --------
+                options.Events = new JwtBearerEvents
                 {
                     OnTokenValidated = async context =>
                     {
                         var userId = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
+                        var securityStamp = context.Principal?.FindFirst("security_stamp")?.Value;
 
-                        if (string.IsNullOrEmpty(userId))
+                        if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(securityStamp))
                         {
-                            context.Fail("No user id in token.");
-                            return;
-                        }
-
-                        var tokenStamp = context.Principal?.FindFirst("security_stamp")?.Value;
-                        if (string.IsNullOrEmpty(tokenStamp))
-                        {
-                            context.Fail("No security stamp in token.");
+                            context.Fail("Invalid token claims.");
                             return;
                         }
 
                         var dbContext = context.HttpContext.RequestServices.GetRequiredService<ApplicationDBContext>();
                         var user = await dbContext.Users
-                                                    .AsNoTracking()
-                                                    .FirstOrDefaultAsync(u => u.Id == userId);
+                            .AsNoTracking()
+                            .FirstOrDefaultAsync(u => u.Id == userId);
+
                         if (user == null)
                         {
                             context.Fail("User not found.");
                             return;
                         }
-                        var currentStamp = user.SecurityStamp;
-                        if (!string.Equals(tokenStamp, currentStamp, StringComparison.Ordinal))
+
+                        if (!string.Equals(user.SecurityStamp, securityStamp, StringComparison.Ordinal))
                         {
                             context.Fail("Security stamp mismatch - token revoked.");
-                            return;
                         }
-
                     }
                 };
             });

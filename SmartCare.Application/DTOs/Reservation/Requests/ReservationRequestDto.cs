@@ -4,16 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Domain.Entities
+namespace SmartCare.Application.DTOs.Reservation.Requests
 {
-    public class Reservation
+    public class ReservationRequestDto
     {
-        public Guid Id { get; set; }
         public Guid CartItemId { get; set; }
         public int QuantityReserved { get; set; }
         public DateTime ReservedAt { get; set; }
-        public DateTime ExpiredAt { get; set; }
-        public CartItem CartItem { get; set; }
-
     }
 }
