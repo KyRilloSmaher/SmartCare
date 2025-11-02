@@ -1,12 +1,13 @@
 ﻿using Stripe.Checkout;
 using Stripe;
+using SmartCare.Application.DTOs.Payment;
 
 namespace SmartCare.Application.ExternalServiceInterfaces
 {
     public interface IPaymentGetway
     {
 
-        Task<Session> CreateCheckoutSessionAsync(decimal amount, string successUrl, string cancelUrl, string clientReferenceId,string currency = "egp" ,Dictionary<string, string>? metadata = null);
-        bool VerifyWebhookSignature(string json, string stripeSignatureHeader, string webhookSecret, out Event stripeEvent);
+        Task<Session> CreateCheckoutSessionAsync(PaymentSessionRequest request);
+        bool VerifyWebhookSignature(string json, string signature, string secret, out Event webhookEvent);
     }
 }

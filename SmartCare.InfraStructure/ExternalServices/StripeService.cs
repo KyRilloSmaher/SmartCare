@@ -3,6 +3,7 @@ using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Domain.Helpers;
 using Stripe.Checkout;
 using Stripe;
+using SmartCare.Application.DTOs.Payment;
 
 public class StripeService : IPaymentGetway
 {
@@ -14,13 +15,7 @@ public class StripeService : IPaymentGetway
         StripeConfiguration.ApiKey = _stripeSettings.SecretKey;
     }
 
-    public async Task<Session> CreateCheckoutSessionAsync(
-        decimal amount,
-        string successUrl,
-        string cancelUrl,
-        string clientReferenceId,
-        string currency = "egp",
-        Dictionary<string, string>? metadata = null)
+    public async Task<Session> CreateCheckoutSessionAsync(PaymentSessionRequest request)
     {
         var options = new SessionCreateOptions
         {
@@ -32,8 +27,8 @@ public class StripeService : IPaymentGetway
                 {
                     PriceData = new SessionLineItemPriceDataOptions
                     {
-                        UnitAmountDecimal = amount * 100, // Stripe uses cents
-                        Currency = currency,
+                        UnitAmountDecimal = request.Amount * 100, // Stripe uses cents
+                        Currency = "egp",
                         ProductData = new SessionLineItemPriceDataProductDataOptions
                         {
                             Name = "SmartCare Order"
@@ -42,27 +37,36 @@ public class StripeService : IPaymentGetway
                     Quantity = 1
                 }
             },
-            SuccessUrl = successUrl,
-            CancelUrl = cancelUrl,
-            ClientReferenceId = clientReferenceId,
-            Metadata = metadata
+            SuccessUrl = request.SuccessUrl,
+            CancelUrl = request.CancelUrl,
+            ClientReferenceId = request.OrderId
         };
 
         var service = new SessionService();
         return await service.CreateAsync(options);
     }
 
-    public bool VerifyWebhookSignature(string json, string stripeSignatureHeader, string webhookSecret, out Event stripeEvent)
+public bool VerifyWebhookSignature(string json, string signature, string secret, out Event webhookEvent)
+{
+    try
     {
-        stripeEvent = null!;
-        try
-        {
-            stripeEvent = EventUtility.ConstructEvent(json, stripeSignatureHeader, webhookSecret);
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
+        webhookEvent = EventUtility.ConstructEvent(json, signature, secret);
+        return true;
     }
+    catch (StripeException ex)
+    {
+        // Optional: log or handle specific Stripe errors
+        Console.WriteLine($"⚠️ Stripe webhook verification failed: {ex.Message}");
+        webhookEvent = null!;
+        return false;
+    }
+    catch (Exception ex)
+    {
+        // Optional: catch any other unexpected exception
+        Console.WriteLine($"⚠️ Unexpected webhook verification error: {ex.Message}");
+        webhookEvent = null!;
+        return false;
+    }
+}
+
 }

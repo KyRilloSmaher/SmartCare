@@ -1,13 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
-using SmartCare.API.Hubs;
+﻿// API/Controllers/PaymentsController.cs
+using Microsoft.AspNetCore.Mvc;
+using SmartCare.API.Helpers;
+using SmartCare.Application.DTOs.Payment;
 using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.IServices;
-using SmartCare.Application.Services;
-using SmartCare.Domain.Enums;
-using SmartCare.Domain.IRepositories;
-using Stripe;
-using Stripe.Checkout;
 
 namespace SmartCare.API.Controllers
 {
@@ -15,72 +11,65 @@ namespace SmartCare.API.Controllers
     [Route("api/[controller]")]
     public class PaymentsController : ControllerBase
     {
-        private readonly IPaymentGetway _stripeService;
-        private readonly IPaymentService _paymentService ;
-        private readonly IOrderRepository _orderRepository;
-        private readonly IHubContext<PaymentsHub> _hubContext;
+        private readonly IPaymentService _paymentService;
+        private readonly IPaymentGetway _paymentGateway;
         private readonly IConfiguration _config;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public PaymentsController(
-            IPaymentGetway stripeService,
-            IOrderRepository orderRepository,
-            IHubContext<PaymentsHub> hubContext,
-            IConfiguration config)
+            IPaymentService paymentService,
+            IPaymentGetway paymentGateway,
+            IConfiguration config,
+            IHttpContextAccessor httpContextAccessor)
         {
-            _stripeService = stripeService;
-            _orderRepository = orderRepository;
-            _hubContext = hubContext;
+            _paymentService = paymentService;
+            _paymentGateway = paymentGateway;
             _config = config;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         [HttpPost("webhook")]
-        public async Task<IActionResult> Handle()
+        public async Task<IActionResult> HandleWebhook()
         {
             var json = await new StreamReader(Request.Body).ReadToEndAsync();
             var signature = Request.Headers["Stripe-Signature"];
             var webhookSecret = _config["StripeSettings:WebhookSecret"];
 
-            if (!_stripeService.VerifyWebhookSignature(json, signature, webhookSecret!, out var stripeEvent))
-                return BadRequest();
+            if (!_paymentGateway.VerifyWebhookSignature(json, signature, webhookSecret!, out var webhookEvent))
+                return BadRequest("Invalid signature");
 
-            switch (stripeEvent.Type)
-            {
-                case "checkout.session.completed":
-                    var session = stripeEvent.Data.Object as Session;
-                    if (session == null) break;
-
-                    var order = await _orderRepository.GetByIdAsync(Guid.Parse(session.ClientReferenceId!), true);
-                    if (order == null) break;
-
-                    if (order.Status == OrderStatus.Completed) break;
-
-                    order.Status = OrderStatus.Completed;
-                    order.Payment.PaymentIntentId = session.PaymentIntentId;
-                    await _orderRepository.UpdateAsync(order);
-
-                    await _hubContext.Clients.Group($"user:{order.ClientId}")
-                        .SendAsync("PaymentUpdated", new { orderId = order.Id, status = "Completed" });
-                    break;
-
-                case "payment_intent.payment_failed":
-                    // You can handle failures here
-                    break;
-            }
+            await _paymentService.HandleWebhookEventAsync(webhookEvent);
 
             return Ok();
         }
+
         [HttpPost("success/{orderId}")]
-        public async Task<IActionResult> Success(string orderId)
+        public async Task<IActionResult> Success(Guid orderId)
         {
-            var response = await _paymentService.MarkPaymentSuccessAsync(orderId);
-            return Ok(response);
+            var result = await _paymentService.MarkPaymentSuccessAsync(orderId);
+            return ControllersHelperMethods.FinalResponse(result);
         }
 
         [HttpPost("fail/{orderId}")]
-        public async Task<IActionResult> Fail(string orderId)
+        public async Task<IActionResult> Fail(Guid orderId)
         {
-            var response = await _paymentService.MarkPaymentFailureAsync(orderId);
-            return Ok(response);
+            var result = await _paymentService.MarkPaymentFailureAsync(orderId);
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+
+        [HttpPost("process/{orderId}")]
+        public async Task<IActionResult> ProcessPayment(Guid orderId)
+        {
+            var request = _httpContextAccessor.HttpContext.Request;
+            var baseUrl = $"{request.Scheme}://{request.Host}";
+            var returnUrl = $"{baseUrl}/payment";
+            var requestdto = new CreateCheckoutSessionRequest
+            {
+                OrderId = orderId,
+                ReturnUrl = returnUrl
+            };
+            var result = await _paymentService.ProcessPaymentAsync(requestdto);
+            return ControllersHelperMethods.FinalResponse(result);
         }
     }
 }

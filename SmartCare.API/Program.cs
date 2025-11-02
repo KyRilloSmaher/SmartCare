@@ -16,6 +16,9 @@ using SmartCare.API.Middlewares;
 using SmartCare.InfraStructure.Seed;
 using Hangfire;
 using SmartCare.API.Hubs;
+using SmartCare.API.Events;
+using SmartCare.API.InMemoryEventsHandlers;
+using SmartCare.Application.commons;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,43 +28,41 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-
-//Swagger Gn
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "SmartCare_Application_API ", Version = "v1" });
-    c.EnableAnnotations();
-
-    c.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
-    {
-        Description = "JWT Authorization header using the Bearer scheme (Example: 'Bearer 12345abcdef')",
-        Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = JwtBearerDefaults.AuthenticationScheme
-
-    });
-
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
-                 {
-                 new OpenApiSecurityScheme
-                 {
-                     Reference = new OpenApiReference
-                     {
-                         Type = ReferenceType.SecurityScheme,
-                         Id = JwtBearerDefaults.AuthenticationScheme
-                     }
-                 },
-                 Array.Empty<string>()
-                 }
-               });
-});
-
-
-builder.Services.AddLogging();
 builder.Services.AddHttpClient();
+
+
+#region Swagger_Gn
+    builder.Services.AddSwaggerGen(c =>
+    {
+        c.SwaggerDoc("v1", new OpenApiInfo { Title = "SmartCare_Application_API ", Version = "v1" });
+        c.EnableAnnotations();
+
+        c.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
+        {
+            Description = "JWT Authorization header using the Bearer scheme (Example: 'Bearer 12345abcdef')",
+            Name = "Authorization",
+            In = ParameterLocation.Header,
+            Type = SecuritySchemeType.ApiKey,
+            Scheme = JwtBearerDefaults.AuthenticationScheme
+
+        });
+
+        c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                    {
+                     {
+                     new OpenApiSecurityScheme
+                     {
+                         Reference = new OpenApiReference
+                         {
+                             Type = ReferenceType.SecurityScheme,
+                             Id = JwtBearerDefaults.AuthenticationScheme
+                         }
+                     },
+                     Array.Empty<string>()
+                     }
+                   });
+    });
+#endregion
 
 #region Connection To SQL SERVER
 
@@ -88,7 +89,6 @@ builder.Services.AddScoped<IUrlHelper>(x =>
 
 
 #endregion
-
 
 #region AllowCORS
 var CORS = "_DefaultCors";
@@ -136,7 +136,26 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 });
 #endregion
 
+#region Logging Configuration
+builder.Services.AddLogging();
+#endregion
+
+#region  SignalR
+builder.Services.AddSignalR();
+#endregion
+
+#region Event Bus Registration
+
+// Register Event Bus
+builder.Services.AddSingleton<IEventBus, InMemoryEventBus>();
+
+// Add your events handlers
+builder.Services.AddSingleton<PaymentStatusChangedHandler>();
+
+#endregion
+
 var app = builder.Build();
+
 #region Seeding Data
 using (var scope = app.Services.CreateScope())
 {
@@ -152,12 +171,9 @@ using (var scope = app.Services.CreateScope())
     }
 }
 #endregion
+
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    //app.UseSwagger();
-    //app.UseSwaggerUI();
-}
+
 app.MapHub<PaymentsHub>("/hubs/payments");
 app.UseSwagger();
 app.UseSwaggerUI();

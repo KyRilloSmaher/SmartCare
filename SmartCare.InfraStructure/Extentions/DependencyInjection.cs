@@ -38,7 +38,10 @@ namespace SmartCare.InfraStructure.Extensions
             services.AddScoped<IRateRepository, RateRepository>();
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<IFavouriteRepository, FavouriteRepository>();
+            services.AddScoped<IOrderRepository, OrderRepository>();
 
+
+            services.AddScoped<IPaymentRepository, PaymentRepository>();
             // ---------- Identity ----------
             services.AddIdentity<Client, IdentityRole>(options =>
             {
@@ -66,15 +69,16 @@ namespace SmartCare.InfraStructure.Extensions
             services.AddScoped<IStoreService, StoreService>();
             services.AddScoped<IRateService, RateService>();
             services.AddScoped<IFavouriteService, FavouriteService>();
-            services.AddScoped<IPaymentGetway, StripeService>();
-            services.AddScoped<IPaymentService, PaymentService>();
+
             services.AddScoped<IBackgroundJobService, HangfireBackgroundJobService>();
             services.AddScoped<IResponseHandler, ResponseHandler>();
+            services.AddScoped<IPaymentService, PaymentService>();
 
             // ---------- External Services ----------
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IImageUploaderService, ImageUploaderService>();
             services.AddScoped<IMapService, MapService>();
+            services.AddScoped<IPaymentGetway, StripeService>();                
 
             // ---------- Configurations ----------
             services.Configure<StripeSettings>(configuration.GetSection("StripeSettings"));

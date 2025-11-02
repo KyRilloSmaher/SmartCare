@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SmartCare.Domain.Entities;
+using SmartCare.Domain.Enums;
 using SmartCare.Domain.IRepositories;
 using SmartCare.InfraStructure.DbContexts;
 using System;
@@ -32,6 +33,19 @@ namespace SmartCare.InfraStructure.Repositories
         {
             return await _context.Payments
                 .FirstOrDefaultAsync(p => p.OrderId == orderId);
+        }
+
+        public async Task UpdatePaymentStatusAsync(Guid paymentId, PaymentStatus status, string paymentIntentId)
+        {
+            var payment = await _context.Payments.FindAsync(paymentId);
+            if (payment != null)
+            {
+                payment.Status = status;
+                payment.PaymentIntentId = paymentIntentId;
+                _context.Payments.Update(payment);
+                await _context.SaveChangesAsync();
+            }
+
         }
     }
 }

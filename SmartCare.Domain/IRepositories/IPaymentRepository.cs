@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SmartCare.Domain.Entities;
+using SmartCare.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,5 +14,6 @@ namespace SmartCare.Domain.IRepositories
         Task<Payment?> GetBySessionIdAsync(string sessionId);
         Task<Payment?> GetByPaymentIntentIdAsync(string paymentIntentId);
         Task<Payment?> GetByOrderIdAsync(Guid orderId);
+        Task UpdatePaymentStatusAsync(Guid paymentId, PaymentStatus status, string paymentIntentId);
     }
 }

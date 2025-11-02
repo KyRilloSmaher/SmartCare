@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace SmartCare.Application.DTOs.Payment
 {
-    public class CreateCheckoutSessionRequest
+   public class CreateCheckoutSessionRequest
     {
+        public string ReturnUrl { get; set; }
         public Guid OrderId { get; set; }
-        public string ReturnUrl { get; set; } = string.Empty;
     }
 }
