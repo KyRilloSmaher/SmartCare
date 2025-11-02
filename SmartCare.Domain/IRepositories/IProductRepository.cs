@@ -13,45 +13,48 @@ namespace SmartCare.Domain.IRepositories
     {
 
         #region FilterProducts
-        Task<List<Product>> FilterProductsAsync(
-       FilterProductsDTo filterProductsDTo,
-       Expression<Func<Product, object>> orderBy,
-       bool ascending = true);
+        IQueryable<Product> FilterProductsAsync(
+       FilterProductsDTo filterProductsDTo);
         #endregion
+
+
+        IQueryable<Product> GetAllProductsQuerable();
 
 
         #region Search
 
         #region SearchByProductName
-        Task<Product> SearchProductByNameAsync(
-          string? nameAr,
-          string? nameEn,
-          bool ascending = true);
+        Task<Product> SearchProductByNameAsync(string nameEn);
         #endregion
 
 
         #region Search by Description
 
-        Task<List<Product>> SearchProductsByDescriptionAsync(string partialDescription);
+        IQueryable<Product> SearchProductsByDescriptionAsync(string partialDescription);
         
         #endregion
 
 
         #region SearchByCompany
 
-        Task<List<Product>> SearchProductsByCompanyName(string CompanyName);
-        Task<List<Product>> SearchProductsByCompanyId(Guid CompanyId);
+        IQueryable<Product> SearchProductsByCompanyName(string CompanyName);
+        IQueryable<Product> GetProductsByCompanyId(Guid CompanyId);
        
         #endregion
 
 
         #region SearchByCategory
 
-        Task<List<Product>> SearchProductsByCategoryName(string CategoryName);
-        Task<List<Product>> SearchProductsByCategoryId(Guid CategoryId);
-        
+        IQueryable<Product> SearchProductsByCategoryName(string CategoryName);
+        IQueryable<Product> GetProductsByCategoryId(Guid CategoryId);
+
         #endregion
 
+
+        IQueryable<Product> GetExpiredProducts();
+        IQueryable<Product> GetUnExpiredProducts();
+        IQueryable<Product> GetMostSelling();
+      
 
         #endregion
     }
