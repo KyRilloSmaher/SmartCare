@@ -74,7 +74,7 @@ namespace SmartCare.InfraStructure.Extensions
             services.AddScoped<ICartService, CartService > ();
             services.AddScoped<IBackgroundJobService, HangfireBackgroundJobService>();
             services.AddScoped<IResponseHandler, ResponseHandler>();
-
+            services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IBackgroundJobService, HangfireBackgroundJobService>();
             services.AddScoped<IResponseHandler, ResponseHandler>();
             services.AddScoped<IPaymentService, PaymentService>();
