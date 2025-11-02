@@ -4,9 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.ExternalServiceInterfaces
+namespace SmartCare.Domain.Enums
 {
-    public interface IPaymentService
+    public enum CartStatus
     {
+        Active,
+        CheckedOut,
+        Abandoned
     }
 }

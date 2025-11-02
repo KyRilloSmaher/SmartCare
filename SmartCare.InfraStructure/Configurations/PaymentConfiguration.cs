@@ -31,7 +31,9 @@ namespace SmartCare.InfraStructure.Configurations
                 .IsRequired()
                 .HasDefaultValue(Domain.Enums.PaymentStatus.Pending);
 
-            builder.Property(x => x.TransactionId)
+            builder.Property(x => x.PaymentIntentId)
+                .IsRequired(false);  
+            builder.Property(x => x.SessionId)
                 .IsRequired(false);
 
             builder.Property(x => x.CreatedAt)
@@ -44,7 +46,8 @@ namespace SmartCare.InfraStructure.Configurations
 
 
             builder.HasIndex(p => p.OrderId);
-            builder.HasIndex(p => p.TransactionId);
+            builder.HasIndex(p => p.SessionId);
+            builder.HasIndex(p => p.PaymentIntentId);
 
         }
     }

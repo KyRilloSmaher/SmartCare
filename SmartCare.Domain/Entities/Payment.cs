@@ -14,7 +14,8 @@ namespace SmartCare.Domain.Entities
         public decimal Amount { get; set; }
         public PaymentMethod? PaymentMethod { get; set; }
         public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
-        public string? TransactionId { get; set; }
+        public string? PaymentIntentId { get; set; }
+        public string? SessionId { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public Order Order { get; set; }
     }

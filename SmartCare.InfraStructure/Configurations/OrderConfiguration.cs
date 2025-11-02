@@ -24,8 +24,10 @@ namespace SmartCare.InfraStructure.Configurations
                 .HasColumnType("decimal(18,2)");
 
             builder.Property(o => o.Status)
-                .IsRequired()
-       .HasDefaultValue(Domain.Enums.OrderStatus.Pending);
+                   .IsRequired()
+                   .HasDefaultValue(Domain.Enums.OrderStatus.Pending);
+            builder.Property(o => o.StoreId)
+                   .IsRequired(false);
 
             builder.Property(o => o.CreatedAt)
                 .IsRequired();
@@ -36,8 +38,9 @@ namespace SmartCare.InfraStructure.Configurations
                 .HasForeignKey<Order>(o => o.PaymentId);
 
             builder.HasOne(o => o.Store)
-                .WithMany(o => o.Orders)
-                .HasForeignKey(o => o.StoreId);
+                    .WithMany(o => o.Orders)
+                    .HasForeignKey(o => o.StoreId)
+                    ;
 
             builder.HasOne(o => o.Address)
                 .WithMany(o => o.Orders)
@@ -51,8 +54,6 @@ namespace SmartCare.InfraStructure.Configurations
 
             builder.HasIndex(o => o.Status);
 
-            builder.Property(o => o.Status)
-                   .HasDefaultValue(OrderStatus.Pending);
 
 
 

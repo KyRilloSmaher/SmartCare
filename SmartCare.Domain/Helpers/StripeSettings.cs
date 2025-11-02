@@ -8,7 +8,9 @@ namespace SmartCare.Domain.Helpers
 {
     public class StripeSettings
     {
-        public string SecretKey { get; set; }
-        public string PubKey { get; set; }
+        public string SecretKey { get; set; } = string.Empty;
+        public string PubKey { get; set; } = string.Empty;
+        public string WebhookSecret { get; set; } = string.Empty;
     }
+
 }
