@@ -6,6 +6,7 @@ using MailKit.Net.Smtp;
 using MimeKit;
 using SmartCare.Domain.Constants;
 using SmartCare.Domain.IRepositories;
+using Microsoft.Extensions.Options;
 
 namespace SmartCare.InfraStructure.ExternalServices
 {
@@ -16,11 +17,11 @@ namespace SmartCare.InfraStructure.ExternalServices
         private readonly IClientRepository _userRepository;
 
         public EmailService(
-            EmailSettings emailSettings,
+            IOptions<EmailSettings> emailSettings,
             ILogger<EmailService> logger,
             IClientRepository userRepository)
         {
-            _emailSettings = emailSettings ?? throw new ArgumentNullException(nameof(emailSettings));
+            _emailSettings = emailSettings.Value ?? throw new ArgumentNullException(nameof(emailSettings));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         }

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Domain.Enums;
 using SmartCare.Domain.Helpers;
+using Microsoft.Extensions.Options;
 
 
 
@@ -15,9 +16,9 @@ namespace SmartCare.InfraStructure.ExternalServices
         private readonly Cloudinary _cloudinary;
         private readonly CloudinarySettings _cloudinarySettings;
 
-        public ImageUploaderService(CloudinarySettings cloudinarySettings)
+        public ImageUploaderService(IOptions<CloudinarySettings> cloudinarySettings)
         {
-            this._cloudinarySettings = cloudinarySettings ?? throw new ArgumentNullException(nameof(cloudinarySettings));
+            this._cloudinarySettings = cloudinarySettings.Value ?? throw new ArgumentNullException(nameof(cloudinarySettings));
 
             if (_cloudinarySettings == null)
             {
