@@ -111,7 +111,7 @@
         }
         #endregion
 
-        #region Favourite
+        #region Favourite Endpoints
         public static class Favourite
         {
             private const string Prefix = Rule + "favourites";
@@ -119,6 +119,34 @@
             public const string GetAllForUser = Rule + "me/favourites";
             public const string Create = Prefix + "/add-to-my-favourites"+ "/{productId}";
             public const string Delete = Prefix + "/remove-from-my-favourites" + "/{productId}";
+        }
+        #endregion
+
+        #region Product Endpoints
+        public static class Product
+        {
+            private const string Prefix = Rule + "Products";
+            private const string AdminPrefix = Rule + "admin/Products";
+
+            public const string GetDetailsForUser = Rule + "user/Products";
+            public const string GetDetailsForAdmin =  Rule + "Admin/Products";
+            public const string SearchBypartialDescription = Prefix + "/Description";
+            public const string GetAll = Prefix;
+            public const string Create = AdminPrefix + "/create";
+            public const string Update = AdminPrefix + "/update";
+            public const string GetByCompanyId = Prefix + "/CompanyId";
+            public const string SearchByCompanyName = Prefix + "/CompanyName";
+            public const string GetByCategoryId = Prefix + "/CategoryId";
+            public const string SearchByCategoryName = Prefix + "/CategoryName";
+            public const string GetExpired = Prefix + "/Expired";
+            public const string GetUnExpired = Prefix + "/UnExpired";
+            public const string GetBestSeller = Prefix + "/BestSeller";
+            public const string SearchByName = Prefix + "/Name";
+            public const string GetByFilter = Prefix + "/Filter";
+            public const string Delete = AdminPrefix + "/delete" + SingleRoute;
+
+
+
         }
         #endregion
     }

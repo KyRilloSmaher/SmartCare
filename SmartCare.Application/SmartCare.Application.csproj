@@ -25,6 +25,5 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="DTOs\Favorites\Requets\" />
-	  <Folder Include="DTOs\Product\Requests\" />
 	</ItemGroup>
 </Project>

@@ -79,6 +79,7 @@ namespace SmartCare.InfraStructure.Extensions
             services.AddScoped<IStoreService, StoreService>();
             services.AddScoped<IRateService, RateService>();
             services.AddScoped<IFavouriteService, FavouriteService>();
+            services.AddScoped<IProductService, ProductService>();
 
             // Register External Services 
             services.AddScoped<IEmailService, EmailService>();
