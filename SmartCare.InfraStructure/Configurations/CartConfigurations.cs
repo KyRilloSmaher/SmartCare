@@ -20,9 +20,8 @@ namespace SmartCare.InfraStructure.Configurations
 
 
 
-            builder.Property(x => x.IsActive)
-                .IsRequired()
-                .HasDefaultValue(false);
+            builder.Property(x => x.status)
+                  .IsRequired();
 
             builder.Property(x => x.TotalPrice)
                 .HasColumnType("decimal(8,2)");
@@ -38,7 +37,7 @@ namespace SmartCare.InfraStructure.Configurations
             builder.HasIndex(x => x.ClientId)
                 .IsUnique();
 
-            builder.HasIndex(x => x.IsActive);
+            builder.HasIndex(x => x.status);
                 
         }
     }

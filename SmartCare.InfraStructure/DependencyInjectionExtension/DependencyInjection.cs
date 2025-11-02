@@ -39,6 +39,8 @@ namespace SmartCare.InfraStructure.Extensions
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<IFavouriteRepository, FavouriteRepository>();
             services.AddScoped<IOrderRepository, OrderRepository>();
+            services.AddScoped<ICartRepository, CartRepository>();
+            services.AddScoped<IReservationRepository , ReservationRepository>();
 
 
             services.AddScoped<IPaymentRepository, PaymentRepository>();
@@ -69,6 +71,9 @@ namespace SmartCare.InfraStructure.Extensions
             services.AddScoped<IStoreService, StoreService>();
             services.AddScoped<IRateService, RateService>();
             services.AddScoped<IFavouriteService, FavouriteService>();
+            services.AddScoped<ICartService, CartService > ();
+            services.AddScoped<IBackgroundJobService, HangfireBackgroundJobService>();
+            services.AddScoped<IResponseHandler, ResponseHandler>();
 
             services.AddScoped<IBackgroundJobService, HangfireBackgroundJobService>();
             services.AddScoped<IResponseHandler, ResponseHandler>();
