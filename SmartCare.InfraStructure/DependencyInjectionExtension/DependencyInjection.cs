@@ -38,9 +38,12 @@ namespace SmartCare.InfraStructure.Extensions
             services.AddScoped<IRateRepository, RateRepository>();
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<IFavouriteRepository, FavouriteRepository>();
+            services.AddScoped<IOrderRepository, OrderRepository>();
             services.AddScoped<ICartRepository, CartRepository>();
             services.AddScoped<IReservationRepository , ReservationRepository>();
 
+
+            services.AddScoped<IPaymentRepository, PaymentRepository>();
             // ---------- Identity ----------
             services.AddIdentity<Client, IdentityRole>(options =>
             {
@@ -72,10 +75,15 @@ namespace SmartCare.InfraStructure.Extensions
             services.AddScoped<IBackgroundJobService, HangfireBackgroundJobService>();
             services.AddScoped<IResponseHandler, ResponseHandler>();
 
+            services.AddScoped<IBackgroundJobService, HangfireBackgroundJobService>();
+            services.AddScoped<IResponseHandler, ResponseHandler>();
+            services.AddScoped<IPaymentService, PaymentService>();
+
             // ---------- External Services ----------
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IImageUploaderService, ImageUploaderService>();
             services.AddScoped<IMapService, MapService>();
+            services.AddScoped<IPaymentGetway, StripeService>();                
 
             // ---------- Configurations ----------
             services.Configure<StripeSettings>(configuration.GetSection("StripeSettings"));
@@ -145,6 +153,21 @@ namespace SmartCare.InfraStructure.Extensions
                         {
                             context.Fail("Security stamp mismatch - token revoked.");
                         }
+                    },
+
+                    OnMessageReceived = context =>
+                    {
+                        // Allow JWT in SignalR WebSocket requests
+                        var accessToken = context.Request.Query["access_token"];
+                        var path = context.HttpContext.Request.Path;
+
+                        // ✅ No NameIdentifierUserIdProvider needed
+                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs/payment"))
+                        {
+                            context.Token = accessToken;
+                        }
+
+                        return Task.CompletedTask;
                     }
                 };
             });

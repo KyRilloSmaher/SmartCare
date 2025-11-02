@@ -11,7 +11,7 @@ namespace SmartCare.Domain.Entities
     {
         public Guid Id { get; set; }
         public string? ClientId { get; set; }
-        public Guid StoreId { get; set; }
+        public Guid? StoreId { get; set; }
         public int PaymentId { get; set; }
         public Guid AddressId { get; set; }
         public decimal TotalPrice { get; set; }
