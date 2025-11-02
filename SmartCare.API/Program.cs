@@ -15,6 +15,7 @@ using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.API.Middlewares;
 using SmartCare.InfraStructure.Seed;
 using Hangfire;
+using SmartCare.API.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -103,6 +104,7 @@ builder.Services.AddCors(options =>
 });
 
 #endregion
+
 #region  Register-FluentValidation
 builder.Services
     .AddFluentValidationAutoValidation()
@@ -156,6 +158,7 @@ if (app.Environment.IsDevelopment())
     //app.UseSwagger();
     //app.UseSwaggerUI();
 }
+app.MapHub<PaymentsHub>("/hubs/payments");
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseHangfireDashboard("/hangfire");
