@@ -19,7 +19,7 @@ namespace SmartCare.Domain.IRepositories
         Task<IEnumerable<Order>> GetTopNOrdersByValueAsync(int n , Guid? storeId = null);
         Task<IEnumerable<Order>> GetRecentOrdersAsync(int days , Guid? storeId = null);
         Task<Dictionary<OrderStatus, int>> GetOrderCountByStatusAsync(Guid? storeId = null);
-        Task<decimal> GetTotalRevenueAsync();
+        Task<decimal> GetTotalRevenueAsync(Guid? storeId = null);
         Task<int> GetTotalOrdersCountAsync(Guid? storeId = null);
 
 

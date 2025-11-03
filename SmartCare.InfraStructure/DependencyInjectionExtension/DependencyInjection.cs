@@ -41,7 +41,7 @@ namespace SmartCare.InfraStructure.Extensions
             services.AddScoped<IOrderRepository, OrderRepository>();
             services.AddScoped<ICartRepository, CartRepository>();
             services.AddScoped<IReservationRepository , ReservationRepository>();
-
+            services.AddScoped<IInventoryRepository, InventoryRepository>();
 
             services.AddScoped<IPaymentRepository, PaymentRepository>();
             // ---------- Identity ----------
@@ -78,6 +78,7 @@ namespace SmartCare.InfraStructure.Extensions
             services.AddScoped<IBackgroundJobService, HangfireBackgroundJobService>();
             services.AddScoped<IResponseHandler, ResponseHandler>();
             services.AddScoped<IPaymentService, PaymentService>();
+            services.AddScoped<IOrderService, OrderService>();
 
             // ---------- External Services ----------
             services.AddScoped<IEmailService, EmailService>();

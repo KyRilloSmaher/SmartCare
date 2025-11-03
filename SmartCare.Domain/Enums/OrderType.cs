@@ -9,6 +9,6 @@ namespace SmartCare.Domain.Enums
     public enum OrderType
     {
         Online,
-        FromStore
+        InStore
     }
 }

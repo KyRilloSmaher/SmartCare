@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static SmartCare.API.Helpers.ApplicationRouting;
 
 namespace SmartCare.InfraStructure.Repositories
 {
@@ -144,9 +143,14 @@ namespace SmartCare.InfraStructure.Repositories
             return await query.CountAsync();
         }
 
-        public async Task<decimal> GetTotalRevenueAsync()
+        public async Task<decimal> GetTotalRevenueAsync(Guid? storeId = null)
         {
-            return await _context.Orders.SumAsync(o => o.TotalPrice);
+            var query = _context.Orders.AsQueryable();
+            if (storeId.HasValue)
+            {
+                query = query.Where(o => o.StoreId == storeId.Value);
+            }
+            return await query.SumAsync(o => o.TotalPrice);
         }
 
         public async Task<Dictionary<OrderStatus, int>> GetOrderCountByStatusAsync(Guid? storeId = null)

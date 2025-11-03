@@ -1,23 +1,20 @@
-﻿using Azure;
+﻿
 using SmartCare.Application.DTOs.Orders.Requests;
 using SmartCare.Application.DTOs.Orders.Responses;
+using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace SmartCare.Application.IServices
 {
     public interface IOrderService
     {
-        Task<Response<OrderResponseDto>> GetOrdersByCustomerIdAsync(string clientId);
+        Task<Response<IEnumerable<OrderResponseDto>>> GetOrdersByCustomerIdAsync(string clientId);
         Task<Response<OrderResponseDto?>> GetOrderWithDetailsByIdAsync(Guid orderId);
         Task<Response<OrderResponseDto>> GetOrderByIdAsync(Guid orderId);
 
         Task<Response<int>> GetTotalOrdersCountAsync(Guid? storeId = null);
-        Task<Response<decimal>> GetTotalRevenueAsync();
+        Task<Response<decimal>> GetTotalRevenueAsync(Guid? storeId = null);
 
         Task<Response<IEnumerable<OrderResponseDto>>> GetOrdersByStatus(OrderStatus status , Guid? storeId = null);
         Task<Response<IEnumerable<OrderResponseDto>>> GetOrdersWithDetailsAsync();
