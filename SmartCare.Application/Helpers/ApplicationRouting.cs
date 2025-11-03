@@ -157,6 +157,7 @@
             public const string GetExpired = Prefix + "/Expired";
             public const string GetUnExpired = Prefix + "/UnExpired";
             public const string GetBestSeller = Prefix + "/BestSeller";
+            public const string GetMorePopular = Prefix + "/MorePopular";
             public const string SearchByName = Prefix + "/Name";
             public const string GetByFilter = Prefix + "/Filter";
             public const string Delete = AdminPrefix + "/delete" + SingleRoute;
