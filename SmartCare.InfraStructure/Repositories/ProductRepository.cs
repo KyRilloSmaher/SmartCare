@@ -168,36 +168,46 @@ namespace SmartCare.InfraStructure.Repositories
 
         public IQueryable<Product> GetMostSelling()
         {
-            var mostSellingProducts = _context.Products
-                .Include(p => p.OrderItems)
-                .OrderByDescending(p => p.OrderItems.Sum(t => t.Quantity))
+            var mostSellingProducts = _context.OrderItems
+                .GroupBy(oi => oi.ProductId)
+                .Select(g => new
+                {
+                    ProductId = g.Key,
+                    TotalSold = g.Sum(oi => oi.Quantity)
+                })
+                .OrderByDescending(x => x.TotalSold)
+                .Join(
+                    _context.Products.Include(p => p.Images),
+                    sales => sales.ProductId,
+                    product => product.ProductId,
+                    (sales, product) => product
+                )
                 .AsQueryable();
+
             return mostSellingProducts;
         }
 
         public IQueryable<Product> GetMorePopular()
         {
-            var productOrderCounts = _context.OrderItems
-                        .GroupBy(oi => oi.ProductId)
-                        .Select(g => new
-                        {
-                            ProductId = g.Key,
-                            OrderCount = g.Count()
-                        })
-                          .OrderByDescending(x => x.OrderCount);
-
-            var mostPopularProducts = _context.Products
+            var mostPopularProducts = _context.OrderItems
+                .GroupBy(oi => oi.ProductId)
+                .Select(g => new
+                {
+                    ProductId = g.Key,
+                    OrderCount = g.Count()
+                })
+                .OrderByDescending(x => x.OrderCount)
                 .Join(
-                     productOrderCounts,
-                     product => product.ProductId,
-                     count => count.ProductId,
-                     (product, count) => product
-                ).AsQueryable();
-                           
+                    _context.Products.Include(p => p.Images),
+                    popularity => popularity.ProductId,
+                    product => product.ProductId,
+                    (popularity, product) => product
+                )
+                .AsQueryable();
 
-            return mostPopularProducts;
-
+            return mostPopularProducts ;
         }
+
 
         #endregion
     }
