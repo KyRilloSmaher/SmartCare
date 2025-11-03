@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using SmartCare.Application.DTOs.Caregory.Response;
 using SmartCare.Application.DTOs.Companies.Responses;
 using SmartCare.Application.DTOs.Product.Requests;
@@ -69,6 +70,8 @@ namespace SmartCare.Application.Services
             if (pageNumber <= 0 || pageSize <= 0)
                 return _responseHandler.BadRequest<PaginatedResult<ProductResponseDtoForClient>>(SystemMessages.INVALID_PAGINATION_PARAMETERS);
             var query = _productRepository.GetProductsByCompanyId(CompanyId);
+            if (query == null)
+                return _responseHandler.Failed<PaginatedResult<ProductResponseDtoForClient>>(SystemMessages.NOT_FOUND);
             var projectedQuery = _mapper.ProjectTo<ProductResponseDtoForClient>(query);
             var paginatedResult = await projectedQuery.ToPaginatedListAsync(pageNumber, pageSize);
             return _responseHandler.Success(paginatedResult);
@@ -78,9 +81,11 @@ namespace SmartCare.Application.Services
         {
             if (pageNumber <= 0 || pageSize <= 0)
                 return _responseHandler.BadRequest<PaginatedResult<ProductResponseDtoForClient>>(SystemMessages.INVALID_PAGINATION_PARAMETERS);
-             var query = _productRepository.SearchProductsByCompanyName(CompanyName);
+             var query =  _productRepository.SearchProductsByCompanyName(CompanyName);
+            if(!await query.AnyAsync())
+              return _responseHandler.Failed< PaginatedResult<ProductResponseDtoForClient>>(SystemMessages.NOT_FOUND);
             var projectedQuery = _mapper.ProjectTo<ProductResponseDtoForClient>(query);
-            var paginatedResult = await projectedQuery.ToPaginatedListAsync(pageNumber, pageSize);
+            var paginatedResult =await projectedQuery.ToPaginatedListAsync(pageNumber, pageSize);
             return _responseHandler.Success(paginatedResult);
         }
 
@@ -89,6 +94,8 @@ namespace SmartCare.Application.Services
             if (pageNumber <= 0 || pageSize <= 0)
                 return _responseHandler.BadRequest<PaginatedResult<ProductResponseDtoForClient>>(SystemMessages.INVALID_PAGINATION_PARAMETERS);
             var query = _productRepository.GetProductsByCategoryId(CategoryId);
+            if (query == null)
+                return _responseHandler.Failed<PaginatedResult<ProductResponseDtoForClient>>(SystemMessages.NOT_FOUND);
             var projectedQuery = _mapper.ProjectTo<ProductResponseDtoForClient>(query);
             var paginatedResult = await projectedQuery.ToPaginatedListAsync(pageNumber, pageSize);
             return _responseHandler.Success(paginatedResult);
@@ -99,6 +106,8 @@ namespace SmartCare.Application.Services
             if (pageNumber <= 0 || pageSize <= 0)
                 return _responseHandler.BadRequest<PaginatedResult<ProductResponseDtoForClient>>(SystemMessages.INVALID_PAGINATION_PARAMETERS);
             var query = _productRepository.SearchProductsByCategoryName(CategoryName);
+            if (!await query.AnyAsync())
+                return _responseHandler.Failed<PaginatedResult<ProductResponseDtoForClient>>(SystemMessages.NOT_FOUND);
             var projectedQuery = _mapper.ProjectTo<ProductResponseDtoForClient>(query);
             var paginatedResult = await projectedQuery.ToPaginatedListAsync(pageNumber, pageSize);
             return _responseHandler.Success(paginatedResult);
@@ -109,6 +118,8 @@ namespace SmartCare.Application.Services
             if (pageNumber <= 0 || pageSize <= 0)
                 return _responseHandler.BadRequest<PaginatedResult<ProductResponseDtoForClient>>(SystemMessages.INVALID_PAGINATION_PARAMETERS);
             var query = _productRepository.GetExpiredProducts();
+            if (query == null)
+                return _responseHandler.Failed<PaginatedResult<ProductResponseDtoForClient>>(SystemMessages.NOT_FOUND);
             var projectedQuery = _mapper.ProjectTo<ProductResponseDtoForClient>(query);
             var paginatedResult = await projectedQuery.ToPaginatedListAsync(pageNumber, pageSize);
             return _responseHandler.Success(paginatedResult);
@@ -119,6 +130,8 @@ namespace SmartCare.Application.Services
             if (pageNumber <= 0 || pageSize <= 0)
                 return _responseHandler.BadRequest<PaginatedResult<ProductResponseDtoForClient>>(SystemMessages.INVALID_PAGINATION_PARAMETERS);
             var query = _productRepository.GetUnExpiredProducts();
+            if (query == null)
+                return _responseHandler.Failed<PaginatedResult<ProductResponseDtoForClient>>(SystemMessages.NOT_FOUND);
             var projectedQuery = _mapper.ProjectTo<ProductResponseDtoForClient>(query);
             var paginatedResult = await projectedQuery.ToPaginatedListAsync(pageNumber, pageSize);
             return _responseHandler.Success(paginatedResult);
@@ -129,6 +142,8 @@ namespace SmartCare.Application.Services
             if (pageNumber <= 0 || pageSize <= 0)
                 return _responseHandler.BadRequest<PaginatedResult<ProductResponseDtoForClient>>(SystemMessages.INVALID_PAGINATION_PARAMETERS);
             var query = _productRepository.GetMostSelling();
+            if (query == null)
+                return _responseHandler.Failed<PaginatedResult<ProductResponseDtoForClient>>(SystemMessages.NOT_FOUND);
             var projectedQuery = _mapper.ProjectTo<ProductResponseDtoForClient>(query);
             var paginatedResult = await projectedQuery.ToPaginatedListAsync(pageNumber, pageSize);
             return _responseHandler.Success(paginatedResult);
@@ -282,6 +297,18 @@ namespace SmartCare.Application.Services
             if (pageNumber <= 0 || pageSize <= 0)
                 return _responseHandler.BadRequest<PaginatedResult<ProductResponseDtoForClient>>(SystemMessages.INVALID_PAGINATION_PARAMETERS);
             var query = _productRepository.SearchProductsByDescriptionAsync(Description);
+            var projectedQuery = _mapper.ProjectTo<ProductResponseDtoForClient>(query);
+            var paginatedResult = await projectedQuery.ToPaginatedListAsync(pageNumber, pageSize);
+            return _responseHandler.Success(paginatedResult);
+        }
+
+        public async Task<Response<PaginatedResult<ProductResponseDtoForClient>>> GetMorePopular(int pageNumber, int pageSize)
+        {
+            if (pageNumber <= 0 || pageSize <= 0)
+                return _responseHandler.BadRequest<PaginatedResult<ProductResponseDtoForClient>>(SystemMessages.INVALID_PAGINATION_PARAMETERS);
+            var query = _productRepository.GetMorePopular();
+            if (query == null)
+                return _responseHandler.Failed<PaginatedResult<ProductResponseDtoForClient>>(SystemMessages.NOT_FOUND);
             var projectedQuery = _mapper.ProjectTo<ProductResponseDtoForClient>(query);
             var paginatedResult = await projectedQuery.ToPaginatedListAsync(pageNumber, pageSize);
             return _responseHandler.Success(paginatedResult);

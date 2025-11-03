@@ -229,5 +229,19 @@ namespace SmartCare.API.Controllers
             return ControllersHelperMethods.FinalResponse(result);
 
         }
+
+
+        /// <summary>
+        /// Get Best Seller Products
+        /// </summary>
+        /// <param name="pageNumber"></param>
+        /// <param name="pageSize"></param>
+        [HttpGet(ApplicationRouting.Product.GetMorePopular)]
+        public async Task<IActionResult> GetMorePopular(int pageNumber, int pageSize)
+        {
+            var result = await _ProductService.GetMorePopular(pageNumber, pageSize);
+            return ControllersHelperMethods.FinalResponse(result);
+
+        }
     }
 }
