@@ -1,4 +1,6 @@
-﻿using SmartCare.Domain.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using SmartCare.Domain.Entities;
+using SmartCare.Domain.Enums;
 using SmartCare.Domain.IRepositories;
 using SmartCare.InfraStructure.DbContexts;
 using System;
@@ -24,6 +26,46 @@ namespace SmartCare.InfraStructure.Repositories
         #endregion
 
         #region Methods
+
+        public async Task<IEnumerable<Order>> GetOrdersByCustomerIdAsync(string customerId)
+        {
+            var orders =  await _context.Orders.Where(o => o.ClientId == customerId)
+                                                .Include(o => o.Items)
+                                                  .ThenInclude(oi => oi.Product)
+                                                    .ThenInclude(p => p.Images)
+                                                .ToListAsync();
+            return orders;
+        }
+
+        public async Task<IEnumerable<Order>> GetOrdersByStatus(OrderStatus status)
+        {
+            var orders = await _context.Orders.Where(o => o.Status == status)
+                                                .Include(o => o.Items)
+                                                  .ThenInclude(oi => oi.Product)
+                                                    .ThenInclude(p => p.Images)
+                                                .ToListAsync();
+            return orders;
+        }
+
+        public async Task<IEnumerable<Order>> GetOrdersWithDetailsAsync()
+        {
+            var orders = await _context.Orders
+                                        .Include(o => o.Items)
+                                          .ThenInclude(oi => oi.Product)
+                                            .ThenInclude(p => p.Images)
+                                        .ToListAsync();
+            return orders;
+
+        }
+
+        public async Task<Order?> GetOrderWithDetailsByIdAsync(Guid orderId)
+        {
+            return await  _context.Orders
+                            .Include(o => o.Items)
+                              .ThenInclude(oi => oi.Product)
+                                .ThenInclude(p => p.Images)
+                            .FirstOrDefaultAsync(o => o.Id == orderId);
+        }
         #endregion
     }
 }
