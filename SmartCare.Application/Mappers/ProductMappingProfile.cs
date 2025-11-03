@@ -49,7 +49,18 @@ namespace SmartCare.Application.Mappers
 
         void ProductToProductResponseDtoForClient()
         {
-            CreateMap<Product, ProductResponseDtoForClient>();
+            CreateMap<Product, ProductResponseDtoForClient>()
+     .ForMember(dest => dest.CompanyName,
+         opt => opt.MapFrom(src => src.Company.Name))
+     .ForMember(dest => dest.Images,
+         opt => opt.MapFrom(src => src.Images
+             .Where(i => !i.IsPrimary)
+             .Select(i => i.Url)))
+     .ForMember(dest => dest.MainImageUrl,
+         opt => opt.MapFrom(src => src.Images
+             .Where(p => p.IsPrimary)
+             .Select(p => p.Url)
+             .FirstOrDefault()));
         }
         void ProductToProductResponseDtoForManager()
         {
