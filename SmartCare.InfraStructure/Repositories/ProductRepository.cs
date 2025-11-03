@@ -205,7 +205,7 @@ namespace SmartCare.InfraStructure.Repositories
                 )
                 .AsQueryable();
 
-            return mostPopularProducts;
+            return mostPopularProducts ;
         }
 
 
