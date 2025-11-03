@@ -71,6 +71,7 @@ namespace SmartCare.InfraStructure.Repositories
             var trimmedName = nameEn.Trim().ToLower();
 
             var result = await _context.Products
+                      .Include(p => p.Images)
                      .Where(p => p.NameEn.ToLower().Contains(trimmedName))
                      .FirstOrDefaultAsync();
 
@@ -100,9 +101,10 @@ namespace SmartCare.InfraStructure.Repositories
         {
             if (string.IsNullOrWhiteSpace(CompanyName))
                 return _context.Products.Where(p => false);
+            string trimmedCompanyName = CompanyName.Trim().ToLower();
             var Products = _context.Products
                 .Include(p => p.Company)
-                .Where(p => p.Company.Name.ToLower() == CompanyName.ToLower()).AsQueryable();
+                .Where(p => p.Company.Name.Trim().ToLower().Contains(trimmedCompanyName)).AsQueryable();
             return Products;
         }
 
@@ -118,9 +120,10 @@ namespace SmartCare.InfraStructure.Repositories
         {
             if (string.IsNullOrWhiteSpace(CategoryName))
                 return _context.Products.Where(p => false);
+            string trimmedCategoryName = CategoryName.Trim().ToLower();
             var Products = _context.Products
                 .Include(p => p.Category)
-                .Where(p => p.Category.Name.ToLower() == CategoryName.ToLower()).AsQueryable();
+                .Where(p => p.Category != null && p.Category.Name.Trim().ToLower().Contains(trimmedCategoryName)).AsQueryable();
             return Products;
         }
 
@@ -171,6 +174,31 @@ namespace SmartCare.InfraStructure.Repositories
                 .AsQueryable();
             return mostSellingProducts;
         }
+
+        public IQueryable<Product> GetMorePopular()
+        {
+            var productOrderCounts = _context.OrderItems
+                        .GroupBy(oi => oi.ProductId)
+                        .Select(g => new
+                        {
+                            ProductId = g.Key,
+                            OrderCount = g.Count()
+                        })
+                          .OrderByDescending(x => x.OrderCount);
+
+            var mostPopularProducts = _context.Products
+                .Join(
+                     productOrderCounts,
+                     product => product.ProductId,
+                     count => count.ProductId,
+                     (product, count) => product
+                ).AsQueryable();
+                           
+
+            return mostPopularProducts;
+
+        }
+
         #endregion
     }
 }
