@@ -31,6 +31,8 @@ namespace SmartCare.Domain.Constants
         public const string NULL_PARAMETER = "Null Parameter to the Function";
         public const string NOT_FOUND = "The requested resource was not found.";
         public const string INVALID_PAGINATION_PARAMETERS = " Page Number and Page Size Should be Greater than 0";
+        public const string NO_DATA_FOUND = "No data found.";
+        public const string INVALID_DATE_RANGE = "INVALID DATE RANGE";
         // =====================
         // 👤 User & Auth
         // =====================
@@ -77,6 +79,7 @@ namespace SmartCare.Domain.Constants
         public const string ORDER_CANCELLED = "Order cancelled successfully.";
         public const string ORDER_COMPLETED = "Order completed successfully.";
         public const string ORDER_NOT_FOUND = "Order not found.";
+        public const string INVALID_ORDER_STATUS = "INVALID ORDER STATUS";
         public const string CART_UPDATED = "Cart updated successfully.";
         public const string ITEM_ADDED_TO_CART = "Item added to cart.";
         public const string ITEM_REMOVED_FROM_CART = "Item removed from cart.";
