@@ -14,7 +14,7 @@ namespace SmartCare.InfraStructure.Repositories
     public class CartRepository : GenericRepository<Cart> ,ICartRepository
     {
         #region Fields
-        private readonly ApplicationDBContext _context;
+        public readonly ApplicationDBContext _context;
         #endregion
 
         #region Constructor
@@ -30,6 +30,15 @@ namespace SmartCare.InfraStructure.Repositories
             await _context.CartItems.AddAsync(cartItem);
             await SaveChangesAsync();
             return true;
+        }
+
+        public async Task<decimal> CalculateCartTotalAsync(Guid cartId)
+        {
+            var total = await _context.CartItems
+                                      .Where(ci => ci.CartId == cartId)
+                                      .SumAsync(ci => (decimal)(ci.Quantity * ci.UnitPrice));
+
+            return total;
         }
 
         public async Task<bool> ClearCartAsync(Cart cart)

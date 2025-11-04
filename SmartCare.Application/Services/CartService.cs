@@ -1,6 +1,9 @@
 ﻿using AutoMapper;
+using SmartCare.Application.commons;
+using SmartCare.Application.Commons;
 using SmartCare.Application.DTOs.Cart.Requests;
 using SmartCare.Application.DTOs.Cart.Responses;
+using SmartCare.Application.Events;
 using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Application.IServices;
@@ -18,7 +21,10 @@ namespace SmartCare.Application.Services
         private readonly ICartRepository _cartRepository;
         private readonly IReservationRepository _reservationRepository;
         private readonly IProductRepository _productRepository;
+        private readonly ISqlLockManager _sqlLockManager;
+        private readonly IInventoryRepository _inventoryRepository;
         private readonly IMapper _mapper;
+        private readonly IEventBus _eventBus;
         private readonly IBackgroundJobService _backgroundJobService;
 
         #endregion
@@ -31,14 +37,21 @@ namespace SmartCare.Application.Services
             IReservationRepository reservationRepository,
             IProductRepository productRepository,
             IMapper mapper,
-            IBackgroundJobService backgroundJobService)
+            IBackgroundJobService backgroundJobService,
+            ISqlLockManager sqlLockManager,
+            IInventoryRepository inventoryRepository,
+            IEventBus eventBus)
         {
+
             _responseHandler = responseHandler;
             _cartRepository = cartRepository;
             _reservationRepository = reservationRepository;
             _productRepository = productRepository;
             _mapper = mapper;
             _backgroundJobService = backgroundJobService;
+            _sqlLockManager = sqlLockManager;
+            _inventoryRepository = inventoryRepository;
+            _eventBus = eventBus;
         }
 
         #endregion
@@ -86,62 +99,90 @@ namespace SmartCare.Application.Services
 
         public async Task<Response<CartItemResponseDto?>> AddToCartAsync(AddToCartRequestDto dto)
         {
+            // Step 1: Validate cart and product existence
             var cart = await EnsureCartExistsAsync(dto.CartId);
             if (cart == null)
-                return _responseHandler.NotFound<CartItemResponseDto?>(SystemMessages.NOT_FOUND);
+                return _responseHandler.NotFound<CartItemResponseDto?>(SystemMessages.CART_NOT_FOUND);
 
             var product = await EnsureProductExistsAsync(dto.ProductId);
             if (product == null)
                 return _responseHandler.NotFound<CartItemResponseDto?>(SystemMessages.PRODUCT_NOT_FOUND);
 
-            // Step 1: Check stock and get available inventory
-            //var availableStock = await _productRepository.GetAvailableStockAsync(product.ProductId);
-            //if (availableStock < dto.Quantity)
-            //    return _responseHandler.BadRequest<CartItemResponseDto?>(SystemMessages.INSUFFICIENT_STOCK);
-
-            //var inventoryId = await _productRepository.GetAvailableInventoryIdAsync(product.ProductId, dto.Quantity);
-            //if (inventoryId == Guid.Empty)
-            //    return _responseHandler.BadRequest<CartItemResponseDto?>(SystemMessages.INSUFFICIENT_STOCK);
-
-            var cartItem = new CartItem
-            {
-                CartItemId = Guid.NewGuid(),
-                CartId = cart.Id,
-                ProductId = product.ProductId,
-               // InventoryId = inventoryId,
-                Quantity = dto.Quantity,
-                UnitPrice = product.Price,
-                SubTotal = product.Price * dto.Quantity
-            };
+            // Step 2: Acquire SQL application lock 
+            await using var appLock = await _sqlLockManager.AcquireLockAsync(
+                $"Inventory-{product.ProductId}",
+                mode: "Exclusive",
+                timeoutMs: 10000);
 
             await _cartRepository.BeginTransactionAsync();
             try
             {
-                // Step 2: Create reservation
+                // Step 3: Check stock again (inside lock)
+                var availableStock = await _inventoryRepository.GetTotalStockForProductAsync(product.ProductId);
+                if (availableStock < dto.Quantity)
+                {
+                    await _cartRepository.RollBackAsync();
+                    return _responseHandler.BadRequest<CartItemResponseDto?>(SystemMessages.INSUFFICIENT_STOCK);
+                }
+
+                // Step 4: Pick inventory (safe within lock)
+                var inventoryId = await _inventoryRepository.GetBestInventoryIdAsync(product.ProductId, dto.Quantity);
+                if (inventoryId == Guid.Empty)
+                {
+                    await _cartRepository.RollBackAsync();
+                    return _responseHandler.BadRequest<CartItemResponseDto?>(SystemMessages.INSUFFICIENT_STOCK);
+                }
+
+                // Step 5: Create Cart Item
+                var cartItem = new CartItem
+                {
+                    CartItemId = Guid.NewGuid(),
+                    CartId = cart.Id,
+                    ProductId = product.ProductId,
+                    InventoryId = inventoryId,
+                    Quantity = dto.Quantity,
+                    UnitPrice = product.Price,
+                    SubTotal = product.Price * dto.Quantity
+                };
+
+                // Step 6: Create Reservation
                 var reservation = await _reservationRepository.CreateReservationAsync(cartItem.CartItemId, dto.Quantity);
                 if (reservation == null)
-                    return await FailTransactionAsync<CartItemResponseDto?>(SystemMessages.RESERVATION_FAILED);
-
+                {
+                    await _cartRepository.RollBackAsync();
+                    return _responseHandler.Failed<CartItemResponseDto?>(SystemMessages.RESERVATION_FAILED);
+                }
+                await _eventBus.PublishAsync(new ProductStockStatusChangedEvent(
+                                     product.ProductId, availableStock - dto.Quantity > 0
+                                ));
                 cartItem.ReservationId = reservation.Id;
-
-                // Step 3: Add item & update total
                 cart.TotalPrice += cartItem.SubTotal;
+
+                // Step 7: Save Cart Item
                 var isAdded = await _cartRepository.AddCartItemAsync(cartItem);
                 if (!isAdded)
-                    return await FailTransactionAsync<CartItemResponseDto?>(SystemMessages.SERVER_ERROR);
+                {
+                    await _cartRepository.RollBackAsync();
+                    return _responseHandler.Failed<CartItemResponseDto?>(SystemMessages.SERVER_ERROR);
+                }
 
-                // Step 4: Commit transaction
+                // Step 8: Commit transaction
                 await _cartRepository.CommitTransactionAsync();
 
-                // Step 5: Schedule reservation expiration cleanup (runs outside transaction)
+                // Step 9: Schedule reservation cleanup (outside transaction)
                 _backgroundJobService.Schedule(
                     () => _reservationRepository.CancelReservationAsync(reservation),
                     TimeSpan.FromMinutes(10));
 
-                var dtoResponse = _mapper.Map<CartItemResponseDto>(cartItem);
-                return _responseHandler.Success(dtoResponse, SystemMessages.ADDED_TO_CART);
+                var responseDto = _mapper.Map<CartItemResponseDto?>(cartItem);
+                return _responseHandler.Success(responseDto, SystemMessages.ADDED_TO_CART);
             }
-            catch
+            catch (TimeoutException)
+            {
+                await _cartRepository.RollBackAsync();
+                return _responseHandler.Failed<CartItemResponseDto?>(SystemMessages.OPERATION_TIMEOUT);
+            }
+            catch (Exception)
             {
                 await _cartRepository.RollBackAsync();
                 return _responseHandler.Failed<CartItemResponseDto?>(SystemMessages.SERVER_ERROR);
@@ -150,33 +191,99 @@ namespace SmartCare.Application.Services
 
         public async Task<Response<CartItemResponseDto?>> UpdateCartItemQuantityAsync(UpdateCartItemRequestDto dto)
         {
+            // Step 1: Validate entities
             var cart = await EnsureCartExistsAsync(dto.CartId);
             if (cart == null)
-                return _responseHandler.NotFound<CartItemResponseDto?>(SystemMessages.NOT_FOUND);
+                return _responseHandler.NotFound<CartItemResponseDto?>(SystemMessages.CART_NOT_FOUND);
 
             var reservation = await EnsureReservationExistsAsync(dto.ReservationId);
             if (reservation == null)
                 return _responseHandler.NotFound<CartItemResponseDto?>(SystemMessages.NOT_FOUND);
+
             var cartItem = await _cartRepository.GetCartItemAsync(dto.CartItemId, dto.ProductId);
             if (cartItem == null)
-                return _responseHandler.NotFound<CartItemResponseDto?>(SystemMessages.NOT_FOUND);
-            _mapper.Map(dto, cartItem);
+                return _responseHandler.NotFound<CartItemResponseDto?>(SystemMessages.CART_ITEM_NOT_EXIST);
+
+            var product = await EnsureProductExistsAsync(dto.ProductId);
+            if (product == null)
+                return _responseHandler.NotFound<CartItemResponseDto?>(SystemMessages.PRODUCT_NOT_FOUND);
+
+            // Step 2: Acquire SQL application lock for this product
+            await using var appLock = await _sqlLockManager.AcquireLockAsync(
+                $"Inventory-{product.ProductId}",
+                mode: "Exclusive",
+                timeoutMs: 10000);
+
             await _cartRepository.BeginTransactionAsync();
             try
             {
+                // Step 3: Handle stock adjustments inside the lock
+                if (dto.NewQuantity > cartItem.Quantity)
+                {
+                    // Need to increase reservation → check stock availability
+                    var extraNeeded = dto.NewQuantity - cartItem.Quantity;
+                    var availableStock = await _inventoryRepository.GetTotalStockForProductAsync(product.ProductId);
+
+                    if (availableStock < extraNeeded)
+                    {
+                        await _cartRepository.RollBackAsync();
+                        return _responseHandler.BadRequest<CartItemResponseDto?>(SystemMessages.INSUFFICIENT_STOCK);
+                    }
+
+                    // Optionally pick inventory again if necessary
+                    var inventoryId = await _inventoryRepository.GetBestInventoryIdAsync(product.ProductId, extraNeeded);
+                    if (inventoryId == Guid.Empty)
+                    {
+                        await _cartRepository.RollBackAsync();
+                        return _responseHandler.BadRequest<CartItemResponseDto?>(SystemMessages.INSUFFICIENT_STOCK);
+                    }
+
+                    // Update reservation (add extra quantity)
+                    var updatedReservation = await _reservationRepository.UpdateReservationQuantityAsync(reservation, dto.NewQuantity);
+                    if (!updatedReservation)
+                    {
+                        await _cartRepository.RollBackAsync();
+                        return _responseHandler.Failed<CartItemResponseDto?>(SystemMessages.RESERVATION_FAILED);
+                    }
+                    await _eventBus.PublishAsync(new ProductStockStatusChangedEvent(
+                                   product.ProductId, availableStock - dto.NewQuantity > 0
+                              ));
+                }
+                else if (dto.NewQuantity < cartItem.Quantity)
+                {
+                    // Decrease reservation (release stock)
+                    var updatedReservation = await _reservationRepository.UpdateReservationQuantityAsync(reservation, dto.NewQuantity);
+                    if (!updatedReservation)
+                    {
+                        await _cartRepository.RollBackAsync();
+                        return _responseHandler.Failed<CartItemResponseDto?>(SystemMessages.RESERVATION_FAILED);
+                    }
+                }
+
+                // Step 4: Update cart item details
+                _mapper.Map(dto, cartItem);
+                cartItem.SubTotal = cartItem.UnitPrice * dto.NewQuantity;
+                cart.TotalPrice = await _cartRepository.CalculateCartTotalAsync(cart.Id);
+
                 var isUpdated = await _cartRepository.UpdateItemCartAsync(cartItem);
                 if (!isUpdated)
-                    return await FailTransactionAsync<CartItemResponseDto?>(SystemMessages.SERVER_ERROR);
+                {
+                    await _cartRepository.RollBackAsync();
+                    return _responseHandler.Failed<CartItemResponseDto?>(SystemMessages.SERVER_ERROR);
+                }
 
-                var isReservationUpdated = await _reservationRepository.UpdateReservationQuantityAsync(reservation, dto.NewQuantity);
-                if (!isReservationUpdated)
-                    return await FailTransactionAsync<CartItemResponseDto?>(SystemMessages.FAILED);
-
+                // Step 5: Commit transaction
                 await _cartRepository.CommitTransactionAsync();
+
                 var dtoResponse = _mapper.Map<CartItemResponseDto?>(cartItem);
                 return _responseHandler.Success(dtoResponse, SystemMessages.CART_UPDATED);
             }
-            catch
+            catch (TimeoutException)
+            {
+                await _cartRepository.RollBackAsync();
+                return _responseHandler.Failed<CartItemResponseDto?>(SystemMessages.OPERATION_TIMEOUT);
+            }
+            catch (Exception)
             {
                 await _cartRepository.RollBackAsync();
                 return _responseHandler.Failed<CartItemResponseDto?>(SystemMessages.SERVER_ERROR);
@@ -209,6 +316,9 @@ namespace SmartCare.Application.Services
                     return await FailTransactionAsync<bool>(SystemMessages.FAILED);
 
                 await _cartRepository.CommitTransactionAsync();
+                await _eventBus.PublishAsync(new ProductStockStatusChangedEvent(
+                       cartItem.ProductId, await _inventoryRepository.GetTotalStockForProductAsync(cartItem.ProductId) > 0
+                  ));
                 return _responseHandler.Success(true, SystemMessages.ITEM_REMOVED_FROM_CART);
             }
             catch
@@ -223,8 +333,11 @@ namespace SmartCare.Application.Services
             var cart = await EnsureCartExistsAsync(cartId);
             if (cart == null)
                 return _responseHandler.NotFound<bool>(SystemMessages.NOT_FOUND);
-
-            var isCleared = await _cartRepository.ClearCartAsync(cart);
+             
+              
+             var isCleared = await _cartRepository.ClearCartAsync(cart);
+            _backgroundJobService.Enqueue(() => _reservationRepository.ReleaseAllReservationsForCartAsync(cartId));
+            _backgroundJobService.Enqueue(() =>  UpdateCartProductsStatus(cartId));
             return isCleared
                 ? _responseHandler.Success(true, SystemMessages.CART_CLEARED)
                 : _responseHandler.Failed<bool>(SystemMessages.FAILED);
@@ -271,7 +384,16 @@ namespace SmartCare.Application.Services
             await _cartRepository.RollBackAsync();
             return _responseHandler.Failed<T>(message);
         }
-
+        private async Task UpdateCartProductsStatus(Guid cartId)
+        {
+            var cartItems = await _cartRepository.GetCartItemsAsync(cartId);
+            foreach (var cartItem in cartItems)
+            {
+                await _eventBus.PublishAsync(new ProductStockStatusChangedEvent(
+                     cartItem.ProductId, await _inventoryRepository.GetTotalStockForProductAsync(cartItem.ProductId) > 0
+                ));
+            }
+        }
         #endregion
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SmartCare.Domain.Entities;
+using SmartCare.Domain.Enums;
 using SmartCare.Domain.IRepositories;
 using SmartCare.InfraStructure.DbContexts;
 
@@ -43,7 +44,7 @@ namespace SmartCare.InfraStructure.Repositories
                 CartItemId = CartItemId,
                 QuantityReserved = quantity,
                 ReservedAt = DateTime.UtcNow,
-                //Reservation expires after 10 minutes
+                Status = ReservationStatus.ReservedUntilCheckout,
                 ExpiredAt = DateTime.UtcNow.AddMinutes(10),
             };
 

@@ -33,6 +33,7 @@ namespace SmartCare.Domain.Constants
         public const string INVALID_PAGINATION_PARAMETERS = " Page Number and Page Size Should be Greater than 0";
         public const string NO_DATA_FOUND = "No data found.";
         public const string INVALID_DATE_RANGE = "INVALID DATE RANGE";
+        public const string OPERATION_TIMEOUT = "Time Out !";
         // =====================
         // 👤 User & Auth
         // =====================
@@ -89,6 +90,8 @@ namespace SmartCare.Domain.Constants
         public const string INSUFFICIENT_STOCK = "Insufficient stock for the requested product.";
         public const string ADDED_TO_CART = "Item added to cart successfully.";
         public const string CART_CLEARED = "Cart Cleared ";
+        public const string CART_NOT_FOUND = "Cart Not Found In Database ";
+        public const string CART_ITEM_NOT_EXIST = "This Product Not Exists In Your Cart !";
         public const string RESERVATION_FAILED = "Failed to create reservation for the product.";
 
         // =====================

@@ -51,7 +51,6 @@ namespace SmartCare.Domain.IRepositories
             /// Rolls back the current transaction and disposes it.
             /// </summary>
             Task RollBackAsync();
-
             #endregion
         }
     

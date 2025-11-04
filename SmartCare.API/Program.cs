@@ -175,6 +175,7 @@ using (var scope = app.Services.CreateScope())
 // Configure the HTTP request pipeline.
 
 app.MapHub<PaymentsHub>("/hubs/payments");
+app.MapHub<PaymentsHub>("/hubs/products");
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseHangfireDashboard("/hangfire");

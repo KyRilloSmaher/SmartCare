@@ -21,6 +21,7 @@ using System.Security.Claims;
 using System.Text;
 using Hangfire;
 using SmartCare.Application.Handlers.ResponsesHandler;
+using SmartCare.Application.Commons;
 
 namespace SmartCare.InfraStructure.Extensions
 {
@@ -79,6 +80,7 @@ namespace SmartCare.InfraStructure.Extensions
             services.AddScoped<IResponseHandler, ResponseHandler>();
             services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<IOrderService, OrderService>();
+            services.AddScoped<ISqlLockManager, SqlLockManager>();
 
             // ---------- External Services ----------
             services.AddScoped<IEmailService, EmailService>();
