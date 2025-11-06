@@ -154,7 +154,15 @@ builder.Services.AddSingleton<PaymentStatusChangedHandler>();
 
 #endregion
 
+builder.Services.Configure<InputSanitizationMiddleware>(
+    builder.Configuration.GetSection("InputSanitization"));
+
 var app = builder.Build();
+
+#region Security Middlewares
+app.UseMiddleware <RateLimitingMiddleware>();
+app.UseMiddleware<InputSanitizationMiddleware>();
+#endregion
 
 #region Seeding Data
 using (var scope = app.Services.CreateScope())
