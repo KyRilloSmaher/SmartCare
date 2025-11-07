@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SmartCare.Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,6 +14,7 @@ namespace SmartCare.Domain.Entities
         public int QuantityReserved { get; set; }
         public DateTime ReservedAt { get; set; }
         public DateTime ExpiredAt { get; set; }
+        public ReservationStatus Status { get; set; }
         public CartItem CartItem { get; set; }
 
     }

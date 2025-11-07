@@ -45,7 +45,7 @@ namespace SmartCare.Application.Services
             _logger = logger;
         }
 
-        // ✅ Unified Payment Process
+
         public async Task<Response<Session>> ProcessPaymentAsync(CreateCheckoutSessionRequest req)
         {
             var order = await _orderRepository.GetByIdAsync(req.OrderId, true);
@@ -69,7 +69,6 @@ namespace SmartCare.Application.Services
             return _responseHandler.Success(session);
         }
 
-        // ✅ Mark Payment as Successful
         public async Task<Response<PaymentResult>> MarkPaymentSuccessAsync(Guid orderId)
         {
 
@@ -97,7 +96,6 @@ namespace SmartCare.Application.Services
             return _responseHandler.Success(result);
         }
 
-        // ❌ Mark Payment as Failed
         public async Task<Response<PaymentResult>> MarkPaymentFailureAsync(Guid orderId)
         {
 
@@ -128,7 +126,6 @@ namespace SmartCare.Application.Services
         }
 
      
-
         public async Task HandleWebhookEventAsync(Event webhookEvent)
         {
             switch (webhookEvent.Type)

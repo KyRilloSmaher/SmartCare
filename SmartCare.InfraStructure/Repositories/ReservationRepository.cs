@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SmartCare.Domain.Entities;
+using SmartCare.Domain.Enums;
 using SmartCare.Domain.IRepositories;
 using SmartCare.InfraStructure.DbContexts;
 
@@ -23,7 +24,7 @@ namespace SmartCare.InfraStructure.Repositories
         /// <summary>
         /// Creates a new reservation for a product in a cart.
         /// </summary>
-        public async Task<Reservation?> CreateReservationAsync(Guid CartItemId, int quantity)
+        public async Task<Reservation?> CreateReservationAsync(Guid CartItemId, int quantity , ReservationStatus status)
         {
             var inventroyId = await _context.CartItems
                 .Where(ci => ci.CartItemId == CartItemId)
@@ -43,7 +44,7 @@ namespace SmartCare.InfraStructure.Repositories
                 CartItemId = CartItemId,
                 QuantityReserved = quantity,
                 ReservedAt = DateTime.UtcNow,
-                //Reservation expires after 10 minutes
+                Status = status,
                 ExpiredAt = DateTime.UtcNow.AddMinutes(10),
             };
 
@@ -55,7 +56,7 @@ namespace SmartCare.InfraStructure.Repositories
         /// <summary>
         /// Cancels (removes) a reservation.
         /// </summary>
-        public async Task<bool> CancelReservationAsync(Reservation reservation)
+        public async Task<bool> CancelReservationAsync(Reservation reservation, ReservationStatus status)
         {
             if (reservation == null)
                 return false;
@@ -70,7 +71,8 @@ namespace SmartCare.InfraStructure.Repositories
             if (inventory == null)
                 return false;
             inventory.StockQuantity += reservation.QuantityReserved;
-            _context.Reservations.Remove(reservation);
+            //_context.Reservations.Remove(reservation);
+            reservation.Status = status;
             return await _context.SaveChangesAsync() > 0;
         }
 
