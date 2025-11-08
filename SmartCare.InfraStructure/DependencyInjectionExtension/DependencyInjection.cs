@@ -22,6 +22,7 @@ using System.Text;
 using Hangfire;
 using SmartCare.Application.Handlers.ResponsesHandler;
 using SmartCare.Application.Commons;
+using SmartCare.Infrastructure.Repositories;
 
 namespace SmartCare.InfraStructure.Extensions
 {

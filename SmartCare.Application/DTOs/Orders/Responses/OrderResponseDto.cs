@@ -18,5 +18,6 @@ namespace SmartCare.Application.DTOs.Orders.Responses
         public decimal TotalPrice { get; set; }
         public OrderStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }
+        public IEnumerable<OrderItemResponseDto>? OrderItems { get; set; }
     }
 }

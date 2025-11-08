@@ -13,11 +13,13 @@ namespace SmartCare.Domain.Entities
         public Guid ProductId { get; set; }
         public Guid OrderId { get; set; }
         public Guid InvetoryId { get; set; }
+        public Guid ReservationId { get; set; }
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; }
         public decimal SubTotal { get; set; }
         public Product Product { get; set; }
         public Order Order { get; set; }
         public Inventory Inventory { get; set; }
+        public Reservation Reservation { get; set; }
     }
 }

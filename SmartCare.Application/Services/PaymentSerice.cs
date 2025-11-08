@@ -177,5 +177,72 @@ namespace SmartCare.Application.Services
                 _logger.LogWarning("⚠️ Missing or invalid orderId in metadata for failed payment");
             }
         }
+        public async Task<Response<PaymentResult>> TryCancelOrRefundAsync(Guid orderId)
+        {
+            var order = await _orderRepository.GetByIdAsync(orderId, true);
+            if (order == null)
+                return _responseHandler.BadRequest<PaymentResult>(SystemMessages.ORDER_NOT_FOUND);
+
+            var payment = await _paymentRepository.GetByOrderIdAsync(order.Id);
+            if (payment == null)
+                return _responseHandler.BadRequest<PaymentResult>(SystemMessages.NOT_FOUND);
+
+            // ✅ Case 1: Payment still pending → cancel only
+            if (payment.Status == PaymentStatus.Pending)
+            {
+                payment.Status = PaymentStatus.Failed;
+                order.Status = OrderStatus.Cancelled;
+
+                await _paymentRepository.UpdateAsync(payment);
+                await _orderRepository.UpdateAsync(order);
+
+                await _eventBus.PublishAsync(new PaymentStatusChangedEvent(
+                    order.Id,
+                    order.ClientId,
+                    "cancelled",
+                    "Order and payment have been cancelled."
+                ));
+
+                return _responseHandler.Success(new PaymentResult(true, "Payment cancelled successfully", payment.SessionId));
+            }
+
+            // ✅ Case 2: Payment already completed → attempt refund
+            if (payment.Status == PaymentStatus.Completed)
+            {
+                try
+                {
+                    var refundSuccess = await _paymentGateway.RefundPaymentAsync(payment.SessionId);
+
+                    if (!refundSuccess)
+                        return _responseHandler.BadRequest<PaymentResult>("Refund failed at payment gateway.");
+
+                    payment.Status = PaymentStatus.Refunded;
+                    order.Status = OrderStatus.Refunded;
+
+                    await _paymentRepository.UpdateAsync(payment);
+                    await _orderRepository.UpdateAsync(order);
+
+                    await _eventBus.PublishAsync(new PaymentStatusChangedEvent(
+                        order.Id,
+                        order.ClientId,
+                        "refunded",
+                        "Payment refunded successfully."
+                    ));
+
+                    return _responseHandler.Success(new PaymentResult(true, "Payment refunded successfully", payment.SessionId));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error processing refund for OrderId: {OrderId}", orderId);
+                    return _responseHandler.Failed<PaymentResult>("An error occurred while processing refund.");
+                }
+            }
+
+            // ❌ Case 3: Already refunded or failed
+            return _responseHandler.BadRequest<PaymentResult>(
+                $"Cannot cancel or refund payment in '{payment.Status}' status."
+            );
+        }
+
     }
 }

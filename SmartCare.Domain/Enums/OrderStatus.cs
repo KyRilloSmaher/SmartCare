@@ -15,5 +15,7 @@ namespace SmartCare.Domain.Enums
         Cancelled,
         Returned,
         PaymentFailed,
+        Expired ,
+        Refunded
     }
 }

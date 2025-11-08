@@ -9,10 +9,10 @@ namespace SmartCare.Application.DTOs.Orders.Requests
 {
     public class CreateOrderRequestDto
     {
-        public string clientId { get; set; }
-        public Guid cartId { get; set; }
-        public OrderType orderType { get; set; }
+        public string ClientId { get; set; }
+        public Guid CartId { get; set; }
+        public OrderType OrderType { get; set; }
         public Guid? storeId { get; set; }
-        public string? deliveryAddress { get; set; }
+        public Guid? deliveryAddressId { get; set; }
     }
 }

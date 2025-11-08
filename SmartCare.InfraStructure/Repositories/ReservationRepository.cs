@@ -151,6 +151,39 @@ namespace SmartCare.InfraStructure.Repositories
                 .FirstOrDefaultAsync(r => r.CartItemId == cartItemId);
         }
 
+
+        public async Task FinalizeStockDeductionAsync(Guid cartId, IEnumerable<Guid> orderedProductIds)
+        {
+            var reservations = await _context.Reservations.Include(r => r.CartItem)
+                                                          .Where(r => r.CartItem.CartId == cartId && r.Status == ReservationStatus.ReservedUntilCheckout)
+                                                          .ToListAsync();
+
+            if (!reservations.Any())
+                return;
+
+            var orderedSet = orderedProductIds.ToHashSet();
+
+            foreach (var reservation in reservations)
+            {
+                if (orderedSet.Contains(reservation.CartItem.ProductId))
+                {
+                    // The item was ordered successfully — confirm reservation
+                    reservation.Status = ReservationStatus.ReservedUntilPayment;
+                }
+                else
+                {
+                    // Item not included in final order — release and restore stock
+                    reservation.Status = ReservationStatus.Realesed;
+
+                    var iventory = await _context.Inventories.FirstOrDefaultAsync(p => p.ProductId == reservation.CartItem.ProductId);
+                    if (iventory != null)
+                        iventory.StockQuantity += reservation.QuantityReserved;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
         #endregion
     }
 }

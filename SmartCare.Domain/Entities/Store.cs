@@ -25,7 +25,7 @@ namespace SmartCare.Domain.Entities
         public string Phone { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public bool IsDeleted { get; set; } = false;
-        public  ICollection<Order> Orders { get; set; }
+        public  ICollection<FromStoreOrder> Orders { get; set; }
         public  ICollection<Inventory> Inventories { get; set; }
 
     }
