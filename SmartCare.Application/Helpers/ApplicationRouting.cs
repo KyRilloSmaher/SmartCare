@@ -131,6 +131,7 @@
             public const string GetById = Prefix + SingleRoute;
             public const string GetForUser = Prefix + "/me";
             public const string AddItem = Prefix + "/add-item";
+            public const string Create = Prefix + "/create";
             public const string UpdateItem = Prefix + "/update-item";
             public const string RemoveItem = Prefix + "/remove-item";
             public const string Clear = Prefix + "/clear";

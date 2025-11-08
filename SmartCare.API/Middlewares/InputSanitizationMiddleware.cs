@@ -4,7 +4,9 @@ using Microsoft.Extensions.Options;
 using System.Text.RegularExpressions;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using System.Text.Json;
 using SmartCare.API.Middlewares.SmartCare.API.Middlewares;
 
 namespace SmartCare.API.Middlewares
@@ -40,23 +42,60 @@ namespace SmartCare.API.Middlewares
                     _logger.LogWarning("Sanitized input in query param '{Key}'", key);
             }
 
-            // Sanitize JSON body
+            // Sanitize JSON body safely
             if (context.Request.ContentType?.Contains("application/json") == true &&
                 context.Request.ContentLength > 0)
             {
                 context.Request.EnableBuffering();
-                using var reader = new StreamReader(context.Request.Body);
+                using var reader = new StreamReader(context.Request.Body, Encoding.UTF8, leaveOpen: true);
                 var body = await reader.ReadToEndAsync();
+                context.Request.Body.Position = 0;
 
-                var sanitizedBody = Sanitize(body);
-                if (body != sanitizedBody)
-                    _logger.LogWarning("Sanitized malicious input from JSON body.");
+                try
+                {
+                    using var doc = JsonDocument.Parse(body);
+                    var sanitizedJson = SanitizeJsonElement(doc.RootElement);
+                    var sanitizedBody = JsonSerializer.Serialize(sanitizedJson);
 
-                var bytes = System.Text.Encoding.UTF8.GetBytes(sanitizedBody);
-                context.Request.Body = new MemoryStream(bytes);
+                    if (sanitizedBody != body)
+                        _logger.LogWarning("Sanitized malicious input from JSON body.");
+
+                    var bytes = Encoding.UTF8.GetBytes(sanitizedBody);
+                    context.Request.Body = new MemoryStream(bytes);
+                    context.Request.Body.Position = 0;
+                }
+                catch (JsonException)
+                {
+                    // If JSON is invalid, skip sanitization and let the model binder handle the error
+                    _logger.LogWarning("JSON body is invalid, skipping sanitization.");
+                    context.Request.Body.Position = 0;
+                }
             }
 
             await _next(context);
+        }
+
+        private object SanitizeJsonElement(JsonElement element)
+        {
+            switch (element.ValueKind)
+            {
+                case JsonValueKind.Object:
+                    var dict = new Dictionary<string, object>();
+                    foreach (var prop in element.EnumerateObject())
+                    {
+                        dict[prop.Name] = SanitizeJsonElement(prop.Value);
+                    }
+                    return dict;
+
+                case JsonValueKind.Array:
+                    return element.EnumerateArray().Select(SanitizeJsonElement).ToList();
+
+                case JsonValueKind.String:
+                    return Sanitize(element.GetString());
+
+                default:
+                    return element.Clone(); // Keep numbers, booleans, null as-is
+            }
         }
 
         private string Sanitize(string input)
