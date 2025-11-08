@@ -9,5 +9,6 @@ namespace SmartCare.Application.ExternalServiceInterfaces
 
         Task<Session> CreateCheckoutSessionAsync(PaymentSessionRequest request);
         bool VerifyWebhookSignature(string json, string signature, string secret, out Event webhookEvent);
+        Task<bool> RefundPaymentAsync(string sessionId);
     }
 }

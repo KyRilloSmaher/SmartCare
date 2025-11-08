@@ -19,6 +19,7 @@ namespace SmartCare.Domain.IRepositories
             Task<bool> RemoveAllExpiredReservationsAsync();
             Task<IEnumerable<Reservation>> GetActiveReservationsByProductAsync(Guid productId);
             Task<Reservation?> GetReservationByCartItemIdAsync(Guid cartItemId);
+        Task FinalizeStockDeductionAsync(Guid cartId, IEnumerable<Guid> orderedProductIds);
         }
   
 }

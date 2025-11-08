@@ -26,8 +26,7 @@ namespace SmartCare.InfraStructure.Configurations
             builder.Property(o => o.Status)
                    .IsRequired()
                    .HasDefaultValue(Domain.Enums.OrderStatus.Pending);
-            builder.Property(o => o.StoreId)
-                   .IsRequired(false);
+
 
             builder.Property(o => o.CreatedAt)
                 .IsRequired();
@@ -36,15 +35,6 @@ namespace SmartCare.InfraStructure.Configurations
             builder.HasOne(o => o.Payment)
                 .WithOne(o => o.Order)
                 .HasForeignKey<Order>(o => o.PaymentId);
-
-            builder.HasOne(o => o.Store)
-                    .WithMany(o => o.Orders)
-                    .HasForeignKey(o => o.StoreId)
-                    ;
-
-            builder.HasOne(o => o.Address)
-                .WithMany(o => o.Orders)
-                .HasForeignKey(o => o.AddressId);
 
             builder.HasMany(o => o.Items)
                 .WithOne(o => o.Order)

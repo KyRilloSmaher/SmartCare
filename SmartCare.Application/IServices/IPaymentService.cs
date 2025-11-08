@@ -16,6 +16,7 @@ namespace SmartCare.Application.IServices
         Task<Response<Session>> ProcessPaymentAsync(CreateCheckoutSessionRequest req);
         Task<Response<PaymentResult>> MarkPaymentSuccessAsync(Guid orderId);
         Task<Response<PaymentResult>> MarkPaymentFailureAsync(Guid orderId);
+        Task<Response<PaymentResult>> TryCancelOrRefundAsync(Guid orderId);
         Task HandleWebhookEventAsync(Event webhookEvent);
     }
 }

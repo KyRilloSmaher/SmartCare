@@ -167,20 +167,10 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<OrderResponseDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> CreateOrderAsync([FromBody] CreateOrderRequestDto dto)
         {
-            var result = await _orderService.CreateOrderAsync(dto);
+            var result = await _orderService.CreateOrderFromCartAsync(dto);
             return ControllersHelperMethods.FinalResponse(result);
         }
 
-        /// <summary>
-        /// Update an Order
-        /// </summary>
-        [HttpPut(ApplicationRouting.Order.Update)]
-        [ProducesResponseType(typeof(Response<OrderResponseDto>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> UpdateOrderAsync([FromBody] UpdateOrderRequestDto dto)
-        {
-            var result = await _orderService.UpdateOrderAsync(dto);
-            return ControllersHelperMethods.FinalResponse(result);
-        }
 
         /// <summary>
         /// Update Order Status

@@ -18,8 +18,7 @@ namespace SmartCare.Application.Mappers
         private void FromOrderToOrderResponseDto()
         {
             CreateMap<Order, OrderResponseDto>()
-                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
-                .ForMember(dest => dest.StoreId, opt => opt.MapFrom(src => src.StoreId))
+               
                 .ForMember(dest => dest.PaymentId, opt => opt.MapFrom(src => src.PaymentId))
                 .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.TotalPrice))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
@@ -55,9 +54,8 @@ namespace SmartCare.Application.Mappers
         private void FromCreateOrderRequestDtoToOrder()
         {
             CreateMap<CreateOrderRequestDto, Order>()
-                .ForMember(dest => dest.ClientId, opt => opt.MapFrom(src => src.clientId))
-                .ForMember(dest => dest.StoreId, opt => opt.MapFrom(src => src.storeId))
-                .ForMember(dest => dest.Address, opt => opt.Ignore()) // handled separately after creation
+                .ForMember(dest => dest.ClientId, opt => opt.MapFrom(src => src.ClientId))
+                
                 .ForMember(dest => dest.TotalPrice, opt => opt.Ignore()) // calculated from items
                 .ForMember(dest => dest.Payment, opt => opt.Ignore()) // created later
                 .ForMember(dest => dest.Items, opt => opt.Ignore()) // populated from cart

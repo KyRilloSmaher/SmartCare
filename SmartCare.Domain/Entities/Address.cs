@@ -17,6 +17,6 @@ namespace SmartCare.Domain.Entities
         public float Longitude { get; set; }
         public bool IsPrimary { get; set; }
         public Client Client { get; set; }
-        public ICollection<Order> Orders { get; set; }
+        public ICollection<OnlineOrder> Orders { get; set; }
     }
 }

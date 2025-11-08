@@ -34,6 +34,7 @@ namespace SmartCare.Domain.Constants
         public const string NO_DATA_FOUND = "No data found.";
         public const string INVALID_DATE_RANGE = "INVALID DATE RANGE";
         public const string OPERATION_TIMEOUT = "Time Out !";
+        public const string RESERVATION_INVALID = "RESERVATION INVALID";
         // =====================
         // 👤 User & Auth
         // =====================
@@ -60,7 +61,7 @@ namespace SmartCare.Domain.Constants
         public const string RESET_PASSWORD_CODE_SENT = "Reset Code Sent To Your Email Successfully";
         public const string INVALID_RESET_CODE = "The reset code is invalid or has expired.";
         public const string PASSWORD_RESET_CODE_CONFIRMED = "Reset Password Code confirmed successfully.";
-
+        public const string ADDRESS_IS_REQUIRED = "Address is Required ";
         // =====================
         // 💊 Product & Inventory
         // =====================
@@ -93,7 +94,7 @@ namespace SmartCare.Domain.Constants
         public const string CART_NOT_FOUND = "Cart Not Found In Database ";
         public const string CART_ITEM_NOT_EXIST = "This Product Not Exists In Your Cart !";
         public const string RESERVATION_FAILED = "Failed to create reservation for the product.";
-
+        public const string INVALID_ORDER_TYPE = "INVALID ORDER TYPE";
         // =====================
         // 💳 Payments & Subscriptions
         // =====================
@@ -138,8 +139,14 @@ namespace SmartCare.Domain.Constants
         public const string FILE_TOO_LARGE = "The uploaded file is too large. Please upload a smaller file.";
         public const string FILE_NOT_FOUND = "Requested file was not found.";
 
-
-
+        // ==========
+        // Stores
+        // ==========
+        public const string STORE_CREATED = "Store created successfully.";
+        public const string STORE_UPDATED = "Store updated successfully.";
+        public const string STORE_DELETED = "Store deleted successfully.";
+        public const string STORE_NOT_FOUND = "Store not found.";
+        public const string STORE_ID_REQUIRED = "STORE id is Reuired ";
         // =====================
         // 📢 Notifications
         // =====================

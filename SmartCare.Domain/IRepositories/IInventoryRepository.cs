@@ -16,7 +16,8 @@ namespace SmartCare.Domain.IRepositories
         Task<Inventory> DecreaseProductStockAsync(Guid InventoryId, int quantityToSubtract);
         Task<Inventory> GetStockOfProductInStore(Guid productId, Guid storeId);
         Task<List<Inventory>> GetAllInventoryInStoreAsync(Guid storeId);
-
+        Task<bool> FinalizeStockDeductionAsync(Guid inventoryId, int quantity);
+        Task<bool> FinalizeStockDeductionForProductAsync(Guid productId, int quantity);
 
     }
 }

@@ -56,6 +56,16 @@ namespace SmartCare.InfraStructure.Repositories
         {
             throw new NotImplementedException();
         }
+
+        public Task<bool> FinalizeStockDeductionAsync(Guid inventoryId, int quantity)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> FinalizeStockDeductionForProductAsync(Guid productId, int quantity)
+        {
+            throw new NotImplementedException();
+        }
         #endregion
     }
 }
