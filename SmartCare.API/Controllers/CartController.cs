@@ -52,6 +52,17 @@ namespace SmartCare.API.Controllers
             var result = await _cartService.GetCartItemsAsync(id);
             return ControllersHelperMethods.FinalResponse(result);
         }
+        /// <summary>
+        /// Add Item to Cart
+        /// </summary>
+        [HttpPost(ApplicationRouting.Cart.Create)]
+        [ProducesResponseType(typeof(Response<CartItemResponseDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> CreateUserCart()
+        {
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var result = await _cartService.CreateCartForUserAsync(userId);
+            return ControllersHelperMethods.FinalResponse(result);
+        }
 
         /// <summary>
         /// Add Item to Cart
