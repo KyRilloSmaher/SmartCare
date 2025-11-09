@@ -1,4 +1,6 @@
-﻿using SmartCare.Domain.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Crypto;
+using SmartCare.Domain.Entities;
 using SmartCare.Domain.IRepositories;
 using SmartCare.InfraStructure.DbContexts;
 using System;
@@ -22,49 +24,110 @@ namespace SmartCare.InfraStructure.Repositories
         #endregion
 
         #region Methods
-        public Task<Guid> GetBestInventoryIdAsync(Guid productId, int quantityRequired)
+        public async Task<Guid> GetBestInventoryIdAsync(Guid productId, int quantityRequired)
         {
-            throw new NotImplementedException();
+            var inventory = await _context.Inventories
+                         .Where(i => i.ProductId == productId)
+                         .OrderByDescending(i => i.StockQuantity)
+                         .FirstOrDefaultAsync();
+
+            return inventory.Id;
         }
 
-        public Task<Inventory> GetAvalaibleStockForProductAsync(Guid productId)
+        public async Task<List<Inventory>> GetAvailableInventoriesForProductAsync(Guid productId)
         {
-            throw new NotImplementedException();
+            var inventories = await _context.Inventories
+                          .Where(i => i.ProductId == productId)
+                          .ToListAsync();
+
+            return inventories;
         }
 
-        public Task<int> GetTotalStockForProductAsync(Guid productId)
+        public async Task<int> GetTotalStockForProductAsync(Guid productId)
         {
-            throw new NotImplementedException();
+            var Total = await _context.Inventories
+                              .Where(i => i.ProductId == productId)
+                              .SumAsync(i => i.StockQuantity);
+            return Total;
         }
 
-        public Task<Inventory> IncreaseProductStockAsync(Guid InventoryId, int quantityToAdd)
+        public async Task<Inventory> IncreaseProductStockAsync(Guid InventoryId, Guid productId, int quantityToAdd)
         {
-            throw new NotImplementedException();
+            var inventory = await _context.Inventories
+                            .FirstOrDefaultAsync(i => i.ProductId == productId && i.Id == InventoryId);
+
+            if (inventory == null)
+            {
+                throw new InvalidOperationException("Inventory record not found.");
+            }
+
+            inventory.StockQuantity += quantityToAdd;
+
+            await _context.SaveChangesAsync();
+
+            return inventory;
+
         }
 
-        public Task<Inventory> DecreaseProductStockAsync(Guid InventoryId, int quantityToSubtract)
+        public async Task<Inventory> DecreaseProductStockAsync(Guid InventoryId, Guid productId, int quantityToSubtract)
         {
-            throw new NotImplementedException();
+            var inventory = await _context.Inventories
+                           .FirstOrDefaultAsync(i => i.ProductId == productId && i.Id == InventoryId);
+
+            if (inventory == null)
+            {
+                throw new InvalidOperationException("Inventory record not found.");
+            }
+
+            inventory.StockQuantity -= quantityToSubtract;
+
+            await _context.SaveChangesAsync();
+
+            return inventory;
+
         }
 
-        public Task<Inventory> GetStockOfProductInStore(Guid productId, Guid storeId)
+        public async Task<Inventory> GetStockOfProductInStore(Guid productId, Guid storeId)
         {
-            throw new NotImplementedException();
+            var inventory = await _context.Inventories
+                         .Where(i => i.ProductId == productId && i.StoreId == storeId)
+                         .FirstOrDefaultAsync();
+
+            return inventory;
         }
 
-        public Task<List<Inventory>> GetAllInventoryInStoreAsync(Guid storeId)
+        public async Task<List<Inventory>> GetAllInventoryInStoreAsync(Guid storeId)
         {
-            throw new NotImplementedException();
+            var Inventories = await _context.Inventories
+                                .Where(i => i.StoreId == storeId).ToListAsync();
+
+            if (Inventories == null)
+            {
+                throw new InvalidOperationException("Inventory record not found.");
+            }
+
+            return Inventories;
         }
 
-        public Task<bool> FinalizeStockDeductionAsync(Guid inventoryId, int quantity)
+        public async Task<bool> FinalizeStockDeductionAsync(Guid inventoryId, Guid productId, int quantity)
         {
-            throw new NotImplementedException();
+            var inventory = await _context.Inventories
+                                 .Where(i => i.ProductId == productId && i.Id == inventoryId)
+                                 .FirstOrDefaultAsync();
+            var stockIninventory = inventory.StockQuantity;
+            if (stockIninventory < quantity)
+                return false;
+            return true;
         }
 
-        public Task<bool> FinalizeStockDeductionForProductAsync(Guid productId, int quantity)
+        public async Task<bool> FinalizeStockDeductionForProductAsync(Guid productId, int quantity)
         {
-            throw new NotImplementedException();
+            var sumOfstock = await _context.Inventories
+                                 .Where(i => i.ProductId == productId)
+                                 .SumAsync(i => i.StockQuantity);
+            if (sumOfstock < quantity)
+                return false;
+            return true;
         }
         #endregion
     }
