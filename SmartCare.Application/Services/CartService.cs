@@ -198,7 +198,7 @@ namespace SmartCare.Application.Services
                         SubTotal = product.Price * dto.Quantity
                     };
 
-                    var reservation = await _reservationRepository.CreateReservationAsync(cartItem.CartItemId, dto.Quantity, ReservationStatus.ReservedUntilCheckout);
+                    var reservation = await _reservationRepository.CreateReservationAsync(cartItem, dto.Quantity, ReservationStatus.ReservedUntilCheckout);
                     if (reservation == null)
                     {
                         _logger.LogWarning("Reservation creation failed for cartItem {CartItemId}", cartItem.CartItemId);
@@ -561,7 +561,7 @@ namespace SmartCare.Application.Services
             }
         }
 
-        private async Task PublishEventsAsync(IEnumerable<object> events)
+        public async Task PublishEventsAsync(IEnumerable<object> events)
         {
             foreach (var evt in events)
             {

@@ -24,20 +24,14 @@ namespace SmartCare.InfraStructure.Repositories
         /// <summary>
         /// Creates a new reservation for a product in a cart.
         /// </summary>
-        public async Task<Reservation?> CreateReservationAsync(Guid CartItemId, int quantity, ReservationStatus status)
+        public async Task<Reservation?> CreateReservationAsync(CartItem CartItem, int quantity, ReservationStatus status)
         {
-            await using var transaction = await _context.Database.BeginTransactionAsync();
 
-            try
-            {
-                var cartItem = await _context.CartItems
-                    .Include(ci => ci.Inventory)
-                    .FirstOrDefaultAsync(ci => ci.CartItemId == CartItemId);
-
-                if (cartItem?.Inventory == null)
+            if (CartItem.InventoryId == Guid.Empty)
                     return null;
 
-                var inventory = cartItem.Inventory;
+            var inventory = await _context.Inventories.FirstOrDefaultAsync(inv => inv.Id == CartItem.InventoryId);
+            if (inventory == null) return null;
 
                 // Check if there's enough available stock (total stock minus already reserved)
                 if (inventory.StockQuantity - inventory.ReservedQuantity < quantity)
@@ -48,7 +42,7 @@ namespace SmartCare.InfraStructure.Repositories
                 var reservation = new Reservation
                 {
                     Id = Guid.NewGuid(),
-                    CartItemId = CartItemId,
+                    CartItemId = CartItem.CartItemId,
                     QuantityReserved = quantity,
                     ReservedAt = DateTime.UtcNow,
                     Status = status,
@@ -56,23 +50,9 @@ namespace SmartCare.InfraStructure.Repositories
                 };
 
                 await _context.Reservations.AddAsync(reservation);
-                var saved = await _context.SaveChangesAsync() > 0;
-
-                if (saved)
-                {
-                    await transaction.CommitAsync();
-                    return reservation;
-                }
-
-                await transaction.RollbackAsync();
-                return null;
-            }
-            catch
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
+                return reservation;
         }
+        
 
         /// <summary>
         /// Cancels (removes) a reservation.

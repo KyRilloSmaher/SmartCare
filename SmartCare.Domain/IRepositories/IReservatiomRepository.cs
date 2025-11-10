@@ -15,7 +15,7 @@ namespace SmartCare.Domain.IRepositories
         /// <summary>
         /// Creates a new reservation for a product in a cart.
         /// </summary>
-        Task<Reservation?> CreateReservationAsync(Guid CartItemId, int quantity, ReservationStatus status);
+        Task<Reservation?> CreateReservationAsync(CartItem CartItem, int quantity, ReservationStatus status);
 
         /// <summary>
         /// Cancels (removes) a reservation.
