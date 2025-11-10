@@ -31,20 +31,20 @@ namespace SmartCare.InfraStructure.Repositories
         public async Task<IEnumerable<ProductProjectionDTO>> GetFavouritesByUserIdAsync(string userId)
         {
             var Favourites = await _context.Favorites
-                                            .Include(f=>f.Product)
-                                               .ThenInclude(p=>p.Images)
+                                            .Include(f => f.Product)
+                                             .ThenInclude(p => p.Images)
                                             .Where(f => f.ClientId == userId && !f.Product.IsDeleted)
                                             .Select(f => new ProductProjectionDTO
-                                               {
-                                                 ProductId = f.Product.ProductId,
-                                                 ProductNameAr = f.Product.NameAr,
-                                                 ProductNameEn = f.Product.NameEn,
-                                                 Description = f.Product.Description,
+                                            {
+                                                ProductId = f.Product.ProductId,
+                                                ProductNameAr = f.Product.NameAr,
+                                                ProductNameEn = f.Product.NameEn,
+                                                Description = f.Product.Description,
+                                                MainImageUrl = f.Product.Images.FirstOrDefault().Url,
                                                  TotalRatings = f.Product.TotalRatings,
-                                                 Price = f.Product.Price,
-                                                 IsAvailable = f.Product.IsAvailable
-                                                })
-                                               .ToListAsync();
+                                                Price = f.Product.Price,
+                                                IsAvailable = f.Product.IsAvailable
+                                            }).ToListAsync();
 
 
             return Favourites;
