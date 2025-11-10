@@ -26,6 +26,21 @@ namespace SmartCare.InfraStructure.Repositories
         #endregion
 
         #region Methods
+
+        public async override Task<Product?> GetByIdAsync(Guid id, bool asTracking = false)
+        {
+            var entity = await _dbContext.Products
+                                            .Include(p => p.Images)
+                                            .Include(p=>p.Company)
+                                            .FirstOrDefaultAsync(p=>p.ProductId == id);
+            if (entity == null) return null;
+
+            if (!asTracking)
+                _dbContext.Entry(entity).State = EntityState.Detached;
+
+            return entity;
+
+        }
         public IQueryable<Product> FilterProductsAsync(FilterProductsDTo filterProductsDTo)
         {
             IQueryable<Product> query = _context.Products;

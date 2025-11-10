@@ -28,16 +28,22 @@ namespace SmartCare.InfraStructure.Repositories
         public async Task<bool> AddCartItemAsync(CartItem cartItem)
         {
             await _context.CartItems.AddAsync(cartItem);
+
             await SaveChangesAsync();
             return true;
         }
 
         public async Task<decimal> CalculateCartTotalAsync(Guid cartId)
         {
+            var cart = await _context.Carts.FirstOrDefaultAsync(c => c.Id == cartId);
+            if (cart is null)
+                  throw new Exception();
             var total = await _context.CartItems
                                       .Where(ci => ci.CartId == cartId)
                                       .SumAsync(ci => (decimal)(ci.Quantity * ci.UnitPrice));
-
+             cart.TotalPrice = total;
+            _context.Carts.Update(cart);
+            await _context.SaveChangesAsync();
             return total;
         }
 
