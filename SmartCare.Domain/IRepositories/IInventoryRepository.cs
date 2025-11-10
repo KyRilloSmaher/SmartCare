@@ -10,13 +10,13 @@ namespace SmartCare.Domain.IRepositories
     public interface IInventoryRepository : IGenericRepository<Inventory>
     {
         Task<Guid> GetBestInventoryIdAsync(Guid productId ,int quantityRequired);
-        Task<Inventory> GetAvalaibleStockForProductAsync(Guid productId);
+        Task<List<Inventory>> GetAvailableInventoriesForProductAsync(Guid productId);
         Task<int> GetTotalStockForProductAsync(Guid productId);
-        Task<Inventory> IncreaseProductStockAsync(Guid InventoryId, int quantityToAdd);
-        Task<Inventory> DecreaseProductStockAsync(Guid InventoryId, int quantityToSubtract);
+        Task<Inventory> IncreaseProductStockAsync(Guid InventoryId, Guid productId, int quantityToAdd);
+        Task<Inventory> DecreaseProductStockAsync(Guid InventoryId, Guid productId, int quantityToSubtract);
         Task<Inventory> GetStockOfProductInStore(Guid productId, Guid storeId);
         Task<List<Inventory>> GetAllInventoryInStoreAsync(Guid storeId);
-        Task<bool> FinalizeStockDeductionAsync(Guid inventoryId, int quantity);
+        Task<bool> FinalizeStockDeductionAsync(Guid inventoryId, Guid productId, int quantity);
         Task<bool> FinalizeStockDeductionForProductAsync(Guid productId, int quantity);
 
     }
