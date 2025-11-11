@@ -102,13 +102,13 @@ namespace SmartCare.API.Controllers
         /// Get Products By Filter
         /// </summary>
         /// <param name="filterproduct"></param>
-        /// <param name="orderBy"></param>
         /// <param name="pageNumber"></param>
         /// <param name="pageSize"></param>
-        [HttpPost(ApplicationRouting.Product.GetByFilter)]
-        public async Task<IActionResult> FilterProducts([FromBody]FilterProductsDTo filterproduct, [FromQuery] string orderBy, [FromQuery] bool isAscending, [FromQuery]int pageNumber, [FromQuery]int pageSize)
+        /// <returns></returns>
+        [HttpGet(ApplicationRouting.Product.GetByFilter)]
+        public async Task<IActionResult> FilterProducts([FromQuery]FilterProductsDTo filterproduct,[FromQuery]int pageNumber, [FromQuery]int pageSize)
         {
-            var result = await _ProductService.FilterProducts(filterproduct, orderBy,isAscending, pageNumber, pageSize);
+            var result = await _ProductService.FilterProducts(filterproduct,pageNumber, pageSize);
             return ControllersHelperMethods.FinalResponse(result);
         }
 
