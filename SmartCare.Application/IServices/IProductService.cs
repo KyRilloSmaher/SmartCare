@@ -21,7 +21,7 @@ namespace SmartCare.Application.IServices
          Task<Response<bool>> DeleteProductAsync(Guid Id);
         Task<Response<ProductResponseDtoForClient>> GetDetailsOfProductForUser(Guid productId);
         Task<Response<ProductResponseDtoForAdmin>> GetDetailsOfProductForAdmin(Guid productId);
-        Task<Response<PaginatedResult<ProductResponseDtoForClient>>> FilterProducts(FilterProductsDTo filterproduct, string orderBy,bool isAsending ,int pageNumber, int pageSize);
+        Task<Response<PaginatedResult<ProductResponseDtoForClient>>> FilterProducts(FilterProductsDTo filterproduct,int pageNumber, int pageSize);
         Task<Response<ProductResponseDtoForClient>> GetDetailsOfProductByName(string NameEn);
         Task<Response<PaginatedResult<ProductResponseDtoForClient>>> GetAllProducts(int pageNumber, int pageSize);
         Task<Response<PaginatedResult<ProductResponseDtoForClient>>> GetProductsByCompanyId(Guid CompanyId ,int pageNumber, int pageSize);
