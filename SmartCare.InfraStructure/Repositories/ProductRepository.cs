@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using SmartCare.Domain.Entities;
 using SmartCare.Domain.IRepositories;
 using SmartCare.Domain.Projection_Models;
@@ -45,15 +46,6 @@ namespace SmartCare.InfraStructure.Repositories
         {
             IQueryable<Product> query = _context.Products;
 
-            if (!string.IsNullOrWhiteSpace(filterProductsDTo.companyName))
-            {
-                query =  query.Where(p => p.Company.Name.ToLower() == filterProductsDTo.companyName.Trim().ToLower());
-            }
-
-            if (!string.IsNullOrWhiteSpace(filterProductsDTo.categoryName))
-            {
-                query = query.Where(p => p.Category.Name.ToLower() == filterProductsDTo.categoryName.Trim().ToLower());
-            }
 
             if (filterProductsDTo.FromRate.HasValue)
             {
@@ -73,6 +65,20 @@ namespace SmartCare.InfraStructure.Repositories
             if (filterProductsDTo.ToPrice.HasValue)
             {
                 query = query.Where(p => p.Price <= filterProductsDTo.ToPrice.Value);
+            }
+
+            // Order By
+            if (filterProductsDTo.OrderByName.HasValue)
+            {
+                query = filterProductsDTo.OrderByName.Value? query.OrderBy(f => f.NameEn) : query.OrderByDescending(f => f.NameEn);
+            }
+            else if (filterProductsDTo.OrderByPrice.HasValue)
+            {
+                query = filterProductsDTo.OrderByPrice.Value ? query.OrderBy(f => f.Price) : query.OrderByDescending(f => f.Price);
+            }
+            else if (filterProductsDTo.OrderByRate.HasValue)
+            {
+                query = filterProductsDTo.OrderByRate.Value ? query.OrderBy(f => f.AverageRating) : query.OrderByDescending(f => f.AverageRating);
             }
             return query.AsQueryable();
 

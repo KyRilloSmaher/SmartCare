@@ -8,11 +8,12 @@ namespace SmartCare.Domain.Projection_Models
 {
     public class FilterProductsDTo
     {
-       public string? companyName {  get; set; }
-       public string? categoryName { get; set; }
-       public float? FromRate {  get; set; }
-       public float? ToRate {  get; set; }
-       public decimal? FromPrice {  get; set; }
-       public decimal? ToPrice {  get; set; }
+        public bool? OrderByName { get; set; } = null;
+        public bool? OrderByPrice { get; set; } = null;
+        public bool? OrderByRate { get; set; } = null;
+        public float? FromRate { get; set; } = 0.0f;
+        public float? ToRate { get; set; } = null;
+        public decimal? FromPrice { get; set; } = 0.0m;
+        public decimal? ToPrice { get; set; } = null;
     }
 }

@@ -174,26 +174,12 @@ namespace SmartCare.Application.Services
 
         }
 
-        public  async Task<Response<PaginatedResult<ProductResponseDtoForClient>>> FilterProducts(FilterProductsDTo filterproduct, string orderByField, bool isAscending, int pageNumber, int pageSize)
+        public  async Task<Response<PaginatedResult<ProductResponseDtoForClient>>> FilterProducts(FilterProductsDTo filterproduct, int pageNumber, int pageSize)
         {
             if (pageNumber <= 0 || pageSize <= 0)
                 return _responseHandler.BadRequest<PaginatedResult<ProductResponseDtoForClient>>(SystemMessages.INVALID_PAGINATION_PARAMETERS);
 
             var query =  _productRepository.FilterProductsAsync(filterproduct);
-
-            Expression<Func<Product, object>> orderBy = orderByField.ToLower() switch
-            {
-                "price" => p => p.Price,
-                "nameen" => p => p.NameEn,
-                "namear" => p => p.NameAr,
-                "discount" => p => p.DiscountPercentage,
-                "expirationdate" => p => p.ExpirationDate,
-                _ => p => p.NameEn 
-            };
-
-            query = isAscending
-                ? query.OrderBy(orderBy)
-                : query.OrderByDescending(orderBy);
 
             var projectedQuery = _mapper.ProjectTo<ProductResponseDtoForClient>(query);
 
