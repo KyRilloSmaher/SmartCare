@@ -71,28 +71,55 @@ namespace SmartCare.InfraStructure.Repositories
             return newCart;
         }
 
-        public async Task<Cart> GetActiveCartAsync(string userId)
+        public async Task<Cart?> GetActiveCartAsync(string userId)
         {
             var cart = await _context.Carts
+                                     .Include(c => c.Items)
+                                      .ThenInclude(ci => ci.Reservation)
+                                     .Include(c => c.Items)
+                                       .ThenInclude(ci => ci.Product)
+                                         .ThenInclude(p => p.Images)
                                      .Where(c => c.ClientId == userId && c.status == CartStatus.Active)
+                                     .AsNoTracking()
                                      .FirstOrDefaultAsync();
-
-            return cart!;
+            if (cart is null)
+                return  null;
+            cart.Items = cart.Items.Where(i => i.Reservation.Status == ReservationStatus.ReservedUntilCheckout).ToList();
+            return cart;
         }
+        public async override Task<Cart?> GetByIdAsync(Guid Id , bool AsTracking = false)
+        {
+            var cart = await _context.Carts
+                         .Include(c => c.Items)
+                          .ThenInclude(ci => ci.Reservation)
+                         .Include(c => c.Items)
+                           .ThenInclude(ci => ci.Product)
+                             .ThenInclude(p => p.Images)
 
-        public async Task<CartItem?> GetCartItemAsync(Guid cartId, Guid productId)
+                         .Where(c => c.Id == Id )
+                         .AsNoTracking()
+                         .FirstOrDefaultAsync();
+
+            if (cart is null)
+                return null;
+            cart.Items = cart.Items.Where(i => i.Reservation.Status == ReservationStatus.ReservedUntilCheckout).ToList();
+            return cart;
+        }
+        public async Task<CartItem?> GetCartItemAsync(Guid cartId)
         {
             var cartItem = await _context.CartItems
-                                         .Where(ci => ci.CartId == cartId && ci.ProductId == productId)
-                                         .FirstOrDefaultAsync();
-
+                                          .AsTracking()
+                                          .FirstOrDefaultAsync(ci => ci.CartId == cartId);
             return cartItem;
         }
 
         public async Task<IEnumerable<CartItem>> GetCartItemsAsync(Guid cartId)
         {
             var cartItems = await _context.CartItems
-                                          .Where(ci => ci.CartId == cartId)
+                                          .Include(ci => ci.Product)
+                                             .ThenInclude(p => p.Images)
+                                          .Include(ci => ci.Reservation)
+                                          .Where(ci => ci.CartId == cartId && ci.Reservation.Status == ReservationStatus.ReservedUntilCheckout)
                                           .ToListAsync();
 
             return cartItems;

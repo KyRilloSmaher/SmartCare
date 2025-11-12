@@ -84,7 +84,7 @@ namespace SmartCare.Application.Services
 
         public async Task<Response<CartResponseDto?>> GetCartByIdAsync(Guid cartId)
         {
-            _logger.LogDebug("GetCartByIdAsync called for CartId={CartId}", cartId);
+            
 
             if (cartId == Guid.Empty)
                 return _responseHandler.BadRequest<CartResponseDto?>(SystemMessages.BAD_REQUEST);
@@ -92,17 +92,17 @@ namespace SmartCare.Application.Services
             var cart = await _cartRepository.GetByIdAsync(cartId);
             if (cart == null)
             {
-                _logger.LogInformation("Cart not found for CartId={CartId}", cartId);
+               
                 return _responseHandler.NotFound<CartResponseDto?>(SystemMessages.NOT_FOUND);
             }
 
-            var dto = _mapper.Map<CartResponseDto>(cart);
+            var dto = _mapper.Map<CartResponseDto?>(cart);
             return _responseHandler.Success(dto);
         }
 
         public async Task<Response<CartResponseDto>> GetUserActiveCartAsync(string userId)
         {
-            _logger.LogDebug("GetUserActiveCartAsync called for UserId={UserId}", userId);
+           
 
             if (string.IsNullOrWhiteSpace(userId))
                 return _responseHandler.BadRequest<CartResponseDto>(SystemMessages.BAD_REQUEST);
@@ -110,7 +110,7 @@ namespace SmartCare.Application.Services
             var cart = await _cartRepository.GetActiveCartAsync(userId);
             if (cart == null)
             {
-                _logger.LogInformation("Active cart not found for UserId={UserId}", userId);
+                
                 return _responseHandler.NotFound<CartResponseDto>(SystemMessages.NOT_FOUND);
             }
 
@@ -120,20 +120,18 @@ namespace SmartCare.Application.Services
 
         public async Task<Response<Guid>> CreateCartForUserAsync(string userId)
         {
-            _logger.LogDebug("CreateCartForUserAsync called for UserId={UserId}", userId);
-
+           
             if (string.IsNullOrWhiteSpace(userId))
                 return _responseHandler.BadRequest<Guid>(SystemMessages.BAD_REQUEST);
 
             var existing = await _cartRepository.GetActiveCartAsync(userId);
             if (existing != null)
             {
-                _logger.LogInformation("User {UserId} already has an active cart Id={CartId}", userId, existing.Id);
+               
                 return _responseHandler.Success(existing.Id, SystemMessages.CART_ALREADY_EXISTS);
             }
 
             var newCart = await _cartRepository.CreateCartAsync(userId);
-            _logger.LogInformation("Created cart {CartId} for User {UserId}", newCart.Id, userId);
             return _responseHandler.Success(newCart.Id, SystemMessages.CART_CREATED);
         }
 
@@ -270,7 +268,7 @@ namespace SmartCare.Application.Services
                 return _responseHandler.NotFound<CartItemResponseDto?>(SystemMessages.NOT_FOUND);
             }
 
-            var cartItem = await _cartRepository.GetCartItemAsync(dto.CartItemId, dto.ProductId);
+            var cartItem = await _cartRepository.GetCartItemAsync(dto.CartItemId);
             if (cartItem == null)
             {
                 _logger.LogWarning("Cart item not found cartItemId={CartItemId} productId={ProductId}", dto.CartItemId, dto.ProductId);
@@ -378,8 +376,6 @@ namespace SmartCare.Application.Services
 
         public async Task<Response<bool>> RemoveFromCartAsync(RemoveFromCartRequestDto dto)
         {
-            _logger.LogInformation("RemoveFromCartAsync called CartId={CartId} CartItemId={CartItemId} ProductId={ProductId}",
-                dto.CartId, dto.CartItemId, dto.ProductId);
 
             var cart = await EnsureCartExistsAsync(dto.CartId);
             if (cart == null)
@@ -387,20 +383,20 @@ namespace SmartCare.Application.Services
                 _logger.LogWarning("Cart not found when removing item: {CartId}", dto.CartId);
                 return _responseHandler.NotFound<bool>(SystemMessages.NOT_FOUND);
             }
-
-            var reservation = await EnsureReservationExistsAsync(dto.ReservationId);
-            if (reservation == null)
-            {
-                _logger.LogWarning("Reservation not found when removing item: {ReservationId}", dto.ReservationId);
-                return _responseHandler.NotFound<bool>(SystemMessages.NOT_FOUND);
-            }
-
-            var cartItem = await _cartRepository.GetCartItemAsync(dto.CartItemId, dto.ProductId);
+            var cartItem = await _cartRepository.GetCartItemAsync(dto.CartItemId);
             if (cartItem == null)
             {
                 _logger.LogWarning("CartItem not found for removal: {CartItemId}", dto.CartItemId);
                 return _responseHandler.NotFound<bool>(SystemMessages.NOT_FOUND);
             }
+            var reservation = await EnsureReservationExistsAsync(cartItem.ReservationId);
+            if (reservation == null)
+            {
+                _logger.LogWarning("Reservation not found when removing item: {ReservationId}", cartItem.ReservationId);
+                return _responseHandler.NotFound<bool>(SystemMessages.NOT_FOUND);
+            }
+
+
 
             await _cartRepository.BeginTransactionAsync();
             try
@@ -462,12 +458,15 @@ namespace SmartCare.Application.Services
             {
                 var available = await _inventoryRepository.GetTotalStockForProductAsync(item.ProductId);
                 stockEvents.Add(new ProductStockStatusChangedEvent(item.ProductId, available > 0));
+                var reservation = await EnsureReservationExistsAsync(item.ReservationId);
+                if (reservation == null)
+                {
+                    _logger.LogWarning("Reservation not found when removing item: {ReservationId}", item.ReservationId);
+                    return _responseHandler.NotFound<bool>(SystemMessages.NOT_FOUND);
+                }
+                _backgroundJobService.Enqueue(() => _reservationRepository.CancelReservationAsync(reservation, ReservationStatus.Realesed));
             }
-
-            // Release reservations and publish events in background jobs (post-clear)
-            _backgroundJobService.Enqueue(() => _reservationRepository.ReleaseAllReservationsForCartAsync(cartId));
-            _backgroundJobService.Enqueue(() => PublishEventsAsync(stockEvents.ConvertAll(e => (object)e)));
-
+            _backgroundJobService.Enqueue(() =>PublishEventsAsync(stockEvents.ConvertAll(e => (object)e)));
             _logger.LogInformation("Cart {CartId} cleared and cleanup jobs enqueued", cartId);
             return _responseHandler.Success(true, SystemMessages.CART_CLEARED);
         }
