@@ -14,7 +14,7 @@ namespace SmartCare.Domain.IRepositories
         Task<bool> UpdateItemCartAsync(CartItem cartItem);
         Task<bool> RemoveCartItemAsync(CartItem cartItem);
         Task<IEnumerable<CartItem>> GetCartItemsAsync(Guid cartId);
-        Task<CartItem?> GetCartItemAsync(Guid cartId, Guid productId);
+        Task<CartItem?> GetCartItemAsync(Guid cartId);
         Task<bool> MarkCartAsCheckedOutAsync(Cart cart);
         Task<Cart> CreateCartAsync(string userId);
         Task<bool> ClearCartAsync(Cart cart);

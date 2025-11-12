@@ -10,6 +10,7 @@ namespace SmartCare.Domain.Enums
     {
         ReservedUntilPayment,
         ReservedUntilCheckout,
-        Realesed
+        Realesed,
+        PaymentTimeOut
     }
 }

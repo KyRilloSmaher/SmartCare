@@ -19,18 +19,6 @@ namespace SmartCare.Application.Validators.Carts
             RuleFor(x => x.CartId)
                 .NotEmpty()
                 .WithMessage("CartId is required.");
-
-            RuleFor(x => x.ProductId)
-                .NotEmpty()
-                .WithMessage("ProductId is required.");
-
-            RuleFor(x => x.InventoryId)
-                .NotEmpty()
-                .WithMessage("InventoryId is required.");
-
-            RuleFor(x => x.ReservationId)
-                .NotEmpty()
-                .WithMessage("ReservationId is required.");
         }
     }
 }

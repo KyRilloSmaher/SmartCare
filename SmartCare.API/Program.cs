@@ -66,7 +66,7 @@ builder.Services.AddHttpClient();
 
 #region Connection To SQL SERVER
 
-var connectionString = builder.Configuration.GetConnectionString("Cloud");
+var connectionString = builder.Configuration.GetConnectionString("Local");
 
 builder.Services.AddDbContext<ApplicationDBContext>(options =>
 {
