@@ -129,7 +129,7 @@
             private const string AdminPrefix = Rule + "admin/cart";
 
             public const string GetById = Prefix + SingleRoute;
-            public const string GetForUser = Prefix + "/me";
+            public const string GetForUser = Rule + "me/cart";
             public const string AddItem = Prefix + "/add-item";
             public const string Create = Prefix + "/create";
             public const string UpdateItem = Prefix + "/update-item";
