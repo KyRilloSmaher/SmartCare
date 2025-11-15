@@ -15,7 +15,6 @@ namespace SmartCare.InfraStructure.Configurations
         {
             builder.ToTable("FromStoreOrders");
 
-
             builder.HasOne(o => o.Store)
                    .WithMany()
                    .HasForeignKey(o => o.StoreId)

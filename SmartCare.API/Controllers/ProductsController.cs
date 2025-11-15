@@ -14,7 +14,7 @@ using System.Linq.Expressions;
 namespace SmartCare.API.Controllers
 {
     [ApiController]
-    //[Authorize]
+    [Authorize]
     public class ProductsController : ControllerBase
     {
         private readonly IProductService _ProductService;
@@ -47,46 +47,6 @@ namespace SmartCare.API.Controllers
 
 
         /// <summary>
-        /// Create Product
-        /// </summary>
-        /// <param name="ProductDto"></param>
-        //[Authorize(Roles = "DASHBOARD_ADMIN")]
-        [HttpPost(ApplicationRouting.Product.Create)]
-        public async Task<IActionResult> CreateProductAsync([FromForm] CreateProductRequestDto ProductDto)
-        {
-            var result = await _ProductService.CreateProductAsync(ProductDto);
-            return ControllersHelperMethods.FinalResponse(result);
-        }
-
-
-        /// <summary>
-        /// Update Product
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="ProductDto"></param>
-        //[Authorize(Roles = "Admin")]
-        [HttpPut(ApplicationRouting.Product.Update)]
-        public async Task<IActionResult> UpdateProductAsync(Guid id, [FromBody] UpdateProductRequestDto ProductDto)
-        {
-            var result = await _ProductService.UpdateProductAsync(id, ProductDto);
-            return ControllersHelperMethods.FinalResponse(result);
-        }
-
-
-        /// <summary>
-        /// Delete Product
-        /// </summary>
-        /// <param name="ProductId"></param>
-       // [Authorize(Roles = "DASHBOARD_ADMIN")]
-        [HttpDelete(ApplicationRouting.Product.Delete)]
-        public async Task<IActionResult> DeleteProductAsync(Guid Id)
-        {
-            var result = await _ProductService.DeleteProductAsync(Id);
-            return ControllersHelperMethods.FinalResponse(result);
-        }
-
-
-        /// <summary>
         /// Get All Products By Pagination
         /// </summary>
         /// <param name="pageNumber"></param>
@@ -106,9 +66,9 @@ namespace SmartCare.API.Controllers
         /// <param name="pageSize"></param>
         /// <returns></returns>
         [HttpGet(ApplicationRouting.Product.GetByFilter)]
-        public async Task<IActionResult> FilterProducts([FromQuery]FilterProductsDTo filterproduct,[FromQuery]int pageNumber, [FromQuery]int pageSize)
+        public async Task<IActionResult> FilterProducts([FromQuery] FilterProductsDTo filterproduct, [FromQuery] int pageNumber =1, [FromQuery] int pageSize =10)
         {
-            var result = await _ProductService.FilterProducts(filterproduct,pageNumber, pageSize);
+            var result = await _ProductService.FilterProducts(filterproduct, pageNumber, pageSize);
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -118,7 +78,7 @@ namespace SmartCare.API.Controllers
         /// <param name="NameEn"></param>
         /// <returns></returns>
         [HttpGet(ApplicationRouting.Product.SearchByName)]
-        public async Task<IActionResult> GetByName([FromQuery]string NameEn)
+        public async Task<IActionResult> GetByName([FromQuery] string NameEn)
         {
             var result = await _ProductService.GetDetailsOfProductByName(NameEn);
             return ControllersHelperMethods.FinalResponse(result);
@@ -174,34 +134,10 @@ namespace SmartCare.API.Controllers
         [HttpGet(ApplicationRouting.Product.SearchByCategoryName)]
         public async Task<IActionResult> SearchByCategoryName(string CategoryName, int pageNumber, int pageSize)
         {
-            var result = await _ProductService.SearchProductsByCategoryName(CategoryName,pageNumber,pageSize);
+            var result = await _ProductService.SearchProductsByCategoryName(CategoryName, pageNumber, pageSize);
             return ControllersHelperMethods.FinalResponse(result);
         }
 
-        /// <summary>
-        /// Get Expired Products
-        /// </summary>
-        /// <param name="pageNumber"></param>
-        /// <param name="pageSize"></param>
-        [HttpGet(ApplicationRouting.Product.GetExpired)]
-        public async Task<IActionResult> GetExpiredProducts(int pageNumber, int pageSize)
-        {
-            var result = await _ProductService.GetexpiredProducts(pageNumber,pageSize);
-            return ControllersHelperMethods.FinalResponse(result);
-        }
-
-
-        /// <summary>
-        /// Get UnExpired Products
-        /// </summary>
-        /// <param name="pageNumber"></param>
-        /// <param name="pageSize"></param>
-        [HttpGet(ApplicationRouting.Product.GetUnExpired)]
-        public async Task<IActionResult> GetUnExpiredProducts(int pageNumber, int pageSize)
-        {
-            var result = await _ProductService.GetUnexpiredProducts(pageNumber, pageSize);
-            return ControllersHelperMethods.FinalResponse(result);
-        }
 
         /// <summary>
         /// Search By partialDescription
@@ -212,7 +148,7 @@ namespace SmartCare.API.Controllers
         [HttpGet(ApplicationRouting.Product.SearchBypartialDescription)]
         public async Task<IActionResult> SearchBypartialDescription([FromQuery] string Description, [FromQuery] int pageNumber, [FromQuery] int pageSize)
         {
-            var result = await _ProductService.SearchProductsByDescription(Description,pageNumber,pageSize);
+            var result = await _ProductService.SearchProductsByDescription(Description, pageNumber, pageSize);
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -243,5 +179,45 @@ namespace SmartCare.API.Controllers
             return ControllersHelperMethods.FinalResponse(result);
 
         }
+
+        /// <summary>
+        /// Create Product
+        /// </summary>
+        /// <param name="ProductDto"></param>
+        //[Authorize(Roles = "DASHBOARD_ADMIN")]
+        [HttpPost(ApplicationRouting.Product.Create)]
+        public async Task<IActionResult> CreateProductAsync([FromForm] CreateProductRequestDto ProductDto)
+        {
+            var result = await _ProductService.CreateProductAsync(ProductDto);
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+
+
+        /// <summary>
+        /// Update Product
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="ProductDto"></param>
+        //[Authorize(Roles = "Admin")]
+        [HttpPut(ApplicationRouting.Product.Update)]
+        public async Task<IActionResult> UpdateProductAsync(Guid id, [FromBody] UpdateProductRequestDto ProductDto)
+        {
+            var result = await _ProductService.UpdateProductAsync(id, ProductDto);
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+
+
+        /// <summary>
+        /// Delete Product
+        /// </summary>
+        /// <param name="ProductId"></param>
+       // [Authorize(Roles = "DASHBOARD_ADMIN")]
+        [HttpDelete(ApplicationRouting.Product.Delete)]
+        public async Task<IActionResult> DeleteProductAsync(Guid Id)
+        {
+            var result = await _ProductService.DeleteProductAsync(Id);
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+
     }
 }

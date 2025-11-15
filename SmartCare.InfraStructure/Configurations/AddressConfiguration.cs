@@ -33,7 +33,7 @@ namespace SmartCare.InfraStructure.Configurations
             //Relations
             builder.HasMany(a => a.Orders)
                     .WithOne(o => o.Address)
-                    .HasForeignKey(o => o.AddressId)
+                    .HasForeignKey(o => o.ShippingAddressId)
                     .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasIndex(a => a.IsPrimary);

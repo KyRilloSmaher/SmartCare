@@ -42,9 +42,6 @@ namespace SmartCare.Domain.Entities
 
             public string? EmbeddingVector { get; set; }
 
-
-            public DateTime? ExpirationDate { get; set; }
-
             public string? DosageForm { get; set; }
 
             // Navigation properties

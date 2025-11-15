@@ -20,7 +20,6 @@ namespace SmartCare.Application.DTOs.Product.Responses
         public decimal Price { get; set; }
         public bool IsAvailable { get; set; }
         public string ActiveIngredients { get; set; }
-        public DateTime? ExpirationDate { get; set; }
         public float DiscountPercentage { get; set; }
 
     }

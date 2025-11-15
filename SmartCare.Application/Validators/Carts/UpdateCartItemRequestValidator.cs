@@ -24,13 +24,6 @@ namespace SmartCare.Application.Validators.Carts
                 .NotEmpty()
                 .WithMessage("ProductId is required.");
 
-            RuleFor(x => x.InventoryId)
-                .NotEmpty()
-                .WithMessage("InventoryId is required.");
-
-            RuleFor(x => x.ReservationId)
-                .NotEmpty()
-                .WithMessage("ReservationId is required.");
 
             RuleFor(x => x.NewQuantity)
                 .GreaterThan(0)
@@ -38,15 +31,6 @@ namespace SmartCare.Application.Validators.Carts
                 .LessThanOrEqualTo(100)
                 .WithMessage("NewQuantity cannot exceed 100.");
 
-            RuleFor(x => x.UnitPrice)
-                .GreaterThan(0)
-                .WithMessage("UnitPrice must be greater than zero.");
-
-            RuleFor(x => x.SubTotal)
-                .GreaterThan(0)
-                .WithMessage("SubTotal must be greater than zero.")
-                .Equal(x => x.NewQuantity * x.UnitPrice)
-                .WithMessage("SubTotal must equal UnitPrice multiplied by NewQuantity.");
         }
     }
 }

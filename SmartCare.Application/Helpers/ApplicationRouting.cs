@@ -129,7 +129,7 @@
             private const string AdminPrefix = Rule + "admin/cart";
 
             public const string GetById = Prefix + SingleRoute;
-            public const string GetForUser = Prefix + "/me";
+            public const string GetForUser = Rule + "me/cart";
             public const string AddItem = Prefix + "/add-item";
             public const string Create = Prefix + "/create";
             public const string UpdateItem = Prefix + "/update-item";
@@ -145,8 +145,8 @@
             private const string Prefix = Rule + "Products";
             private const string AdminPrefix = Rule + "admin/Products";
 
-            public const string GetDetailsForUser = Rule + "user/Products";
-            public const string GetDetailsForAdmin = Rule + "Admin/Products";
+            public const string GetDetailsForUser = Prefix+ SingleRoute;
+            public const string GetDetailsForAdmin = AdminPrefix+SingleRoute;
             public const string SearchBypartialDescription = Prefix + "/Description";
             public const string GetAll = Prefix;
             public const string Create = AdminPrefix + "/create";
@@ -155,8 +155,6 @@
             public const string SearchByCompanyName = Prefix + "/CompanyName";
             public const string GetByCategoryId = Prefix + "/CategoryId";
             public const string SearchByCategoryName = Prefix + "/CategoryName";
-            public const string GetExpired = Prefix + "/Expired";
-            public const string GetUnExpired = Prefix + "/UnExpired";
             public const string GetBestSeller = Prefix + "/BestSeller";
             public const string GetMorePopular = Prefix + "/MorePopular";
             public const string SearchByName = Prefix + "/Name";

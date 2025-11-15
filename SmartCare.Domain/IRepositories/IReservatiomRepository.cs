@@ -20,7 +20,7 @@ namespace SmartCare.Domain.IRepositories
         /// <summary>
         /// Cancels (removes) a reservation.
         /// </summary>
-        Task<bool> CancelReservationAsync(Reservation reservation, ReservationStatus status);
+        Task<bool> CancelReservationAsync(Guid reservationId,Guid inventoryId , ReservationStatus status);
 
         /// <summary>
         /// Updates the quantity of a reservation.

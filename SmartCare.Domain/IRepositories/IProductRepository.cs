@@ -50,9 +50,6 @@ namespace SmartCare.Domain.IRepositories
 
         #endregion
 
-
-        IQueryable<Product> GetExpiredProducts();
-        IQueryable<Product> GetUnExpiredProducts();
         IQueryable<Product> GetMostSelling();
 
         IQueryable<Product> GetMorePopular();

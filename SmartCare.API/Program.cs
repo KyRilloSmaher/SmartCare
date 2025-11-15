@@ -66,7 +66,7 @@ builder.Services.AddHttpClient();
 
 #region Connection To SQL SERVER
 
-var connectionString = builder.Configuration.GetConnectionString("Local");
+var connectionString = builder.Configuration.GetConnectionString("Cloud");
 
 builder.Services.AddDbContext<ApplicationDBContext>(options =>
 {
@@ -184,6 +184,7 @@ using (var scope = app.Services.CreateScope())
 
 app.MapHub<PaymentsHub>("/hubs/payments");
 app.MapHub<PaymentsHub>("/hubs/products");
+app.MapHub<PaymentsHub>("/hubs/cart");
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseHangfireDashboard("/hangfire");

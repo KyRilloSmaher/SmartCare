@@ -450,7 +450,7 @@ namespace SmartCare.Application.Services
                     Status = OrderStatus.Pending,
                     TotalPrice = totalPrice,
                     OrderType = OrderType.Online,
-                    AddressId = (Guid)dto.deliveryAddressId
+                    ShippingAddressId = (Guid)dto.deliveryAddressId
                 },
 
                 OrderType.InStore => new FromStoreOrder
@@ -494,7 +494,7 @@ namespace SmartCare.Application.Services
 
                 foreach (var ci in cartItems)
                 {
-                    await _inventoryRepository.FinalizeStockDeductionAsync(ci.InventoryId, ci.Quantity);
+                    await _inventoryRepository.FinalizeStockDeductionAsync(ci.InventoryId , ci.Quantity);
                 }
 
                 return (true, string.Empty);
@@ -580,7 +580,7 @@ namespace SmartCare.Application.Services
                     var reservation = await _reservationRepository.GetByIdAsync(item.ReservationId);
                     if (reservation != null)
                     {
-                        await _reservationRepository.CancelReservationAsync(reservation, ReservationStatus.Realesed);
+                        await _reservationRepository.CancelReservationAsync(reservation.Id,item .InvetoryId ,ReservationStatus.Realesed);
                     }
                 }
 

@@ -113,29 +113,6 @@ namespace SmartCare.Application.Services
             return _responseHandler.Success(paginatedResult);
         }
 
-        public async Task<Response<PaginatedResult<ProductResponseDtoForClient>>> GetexpiredProducts(int pageNumber, int pageSize)
-        {
-            if (pageNumber <= 0 || pageSize <= 0)
-                return _responseHandler.BadRequest<PaginatedResult<ProductResponseDtoForClient>>(SystemMessages.INVALID_PAGINATION_PARAMETERS);
-            var query = _productRepository.GetExpiredProducts();
-            if (query == null)
-                return _responseHandler.Failed<PaginatedResult<ProductResponseDtoForClient>>(SystemMessages.NOT_FOUND);
-            var projectedQuery = _mapper.ProjectTo<ProductResponseDtoForClient>(query);
-            var paginatedResult = await projectedQuery.ToPaginatedListAsync(pageNumber, pageSize);
-            return _responseHandler.Success(paginatedResult);
-        }
-
-        public async Task<Response<PaginatedResult<ProductResponseDtoForClient>>> GetUnexpiredProducts(int pageNumber, int pageSize)
-        {
-            if (pageNumber <= 0 || pageSize <= 0)
-                return _responseHandler.BadRequest<PaginatedResult<ProductResponseDtoForClient>>(SystemMessages.INVALID_PAGINATION_PARAMETERS);
-            var query = _productRepository.GetUnExpiredProducts();
-            if (query == null)
-                return _responseHandler.Failed<PaginatedResult<ProductResponseDtoForClient>>(SystemMessages.NOT_FOUND);
-            var projectedQuery = _mapper.ProjectTo<ProductResponseDtoForClient>(query);
-            var paginatedResult = await projectedQuery.ToPaginatedListAsync(pageNumber, pageSize);
-            return _responseHandler.Success(paginatedResult);
-        }
 
         public async Task<Response<PaginatedResult<ProductResponseDtoForClient>>> GetMostSellingProducts(int pageNumber, int pageSize)
         {
