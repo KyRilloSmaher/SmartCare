@@ -28,8 +28,6 @@ namespace SmartCare.Application.IServices
         Task<Response<PaginatedResult<ProductResponseDtoForClient>>> SearchProductsByCompanyName(string CompanyName ,int pageNumber, int pageSize);
         Task<Response<PaginatedResult<ProductResponseDtoForClient>>> GetProductsByCategoryId(Guid CategoryId, int pageNumber, int pageSize);
         Task<Response<PaginatedResult<ProductResponseDtoForClient>>> SearchProductsByCategoryName(string CategoryName, int pageNumber, int pageSize);
-        Task<Response<PaginatedResult<ProductResponseDtoForClient>>> GetexpiredProducts(int pageNumber, int pageSize);
-        Task<Response<PaginatedResult<ProductResponseDtoForClient>>> GetUnexpiredProducts(int pageNumber, int pageSize);
         Task<Response<PaginatedResult<ProductResponseDtoForClient>>> GetMostSellingProducts(int pageNumber, int pageSize);
         Task<Response<PaginatedResult<ProductResponseDtoForClient>>> GetMorePopular(int pageNumber, int pageSize);
 

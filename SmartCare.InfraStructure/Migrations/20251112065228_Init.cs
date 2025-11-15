@@ -1,12 +1,13 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using NetTopologySuite.Geometries;
 
 #nullable disable
 
 namespace SmartCare.InfraStructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitDataBase : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -30,6 +31,8 @@ namespace SmartCare.InfraStructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Gender = table.Column<int>(type: "int", nullable: false),
                     ProfileImageUrl = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     BirthDate = table.Column<DateOnly>(type: "date", nullable: false),
@@ -67,6 +70,7 @@ namespace SmartCare.InfraStructure.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     LogoUrl = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    ProductsCount = table.Column<int>(type: "int", nullable: false),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
@@ -81,7 +85,8 @@ namespace SmartCare.InfraStructure.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     LogoUrl = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    ProductsCount = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -95,7 +100,11 @@ namespace SmartCare.InfraStructure.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     Address = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false),
+                    Latitude = table.Column<float>(type: "real", nullable: false),
+                    Longitude = table.Column<float>(type: "real", nullable: false),
+                    GeoLocation = table.Column<Point>(type: "geography", nullable: true),
                     Phone = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
@@ -215,7 +224,7 @@ namespace SmartCare.InfraStructure.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ClientId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    status = table.Column<int>(type: "int", nullable: false),
                     TotalPrice = table.Column<decimal>(type: "decimal(8,2)", nullable: false)
                 },
                 constraints: table =>
@@ -227,6 +236,29 @@ namespace SmartCare.InfraStructure.Migrations
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Order",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ClientId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    PaymentId = table.Column<int>(type: "int", nullable: false),
+                    OrderType = table.Column<int>(type: "int", nullable: false),
+                    TotalPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Order", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Order_AspNetUsers_ClientId",
+                        column: x => x.ClientId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -269,14 +301,13 @@ namespace SmartCare.InfraStructure.Migrations
                     TotalRatings = table.Column<int>(type: "int", nullable: false),
                     DiscountPercentage = table.Column<double>(type: "float", nullable: false),
                     ActiveIngredients = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    SideEffects = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    Contraindications = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    SideEffects = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    Contraindications = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     IsAvailable = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
                     SearchVector = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
                     EmbeddingVector = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
-                    ExpirationDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     DosageForm = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true)
                 },
                 constraints: table =>
@@ -295,36 +326,79 @@ namespace SmartCare.InfraStructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Order",
+                name: "FromStoreOrders",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ClientId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    StoreId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    PaymentId = table.Column<int>(type: "int", nullable: false),
-                    AddressId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    TotalPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    StoreId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FromStoreOrders", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_FromStoreOrders_Order_Id",
+                        column: x => x.Id,
+                        principalTable: "Order",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_FromStoreOrders_Store_StoreId",
+                        column: x => x.StoreId,
+                        principalTable: "Store",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Payment",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    OrderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    PaymentMethod = table.Column<int>(type: "int", nullable: false, defaultValue: 1),
                     Status = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    PaymentIntentId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    SessionId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Order", x => x.Id);
+                    table.PrimaryKey("PK_Payment", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Order_AspNetUsers_ClientId",
-                        column: x => x.ClientId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
+                        name: "FK_Payment_Order_OrderId",
+                        column: x => x.OrderId,
+                        principalTable: "Order",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "OnlineOrders",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AddressId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AddressId1 = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OnlineOrders", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Order_Store_StoreId",
-                        column: x => x.StoreId,
-                        principalTable: "Store",
+                        name: "FK_OnlineOrders_Order_Id",
+                        column: x => x.Id,
+                        principalTable: "Order",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Order_UserAddress_AddressId",
+                        name: "FK_OnlineOrders_UserAddress_AddressId",
                         column: x => x.AddressId,
+                        principalTable: "UserAddress",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_OnlineOrders_UserAddress_AddressId1",
+                        column: x => x.AddressId1,
                         principalTable: "UserAddress",
                         principalColumn: "Id");
                 });
@@ -360,7 +434,8 @@ namespace SmartCare.InfraStructure.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     StoreId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    StockQuantity = table.Column<int>(type: "int", nullable: false)
+                    StockQuantity = table.Column<int>(type: "int", nullable: false),
+                    ReservedQuantity = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -401,7 +476,7 @@ namespace SmartCare.InfraStructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ClientId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ClientId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     ProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Value = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -415,35 +490,12 @@ namespace SmartCare.InfraStructure.Migrations
                         column: x => x.ClientId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_Rate_Products_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Products",
                         principalColumn: "ProductId");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Payment",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    OrderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    PaymentMethod = table.Column<int>(type: "int", nullable: false, defaultValue: 1),
-                    Status = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
-                    TransactionId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Payment", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Payment_Order_OrderId",
-                        column: x => x.OrderId,
-                        principalTable: "Order",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -481,6 +533,28 @@ namespace SmartCare.InfraStructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Reservation",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CartItemId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    QuantityReserved = table.Column<int>(type: "int", nullable: false),
+                    ReservedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ExpiredAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Reservation", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Reservation_CartItem_CartItemId",
+                        column: x => x.CartItemId,
+                        principalTable: "CartItem",
+                        principalColumn: "CartItemId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "OrderItem",
                 columns: table => new
                 {
@@ -488,6 +562,7 @@ namespace SmartCare.InfraStructure.Migrations
                     ProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     OrderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     InvetoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ReservationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Quantity = table.Column<int>(type: "int", nullable: false),
                     UnitPrice = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
                     SubTotal = table.Column<decimal>(type: "decimal(18,2)", nullable: false, computedColumnSql: "[Quantity] * [UnitPrice]")
@@ -512,26 +587,11 @@ namespace SmartCare.InfraStructure.Migrations
                         principalTable: "Products",
                         principalColumn: "ProductId",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Reservation",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CartItemId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    QuantityReserved = table.Column<int>(type: "int", nullable: false),
-                    ReservedAt = table.Column<int>(type: "int", nullable: false),
-                    ExpiredAt = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Reservation", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Reservation_CartItem_CartItemId",
-                        column: x => x.CartItemId,
-                        principalTable: "CartItem",
-                        principalColumn: "CartItemId",
+                        name: "FK_OrderItem_Reservation_ReservationId",
+                        column: x => x.ReservationId,
+                        principalTable: "Reservation",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -588,9 +648,9 @@ namespace SmartCare.InfraStructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Cart_IsActive",
+                name: "IX_Cart_status",
                 table: "Cart",
-                column: "IsActive");
+                column: "status");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CartItem_CartId_ProductId",
@@ -641,9 +701,15 @@ namespace SmartCare.InfraStructure.Migrations
                 column: "ClientId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Favorite_ProductId",
+                name: "IX_Favorite_ProductId_ClientId",
                 table: "Favorite",
-                column: "ProductId");
+                columns: new[] { "ProductId", "ClientId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FromStoreOrders_StoreId",
+                table: "FromStoreOrders",
+                column: "StoreId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Inventory_ProductId",
@@ -657,9 +723,14 @@ namespace SmartCare.InfraStructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Order_AddressId",
-                table: "Order",
+                name: "IX_OnlineOrders_AddressId",
+                table: "OnlineOrders",
                 column: "AddressId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OnlineOrders_AddressId1",
+                table: "OnlineOrders",
+                column: "AddressId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Order_ClientId",
@@ -670,11 +741,6 @@ namespace SmartCare.InfraStructure.Migrations
                 name: "IX_Order_Status",
                 table: "Order",
                 column: "Status");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Order_StoreId",
-                table: "Order",
-                column: "StoreId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OrderItem_InvetoryId",
@@ -693,15 +759,25 @@ namespace SmartCare.InfraStructure.Migrations
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_OrderItem_ReservationId",
+                table: "OrderItem",
+                column: "ReservationId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Payment_OrderId",
                 table: "Payment",
                 column: "OrderId",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Payment_TransactionId",
+                name: "IX_Payment_PaymentIntentId",
                 table: "Payment",
-                column: "TransactionId");
+                column: "PaymentIntentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Payment_SessionId",
+                table: "Payment",
+                column: "SessionId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProductImage_IsPrimary",
@@ -827,6 +903,12 @@ namespace SmartCare.InfraStructure.Migrations
                 name: "Favorite");
 
             migrationBuilder.DropTable(
+                name: "FromStoreOrders");
+
+            migrationBuilder.DropTable(
+                name: "OnlineOrders");
+
+            migrationBuilder.DropTable(
                 name: "OrderItem");
 
             migrationBuilder.DropTable(
@@ -839,19 +921,19 @@ namespace SmartCare.InfraStructure.Migrations
                 name: "Rate");
 
             migrationBuilder.DropTable(
-                name: "Reservation");
+                name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "AspNetRoles");
+                name: "UserAddress");
+
+            migrationBuilder.DropTable(
+                name: "Reservation");
 
             migrationBuilder.DropTable(
                 name: "Order");
 
             migrationBuilder.DropTable(
                 name: "CartItem");
-
-            migrationBuilder.DropTable(
-                name: "UserAddress");
 
             migrationBuilder.DropTable(
                 name: "Cart");

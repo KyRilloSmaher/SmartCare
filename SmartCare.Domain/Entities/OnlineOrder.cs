@@ -8,7 +8,7 @@ namespace SmartCare.Domain.Entities
 {
     public class OnlineOrder : Order
     {
-        public Guid AddressId { get; set; }
+        public Guid ShippingAddressId { get; set; }
         public Address Address { get; set; }
     }
 }

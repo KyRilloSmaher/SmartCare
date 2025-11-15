@@ -666,9 +666,6 @@ namespace SmartCare.InfraStructure.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
-                    b.Property<DateTime?>("ExpirationDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<bool>("IsAvailable")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
@@ -889,15 +886,15 @@ namespace SmartCare.InfraStructure.Migrations
                 {
                     b.HasBaseType("SmartCare.Domain.Entities.Order");
 
-                    b.Property<Guid>("AddressId")
+                    b.Property<Guid?>("AddressId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("AddressId1")
+                    b.Property<Guid>("ShippingAddressId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasIndex("AddressId");
 
-                    b.HasIndex("AddressId1");
+                    b.HasIndex("ShippingAddressId");
 
                     b.ToTable("OnlineOrders", (string)null);
                 });
@@ -1174,20 +1171,20 @@ namespace SmartCare.InfraStructure.Migrations
 
             modelBuilder.Entity("SmartCare.Domain.Entities.OnlineOrder", b =>
                 {
-                    b.HasOne("SmartCare.Domain.Entities.Address", "Address")
-                        .WithMany()
-                        .HasForeignKey("AddressId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("SmartCare.Domain.Entities.Address", null)
                         .WithMany("Orders")
-                        .HasForeignKey("AddressId1");
+                        .HasForeignKey("AddressId");
 
                     b.HasOne("SmartCare.Domain.Entities.Order", null)
                         .WithOne()
                         .HasForeignKey("SmartCare.Domain.Entities.OnlineOrder", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SmartCare.Domain.Entities.Address", "Address")
+                        .WithMany()
+                        .HasForeignKey("ShippingAddressId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Address");

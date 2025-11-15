@@ -40,6 +40,9 @@ namespace SmartCare.InfraStructure.DbContexts
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<Order>().ToTable("Orders");
+            modelBuilder.Entity<OnlineOrder>().ToTable("OnlineOrders");
+            modelBuilder.Entity<FromStoreOrder>().ToTable("FromStoreOrders");
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         }
     }

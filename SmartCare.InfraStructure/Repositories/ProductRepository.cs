@@ -171,21 +171,6 @@ namespace SmartCare.InfraStructure.Repositories
                 .AsNoTracking();
         }
 
-        public IQueryable<Product> GetExpiredProducts()
-        {
-            var expiredProducts = _context.Products
-                .Where(p => p.ExpirationDate.HasValue && p.ExpirationDate < DateTime.Now).AsQueryable();
-
-            return expiredProducts;
-        }
-
-        public IQueryable<Product> GetUnExpiredProducts()
-        {
-            var UnexpiredProducts = _context.Products
-                .Where(p => p.ExpirationDate.HasValue && p.ExpirationDate > DateTime.Now).AsQueryable();
-
-            return UnexpiredProducts;
-        }
 
         public IQueryable<Product> GetMostSelling()
         {

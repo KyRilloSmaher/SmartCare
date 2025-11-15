@@ -13,8 +13,8 @@ using SmartCare.InfraStructure.DbContexts;
 namespace SmartCare.InfraStructure.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    [Migration("20251028051745_Update_DB")]
-    partial class Update_DB
+    [Migration("20251112065228_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -211,20 +211,18 @@ namespace SmartCare.InfraStructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
                     b.Property<decimal>("TotalPrice")
                         .HasColumnType("decimal(8,2)");
+
+                    b.Property<int>("status")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ClientId")
                         .IsUnique();
 
-                    b.HasIndex("IsActive");
+                    b.HasIndex("status");
 
                     b.ToTable("Cart", (string)null);
                 });
@@ -442,6 +440,9 @@ namespace SmartCare.InfraStructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<int>("ProductsCount")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Id");
@@ -469,7 +470,8 @@ namespace SmartCare.InfraStructure.Migrations
 
                     b.HasIndex("ClientId");
 
-                    b.HasIndex("ProductId");
+                    b.HasIndex("ProductId", "ClientId")
+                        .IsUnique();
 
                     b.ToTable("Favorite", (string)null);
                 });
@@ -482,6 +484,9 @@ namespace SmartCare.InfraStructure.Migrations
 
                     b.Property<Guid>("ProductId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("ReservedQuantity")
+                        .HasColumnType("int");
 
                     b.Property<int>("StockQuantity")
                         .HasColumnType("int");
@@ -505,14 +510,14 @@ namespace SmartCare.InfraStructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("AddressId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("ClientId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("OrderType")
+                        .HasColumnType("int");
 
                     b.Property<int>("PaymentId")
                         .HasColumnType("int");
@@ -522,23 +527,18 @@ namespace SmartCare.InfraStructure.Migrations
                         .HasColumnType("int")
                         .HasDefaultValue(0);
 
-                    b.Property<Guid>("StoreId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<decimal>("TotalPrice")
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AddressId");
-
                     b.HasIndex("ClientId");
 
                     b.HasIndex("Status");
 
-                    b.HasIndex("StoreId");
-
                     b.ToTable("Order", (string)null);
+
+                    b.UseTptMappingStrategy();
                 });
 
             modelBuilder.Entity("SmartCare.Domain.Entities.OrderItem", b =>
@@ -559,6 +559,9 @@ namespace SmartCare.InfraStructure.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
+                    b.Property<Guid>("ReservationId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<decimal>("SubTotal")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("decimal(18,2)")
@@ -575,6 +578,8 @@ namespace SmartCare.InfraStructure.Migrations
                     b.HasIndex("OrderId");
 
                     b.HasIndex("ProductId");
+
+                    b.HasIndex("ReservationId");
 
                     b.ToTable("OrderItem", (string)null);
                 });
@@ -597,25 +602,30 @@ namespace SmartCare.InfraStructure.Migrations
                     b.Property<Guid>("OrderId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("PaymentIntentId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<int>("PaymentMethod")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasDefaultValue(1);
+
+                    b.Property<string>("SessionId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("Status")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasDefaultValue(0);
 
-                    b.Property<string>("TransactionId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("OrderId")
                         .IsUnique();
 
-                    b.HasIndex("TransactionId");
+                    b.HasIndex("PaymentIntentId");
+
+                    b.HasIndex("SessionId");
 
                     b.ToTable("Payment", (string)null);
                 });
@@ -658,9 +668,6 @@ namespace SmartCare.InfraStructure.Migrations
                     b.Property<string>("EmbeddingVector")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
-
-                    b.Property<DateTime?>("ExpirationDate")
-                        .HasColumnType("datetime2");
 
                     b.Property<bool>("IsAvailable")
                         .ValueGeneratedOnAdd()
@@ -757,7 +764,6 @@ namespace SmartCare.InfraStructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ClientId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedAt")
@@ -794,13 +800,16 @@ namespace SmartCare.InfraStructure.Migrations
                     b.Property<Guid>("CartItemId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("ExpiredAt")
-                        .HasColumnType("int");
+                    b.Property<DateTime>("ExpiredAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("QuantityReserved")
                         .HasColumnType("int");
 
-                    b.Property<int>("ReservedAt")
+                    b.Property<DateTime>("ReservedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -862,6 +871,35 @@ namespace SmartCare.InfraStructure.Migrations
                     b.HasIndex("Phone");
 
                     b.ToTable("Store", (string)null);
+                });
+
+            modelBuilder.Entity("SmartCare.Domain.Entities.FromStoreOrder", b =>
+                {
+                    b.HasBaseType("SmartCare.Domain.Entities.Order");
+
+                    b.Property<Guid>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasIndex("StoreId");
+
+                    b.ToTable("FromStoreOrders", (string)null);
+                });
+
+            modelBuilder.Entity("SmartCare.Domain.Entities.OnlineOrder", b =>
+                {
+                    b.HasBaseType("SmartCare.Domain.Entities.Order");
+
+                    b.Property<Guid>("AddressId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("AddressId1")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasIndex("AddressId");
+
+                    b.HasIndex("AddressId1");
+
+                    b.ToTable("OnlineOrders", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -1004,28 +1042,12 @@ namespace SmartCare.InfraStructure.Migrations
 
             modelBuilder.Entity("SmartCare.Domain.Entities.Order", b =>
                 {
-                    b.HasOne("SmartCare.Domain.Entities.Address", "Address")
-                        .WithMany("Orders")
-                        .HasForeignKey("AddressId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
                     b.HasOne("SmartCare.Domain.Entities.Client", "Client")
                         .WithMany("Orders")
                         .HasForeignKey("ClientId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("SmartCare.Domain.Entities.Store", "Store")
-                        .WithMany("Orders")
-                        .HasForeignKey("StoreId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Address");
-
                     b.Navigation("Client");
-
-                    b.Navigation("Store");
                 });
 
             modelBuilder.Entity("SmartCare.Domain.Entities.OrderItem", b =>
@@ -1048,11 +1070,19 @@ namespace SmartCare.InfraStructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("SmartCare.Domain.Entities.Reservation", "Reservation")
+                        .WithMany()
+                        .HasForeignKey("ReservationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Inventory");
 
                     b.Navigation("Order");
 
                     b.Navigation("Product");
+
+                    b.Navigation("Reservation");
                 });
 
             modelBuilder.Entity("SmartCare.Domain.Entities.Payment", b =>
@@ -1101,8 +1131,7 @@ namespace SmartCare.InfraStructure.Migrations
                     b.HasOne("SmartCare.Domain.Entities.Client", "Client")
                         .WithMany("Rates")
                         .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("SmartCare.Domain.Entities.Product", "Product")
                         .WithMany("Rates")
@@ -1124,6 +1153,44 @@ namespace SmartCare.InfraStructure.Migrations
                         .IsRequired();
 
                     b.Navigation("CartItem");
+                });
+
+            modelBuilder.Entity("SmartCare.Domain.Entities.FromStoreOrder", b =>
+                {
+                    b.HasOne("SmartCare.Domain.Entities.Order", null)
+                        .WithOne()
+                        .HasForeignKey("SmartCare.Domain.Entities.FromStoreOrder", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SmartCare.Domain.Entities.Store", "Store")
+                        .WithMany("Orders")
+                        .HasForeignKey("StoreId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Store");
+                });
+
+            modelBuilder.Entity("SmartCare.Domain.Entities.OnlineOrder", b =>
+                {
+                    b.HasOne("SmartCare.Domain.Entities.Address", "Address")
+                        .WithMany()
+                        .HasForeignKey("AddressId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SmartCare.Domain.Entities.Address", null)
+                        .WithMany("Orders")
+                        .HasForeignKey("AddressId1");
+
+                    b.HasOne("SmartCare.Domain.Entities.Order", null)
+                        .WithOne()
+                        .HasForeignKey("SmartCare.Domain.Entities.OnlineOrder", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Address");
                 });
 
             modelBuilder.Entity("SmartCare.Domain.Entities.Address", b =>
