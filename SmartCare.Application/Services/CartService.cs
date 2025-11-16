@@ -183,7 +183,7 @@ namespace SmartCare.Application.Services
                         () => CancelReservationPrivate(reservation.Id, inventoryId, cart.Id, product.ProductId, cartItem.Quantity),
                         TimeSpan.FromMinutes(10));
 
-                    var responseDto = _mapper.Map<CartItemResponseDto?>(cartItem);
+                    var responseDto = _mapper.Map<CartItemResponseDto?>(await _cartRepository.GetCartItemAsync(cartItem.CartItemId));
                     return _responseHandler.Success(responseDto, SystemMessages.ADDED_TO_CART);
                 }
                 catch (Exception ex)
@@ -249,10 +249,9 @@ namespace SmartCare.Application.Services
                     cartItem.Quantity = dto.NewQuantity;
                     cartItem.SubTotal = cartItem.UnitPrice * dto.NewQuantity;
                     await _cartRepository.UpdateItemCartAsync(cartItem);
-                    await _cartRepository.CalculateCartTotalAsync(cart.Id);
 
                     await _cartRepository.CommitTransactionAsync();
-
+                    await _cartRepository.CalculateCartTotalAsync(cart.Id);
                     eventsToPublish.Add(new ProductStockStatusChangedEvent(product.ProductId,
                         await _inventoryRepository.GetTotalStockForProductAsync(product.ProductId) > 0));
 
@@ -300,12 +299,12 @@ namespace SmartCare.Application.Services
                     if (!removed)
                         return await FailTransactionAsync<bool>(SystemMessages.SERVER_ERROR);
 
-                    await _cartRepository.CalculateCartTotalAsync(cart.Id);
 
-                    await _reservationRepository.CancelReservationAsync(reservation.Id, cartItem.InventoryId, ReservationStatus.Realesed);
+
+                   // await _reservationRepository.CancelReservationAsync(reservation.Id, cartItem.InventoryId, ReservationStatus.Realesed);
 
                     await _cartRepository.CommitTransactionAsync();
-
+                    await _cartRepository.CalculateCartTotalAsync(cart.Id);
                     // Post-commit events
                     var availableStock = await _inventoryRepository.GetTotalStockForProductAsync(cartItem.ProductId);
                     _backgroundJobService.Enqueue(() =>

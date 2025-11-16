@@ -30,6 +30,7 @@ namespace SmartCare.InfraStructure.Repositories
             };
 
             await _context.Carts.AddAsync(newCart);
+            await SaveChangesAsync();
             return newCart;
         }
 
@@ -148,7 +149,7 @@ namespace SmartCare.InfraStructure.Repositories
 
             cart.TotalPrice = total;
             _context.Carts.Update(cart);
-
+            await SaveChangesAsync();
             return total;
         }
 
