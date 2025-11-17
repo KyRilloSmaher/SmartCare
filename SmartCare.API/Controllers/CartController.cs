@@ -56,7 +56,7 @@ namespace SmartCare.API.Controllers
         /// Add Item to Cart
         /// </summary>
         [HttpPost(ApplicationRouting.Cart.Create)]
-        [ProducesResponseType(typeof(Response<CartItemResponseDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response<Guid>), StatusCodes.Status200OK)]
         public async Task<IActionResult> CreateUserCart()
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;

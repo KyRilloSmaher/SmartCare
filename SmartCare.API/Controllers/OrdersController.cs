@@ -6,6 +6,7 @@ using SmartCare.Application.DTOs.Orders.Responses;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Application.IServices;
 using SmartCare.Domain.Enums;
+using System.Security.Claims;
 
 namespace SmartCare.API.Controllers
 {
@@ -161,39 +162,51 @@ namespace SmartCare.API.Controllers
         }
 
         /// <summary>
-        /// Create a new Order
+        /// Create a new Online Order
         /// </summary>
-        [HttpPost(ApplicationRouting.Order.Create)]
+        [HttpPost(ApplicationRouting.Order.CreateOnline)]
         [ProducesResponseType(typeof(Response<OrderResponseDto>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> CreateOrderAsync([FromBody] CreateOrderRequestDto dto)
+        public async Task<IActionResult> CreateOnlineOrderAsync([FromBody] CreateOnlineOrderRequestDto dto)
         {
-            var result = await _orderService.CreateOrderFromCartAsync(dto);
-            return ControllersHelperMethods.FinalResponse(result);
-        }
-
-
-        /// <summary>
-        /// Update Order Status
-        /// </summary>
-        [Authorize(Roles = "DASHBOARD_ADMIN , OWNER")]
-        [HttpPatch(ApplicationRouting.Order.UpdateStatus)]
-        [ProducesResponseType(typeof(Response<OrderResponseDto>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> UpdateOrderStatusAsync(Guid id, OrderStatus newStatus)
-        {
-            var result = await _orderService.UpdateOrderStatusAsync(id, newStatus);
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;                                                               
+            var result = await _orderService.CreateOnlineOrderFromCartAsync(userId,dto);
             return ControllersHelperMethods.FinalResponse(result);
         }
 
         /// <summary>
-        /// Delete Order
+        /// Create a new PickUp Order
         /// </summary>
-        [Authorize(Roles = "DASHBOARD_ADMIN , OWNER")]
-        [HttpDelete(ApplicationRouting.Order.Delete)]
-        [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> DeleteOrderAsync(Guid id)
+        [HttpPost(ApplicationRouting.Order.CreatePickUp)]
+        [ProducesResponseType(typeof(Response<PickUpOrderResponseDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> CreatePickUpOrderAsync([FromBody] CreatePickUpOrderRequestDto dto)
         {
-            var result = await _orderService.DeleteOrderAsync(id);
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var result = await _orderService.CreatePickupOrderFromCartAsync(userId,dto);
             return ControllersHelperMethods.FinalResponse(result);
         }
+
+        ///// <summary>
+        ///// Update Order Status
+        ///// </summary>
+        //[Authorize(Roles = "DASHBOARD_ADMIN , OWNER")]
+        //[HttpPatch(ApplicationRouting.Order.UpdateStatus)]
+        //[ProducesResponseType(typeof(Response<OrderResponseDto>), StatusCodes.Status200OK)]
+        //public async Task<IActionResult> UpdateOrderStatusAsync(Guid id, OrderStatus newStatus)
+        //{
+        //    var result = await _orderService.UpdateOrderStatusAsync(id, newStatus);
+        //    return ControllersHelperMethods.FinalResponse(result);
+        //}
+
+        ///// <summary>
+        ///// Delete Order
+        ///// </summary>
+        //[Authorize(Roles = "DASHBOARD_ADMIN , OWNER")]
+        //[HttpDelete(ApplicationRouting.Order.Delete)]
+        //[ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
+        //public async Task<IActionResult> DeleteOrderAsync(Guid id)
+        //{
+        //    var result = await _orderService.DeleteOrderAsync(id);
+        //    return ControllersHelperMethods.FinalResponse(result);
+        //}
     }
 }

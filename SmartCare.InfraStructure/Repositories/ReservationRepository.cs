@@ -72,9 +72,9 @@ namespace SmartCare.InfraStructure.Repositories
             reservation.Status = status;
             reservation.ExpiredAt = DateTime.UtcNow;
 
-            var cartItem = await _context.CartItems.FirstOrDefaultAsync(c => c.ReservationId == reservationId);
-            if (cartItem != null)
-                _context.CartItems.Remove(cartItem);
+            //var cartItem = await _context.CartItems.FirstOrDefaultAsync(c => c.ReservationId == reservationId);
+            //if (cartItem != null)
+            //    _context.CartItems.Remove(cartItem);
 
             _context.Reservations.Update(reservation);
 
@@ -151,11 +151,12 @@ namespace SmartCare.InfraStructure.Repositories
             foreach (var reservation in expiredReservations)
             {
                 if (reservation.CartItem?.Inventory != null)
-                    reservation.CartItem.Inventory.ReservedQuantity = Math.Max(0,
-                        reservation.CartItem.Inventory.ReservedQuantity - reservation.QuantityReserved);
+                {
+                    reservation.CartItem.Inventory.ReservedQuantity = Math.Max(0, reservation.CartItem.Inventory.ReservedQuantity - reservation.QuantityReserved);
+                    reservation.Status = ReservationStatus.Realesed;
+                }
             }
 
-            _context.Reservations.RemoveRange(expiredReservations);
             return await _context.SaveChangesAsync();
         }
 

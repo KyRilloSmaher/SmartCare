@@ -155,7 +155,8 @@ namespace SmartCare.Infrastructure.Repositories
         public async Task<bool> AddOrderItemsAsync(IEnumerable<OrderItem> orderItems)
         {
             await _context.OrderItems.AddRangeAsync(orderItems);
-            return true;
+
+            return await _context.SaveChangesAsync()>0;
         }
 
 

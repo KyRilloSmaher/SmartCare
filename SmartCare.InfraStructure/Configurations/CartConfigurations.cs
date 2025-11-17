@@ -34,8 +34,8 @@ namespace SmartCare.InfraStructure.Configurations
 
 
 
-            builder.HasIndex(x => x.ClientId)
-                .IsUnique();
+            //builder.HasIndex(x => x.ClientId)
+            //    .IsUnique();
 
             builder.HasIndex(x => x.status);
                 

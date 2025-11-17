@@ -22,6 +22,7 @@ namespace SmartCare.Application.Services
         private readonly IPaymentGetway _paymentGateway;
         private readonly IPaymentRepository _paymentRepository;
         private readonly IOrderRepository _orderRepository;
+        private readonly IInventoryRepository _inventoryRepository;
         private readonly IResponseHandler _responseHandler;
         private readonly IMapper _mapper;
         private readonly IEventBus _eventBus;
@@ -34,7 +35,8 @@ namespace SmartCare.Application.Services
             IResponseHandler responseHandler,
             IMapper mapper,
             IEventBus eventBus,
-            ILogger<PaymentService> logger)
+            ILogger<PaymentService> logger,
+            IInventoryRepository inventoryRepository)
         {
             _paymentGateway = paymentGateway;
             _paymentRepository = paymentRepository;
@@ -43,14 +45,15 @@ namespace SmartCare.Application.Services
             _mapper = mapper;
             _eventBus = eventBus;
             _logger = logger;
+            _inventoryRepository = inventoryRepository;
         }
 
 
-        public async Task<Response<Session>> ProcessPaymentAsync(CreateCheckoutSessionRequest req)
+        public async Task<Response<SessionResponse>> ProcessPaymentAsync(CreateCheckoutSessionRequest req)
         {
             var order = await _orderRepository.GetByIdAsync(req.OrderId, true);
             if (order == null)
-                return _responseHandler.BadRequest<Session>(SystemMessages.ORDER_NOT_FOUND);
+                return _responseHandler.BadRequest<SessionResponse>(SystemMessages.ORDER_NOT_FOUND);
 
             var request = new PaymentSessionRequest
             {
@@ -63,16 +66,22 @@ namespace SmartCare.Application.Services
 
             var session = await _paymentGateway.CreateCheckoutSessionAsync(request);
             var payment = _mapper.Map<Payment>(session);
-            payment.OrderId = order.Id;
             payment.Status = PaymentStatus.Pending;
+            payment.OrderId = order.Id;
             await _paymentRepository.AddAsync(payment);
-            return _responseHandler.Success(session);
+            order.PaymentId = payment.Id;
+            var response = new SessionResponse
+            {
+                url = session.Url,
+                Id = session.Id
+            };
+            return _responseHandler.Success(response);
         }
 
         public async Task<Response<PaymentResult>> MarkPaymentSuccessAsync(Guid orderId)
         {
 
-            var order = await _orderRepository.GetByIdAsync(orderId, true);
+            var order = await _orderRepository.GetOrderWithDetailsByIdAsync(orderId);
             if (order == null)
                 return _responseHandler.BadRequest<PaymentResult>("Order not found.");
 
@@ -81,8 +90,13 @@ namespace SmartCare.Application.Services
                 return _responseHandler.BadRequest<PaymentResult>("Payment not found.");
 
             order.Status = OrderStatus.Completed;
+            order.PaymentId = payment.Id;
             payment.Status = PaymentStatus.Completed;
-
+            var orderItems = order.Items;
+            foreach (var item in orderItems)
+            {
+                await _inventoryRepository.FinalizeStockDeductionAsync(item.InvetoryId, item.Quantity);
+            }
             await _orderRepository.UpdateAsync(order);
             await _paymentRepository.UpdateAsync(payment);
 

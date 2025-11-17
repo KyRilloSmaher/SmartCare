@@ -31,7 +31,7 @@ namespace SmartCare.InfraStructure.Repositories
         }
         public async Task<Payment?> GetByOrderIdAsync(Guid orderId)
         {
-            return await _context.Payments
+            return await _context.Payments.AsTracking()
                 .FirstOrDefaultAsync(p => p.OrderId == orderId);
         }
 

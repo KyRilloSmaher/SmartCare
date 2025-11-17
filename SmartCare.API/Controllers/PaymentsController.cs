@@ -42,34 +42,37 @@ namespace SmartCare.API.Controllers
 
             return Ok();
         }
-
-        [HttpPost("success/{orderId}")]
-        public async Task<IActionResult> Success(Guid orderId)
-        {
-            var result = await _paymentService.MarkPaymentSuccessAsync(orderId);
-            return ControllersHelperMethods.FinalResponse(result);
-        }
-
-        [HttpPost("fail/{orderId}")]
-        public async Task<IActionResult> Fail(Guid orderId)
-        {
-            var result = await _paymentService.MarkPaymentFailureAsync(orderId);
-            return ControllersHelperMethods.FinalResponse(result);
-        }
-
         [HttpPost("process/{orderId}")]
         public async Task<IActionResult> ProcessPayment(Guid orderId)
         {
             var request = _httpContextAccessor.HttpContext.Request;
             var baseUrl = $"{request.Scheme}://{request.Host}";
-            var returnUrl = $"{baseUrl}/payment";
+            var returnUrl = $"{baseUrl}/api/Payments";
             var requestdto = new CreateCheckoutSessionRequest
             {
                 OrderId = orderId,
                 ReturnUrl = returnUrl
             };
             var result = await _paymentService.ProcessPaymentAsync(requestdto);
+
             return ControllersHelperMethods.FinalResponse(result);
         }
+
+
+        [HttpGet("success/{orderId}")]
+        public async Task<IActionResult> Success(Guid orderId)
+        {
+            var result = await _paymentService.MarkPaymentSuccessAsync(orderId);
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+
+        [HttpGet("fail/{orderId}")]
+        public async Task<IActionResult> Fail(Guid orderId)
+        {
+            var result = await _paymentService.MarkPaymentFailureAsync(orderId);
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+
+       
     }
 }

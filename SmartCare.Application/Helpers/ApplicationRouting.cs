@@ -185,7 +185,9 @@
             public const string GetTotalRevenue = AdminPrefix + "/total-revenue";
             public const string GetCountByStatus = AdminPrefix + "/count-by-status";
 
-            public const string Create = Prefix + "/create";
+
+            public const string CreateOnline = Prefix + "/create-online-order";
+            public const string CreatePickUp = Prefix + "/create-pickup-order";
             public const string Update = Prefix + "/update";
             public const string UpdateStatus = AdminPrefix + "/update-status" + SingleRoute;
             public const string Delete = AdminPrefix + "/delete" + SingleRoute;
