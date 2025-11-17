@@ -28,7 +28,7 @@ public class StripeService : IPaymentGetway
                     PriceData = new SessionLineItemPriceDataOptions
                     {
                         UnitAmountDecimal = request.Amount * 100, // Stripe uses cents
-                        Currency = "egp",
+                        Currency = "usd",
                         ProductData = new SessionLineItemPriceDataProductDataOptions
                         {
                             Name = "SmartCare Order"

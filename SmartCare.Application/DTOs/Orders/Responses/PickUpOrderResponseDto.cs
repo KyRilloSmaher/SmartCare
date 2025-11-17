@@ -8,15 +8,15 @@ using System.Threading.Tasks;
 
 namespace SmartCare.Application.DTOs.Orders.Responses
 {
-    public class OrderResponseDto
+    public class PickUpOrderResponseDto
     {
         public Guid Id { get; set; }
         public string? ClientId { get; set; }
         public int? PaymentId { get; set; }
-        public AddressResponseDto Address { get; set; }
+        public Guid storeId { get; set; }
         public decimal TotalPrice { get; set; }
         public OrderStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }
-        public IEnumerable<OrderItemResponseDto>? OrderItems { get; set; }
+        public IEnumerable<OutOfStockItemDto>? outOfStocks { get; set; }
     }
 }

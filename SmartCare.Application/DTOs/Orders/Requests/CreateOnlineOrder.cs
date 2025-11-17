@@ -7,10 +7,8 @@ using System.Threading.Tasks;
 
 namespace SmartCare.Application.DTOs.Orders.Requests
 {
-    public class CreateOrderRequestDto
+    public class CreateOnlineOrderRequestDto : CreateOrderRequestDto
     {
-
-        public Guid CartId { get; set; }
-
+        public Guid deliveryAddressId { get; set; }
     }
 }

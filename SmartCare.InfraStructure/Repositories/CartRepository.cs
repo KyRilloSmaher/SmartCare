@@ -162,6 +162,18 @@ namespace SmartCare.InfraStructure.Repositories
             _context.CartItems.RemoveRange(cartItems);
             return true;
         }
+        public async override  Task<bool> DeleteAsync(Cart entity)
+        {
+            entity.status = CartStatus.Abandoned;
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> CheckIfProductExistInCart(Guid cartId, Guid productId)
+        {
+            return await _context.CartItems
+                .AnyAsync(ci => ci.CartId == cartId && ci.ProductId == productId);
+        }
 
         #endregion
     }

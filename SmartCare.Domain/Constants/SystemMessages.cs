@@ -85,6 +85,7 @@ namespace SmartCare.Domain.Constants
         public const string CART_UPDATED = "Cart updated successfully.";
         public const string ITEM_ADDED_TO_CART = "Item added to cart.";
         public const string ITEM_REMOVED_FROM_CART = "Item removed from cart.";
+        public const string PRODUCT_ALREADY_IN_CART = "This Product is already Exist In your cart ";
         public const string CART_EMPTY = "Cart is empty.";
         public const string CART_CREATED = "CART CREATED";
         public const string CART_ALREADY_EXISTS = "An active cart already exists for this user.";

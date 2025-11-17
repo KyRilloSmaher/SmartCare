@@ -128,7 +128,8 @@ namespace SmartCare.Application.Services
             var product = await EnsureProductExistsAsync(dto.ProductId);
             if (product == null)
                 return _responseHandler.NotFound<CartItemResponseDto?>(SystemMessages.PRODUCT_NOT_FOUND);
-
+            if ( await _cartRepository.CheckIfProductExistInCart(dto.CartId, dto.ProductId))
+                return _responseHandler.BadRequest<CartItemResponseDto?>(SystemMessages.PRODUCT_ALREADY_IN_CART);
             return await _lockRetryPolicy.ExecuteAsync(async () =>
             {
                 await using var appLock = await _sqlLockManager.AcquireLockAsync(

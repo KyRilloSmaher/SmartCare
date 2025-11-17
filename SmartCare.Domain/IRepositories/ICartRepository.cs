@@ -19,5 +19,6 @@ namespace SmartCare.Domain.IRepositories
         Task<Cart> CreateCartAsync(string userId);
         Task<bool> ClearCartAsync(Cart cart);
         Task<decimal> CalculateCartTotalAsync(Guid cartId);
+        Task<bool> CheckIfProductExistInCart(Guid cartId, Guid productId);
     }
 }

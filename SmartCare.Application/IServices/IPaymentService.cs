@@ -13,7 +13,7 @@ namespace SmartCare.Application.IServices
 {
     public interface IPaymentService
     {
-        Task<Response<Session>> ProcessPaymentAsync(CreateCheckoutSessionRequest req);
+        Task<Response<SessionResponse>> ProcessPaymentAsync(CreateCheckoutSessionRequest req);
         Task<Response<PaymentResult>> MarkPaymentSuccessAsync(Guid orderId);
         Task<Response<PaymentResult>> MarkPaymentFailureAsync(Guid orderId);
         Task<Response<PaymentResult>> TryCancelOrRefundAsync(Guid orderId);
