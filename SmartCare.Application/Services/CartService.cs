@@ -140,7 +140,7 @@ namespace SmartCare.Application.Services
 
                 try
                 {
-                    // 1️⃣ Check available stock
+                    //  Check available stock
                     var availableStock = await _inventoryRepository.GetTotalStockForProductAsync(product.ProductId);
                     if (availableStock < dto.Quantity)
                         return await FailTransactionAsync<CartItemResponseDto?>(SystemMessages.INSUFFICIENT_STOCK);
@@ -149,7 +149,7 @@ namespace SmartCare.Application.Services
                     if (inventoryId == Guid.Empty)
                         return await FailTransactionAsync<CartItemResponseDto?>(SystemMessages.INSUFFICIENT_STOCK);
 
-                    // 2️⃣ Create and save CartItem first
+                    //  Create and save CartItem first
                     var cartItem = new CartItem
                     {
                         CartItemId = Guid.NewGuid(),
@@ -162,9 +162,9 @@ namespace SmartCare.Application.Services
                     };
 
                     await _cartRepository.AddCartItemAsync(cartItem);
-                    await _cartRepository.SaveChangesAsync(); // ✅ Save to generate CartItemId for FK
+                    await _cartRepository.SaveChangesAsync(); 
 
-                    // 3️⃣ Create Reservation using the saved CartItem
+                    // Create Reservation using the saved CartItem
                     var reservation = await _reservationRepository.CreateReservationAsync(
                         cartItem, dto.Quantity, ReservationStatus.ReservedUntilCheckout);
 
@@ -177,7 +177,7 @@ namespace SmartCare.Application.Services
                     await _cartRepository.CalculateCartTotalAsync(cart.Id);
                     await _cartRepository.CommitTransactionAsync();
 
-                    // 4️⃣ Post-commit jobs
+                    //  Post-commit jobs
                     eventsToPublish.Add(new ProductStockStatusChangedEvent(product.ProductId, availableStock - dto.Quantity > 0));
                     _backgroundJobService.Enqueue(() => PublishEventsAsync(eventsToPublish));
                     _backgroundJobService.Schedule(
@@ -346,12 +346,12 @@ namespace SmartCare.Application.Services
                     foreach (var item in cartItems)
                     {
                         await _cartRepository.RemoveCartItemAsync(item);
-                        await _reservationRepository.CancelReservationAsync(item.ReservationId, item.InventoryId, ReservationStatus.Realesed);
+                        
                     }
 
+                    await _cartRepository.CommitTransactionAsync();
                     await _cartRepository.CalculateCartTotalAsync(cart.Id);
 
-                    await _cartRepository.CommitTransactionAsync();
 
                     // Post-commit events
                     var stockEvents = new List<ProductStockStatusChangedEvent>();
@@ -504,19 +504,11 @@ namespace SmartCare.Application.Services
                     _logger.LogError("Failed to cancel reservation {ReservationId}", reservationId);
                 }
 
-                // recalc cart total if cartId known - try to find cart containing reservation (best-effort)
-                try
-                {
                     var cart = await _cartRepository.GetByIdAsync(CartId);
                     if (cart != null)
                     {
                         await _cartRepository.CalculateCartTotalAsync(cart.Id);
                     }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Failed to calculate cart total after cancelling reservation {ReservationId}", reservationId);
-                }
 
                 // publish ReservationExpiredEvent (post-commit via background job)
                 var eventsToPublish = new List<object>

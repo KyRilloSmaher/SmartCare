@@ -18,5 +18,6 @@ namespace SmartCare.Application.DTOs.Orders.Responses
         public OrderStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }
         public IEnumerable<OutOfStockItemDto>? outOfStocks { get; set; }
+        public IEnumerable<OrderItemResponseDtoForPickup>? items { get; set; }
     }
 }

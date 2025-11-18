@@ -103,6 +103,7 @@ namespace SmartCare.Infrastructure.Repositories
             if (storeId.HasValue)
             {
                 query = query.OfType<FromStoreOrder>()
+                             .Include(o => o.Store)
                              .Where(o => o.StoreId == storeId.Value);
             }
 
@@ -142,6 +143,7 @@ namespace SmartCare.Infrastructure.Repositories
             if (storeId.HasValue)
             {
                 query = query.OfType<FromStoreOrder>()
+                              .Include(o => o.Store)
                              .Where(o => o.StoreId == storeId.Value);
             }
 
