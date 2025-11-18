@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Crypto;
+using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Domain.Entities;
 using SmartCare.Domain.IRepositories;
 using SmartCare.InfraStructure.DbContexts;
@@ -36,7 +37,7 @@ namespace SmartCare.InfraStructure.Repositories
             return inventory.Id;
         }
 
-        public async Task<List<Inventory>> GetAvailableInventoriesForProductAsync(Guid productId)
+        public async Task<IEnumerable<Inventory>> GetAvailableInventoriesForProductAsync(Guid productId)
         {
             var inventories = await _context.Inventories.Include(i => i.Store).Include(i => i.Product)
                           .Where(i => i.ProductId == productId)
@@ -56,6 +57,8 @@ namespace SmartCare.InfraStructure.Repositories
         public async Task<Inventory> IncreaseProductStockAsync(Guid InventoryId, int quantityToAdd)
         {
             var inventory = await _context.Inventories
+                                           .Include(x => x.Product)
+                                           .Include(x => x.Store)
                                           .FirstOrDefaultAsync(i => i.Id == InventoryId);
 
             if (inventory == null)
@@ -74,6 +77,8 @@ namespace SmartCare.InfraStructure.Repositories
         public async Task<Inventory> DecreaseProductStockAsync(Guid InventoryId , int quantityToSubtract)
         {
             var inventory = await _context.Inventories
+                                         .Include(x => x.Product)
+                                           .Include(x => x.Store)
                            .FirstOrDefaultAsync(i =>i.Id == InventoryId);
 
             if (inventory == null)
@@ -92,15 +97,19 @@ namespace SmartCare.InfraStructure.Repositories
         public async Task<Inventory?> GetStockOfProductInStore(Guid productId, Guid storeId)
         {
             return await _context.Inventories
+                              .Include(x => x.Product)
+                              .Include(x => x.Store)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(i => i.ProductId == productId && i.StoreId == storeId);
 
         }
 
-        public async Task<List<Inventory>> GetAllInventoryInStoreAsync(Guid storeId)
+        public async Task<IQueryable<Inventory>> GetAllInventoryInStoreAsync(Guid storeId)
         {
-            var Inventories = await _context.Inventories
-                                .Where(i => i.StoreId == storeId).ToListAsync();
+            var Inventories =  _context.Inventories
+                                   .Include(x => x.Product)
+                                   .Include(x => x.Store)
+                                .Where(i => i.StoreId == storeId).AsQueryable();
             return Inventories;
         }
 
@@ -127,7 +136,6 @@ namespace SmartCare.InfraStructure.Repositories
             var result = await _context.SaveChangesAsync();
             return result > 0;
         }
-
 
         public async Task<bool> FinalizeStockDeductionForProductAsync(Guid productId, int quantity)
         {
@@ -179,6 +187,212 @@ namespace SmartCare.InfraStructure.Repositories
             }
         }
 
+        public async Task<bool> ReserveStockAsync(Guid inventoryId, int quantity)
+        {
+            var inventory = await _context.Inventories
+                .FirstOrDefaultAsync(i => i.Id == inventoryId);
+
+            if (inventory == null)
+                throw new InvalidOperationException($"Inventory with ID {inventoryId} not found.");
+
+
+            var availableQuantity = inventory.StockQuantity - inventory.ReservedQuantity; 
+
+            if(quantity > availableQuantity)
+            {
+                throw new InvalidOperationException($"Quantity exceed from availableQuantity");
+            }
+            inventory.ReservedQuantity += quantity;
+
+            var result = await _context.SaveChangesAsync();
+            return result > 0;
+        }
+
+        public async Task<bool> ReleaseReservedStockAsync(Guid inventoryId, int quantity)
+        {
+            var inventory = await _context.Inventories
+                .FirstOrDefaultAsync(i => i.Id == inventoryId);
+
+            if (inventory == null)
+                throw new InvalidOperationException($"Inventory with ID {inventoryId} not found.");
+
+
+            inventory.ReservedQuantity -= quantity;
+
+            var result = await _context.SaveChangesAsync();
+            return result > 0;
+        }
+
+        public async Task<bool> TransferStockAsync(Guid fromInventoryId, Guid toInventoryId, int quantity)
+        {
+            var frominventory = await _context.Inventories
+                .FirstOrDefaultAsync(i => i.Id == fromInventoryId);
+            var toinventory = await _context.Inventories
+                .FirstOrDefaultAsync(i => i.Id == toInventoryId);
+            if (frominventory == null)
+                throw new InvalidOperationException($"Inventory with ID {fromInventoryId} not found.");
+            if (toinventory == null)
+                throw new InvalidOperationException($"Inventory with ID {toInventoryId} not found.");
+            frominventory.StockQuantity -= quantity;
+            toinventory.StockQuantity += quantity;
+
+            var result = await _context.SaveChangesAsync();
+            return result > 0;
+
+        }
+
+        public async Task<List<Inventory>> GetLowStockItemsAsync(int threshold)
+        {
+            List<Inventory> LowStock = new List<Inventory>();
+
+            var inventories = await _context.Inventories
+                                .Include(x => x.OrderItem)
+                                .Include(x => x.Product)
+                                .Include(x => x.Store)
+                                .Where(I => I.StockQuantity <= threshold).ToListAsync();
+
+            if(!inventories.Any())
+                return LowStock;
+
+                var ProductIds = inventories.Select(i => i.ProductId).ToList();
+
+            var OrderItems = await _context.OrderItems
+                                      .Where(O => ProductIds.Contains(O.ProductId))
+                                      .GroupBy(i => i.ProductId)
+                                      .Select(g => new
+                                      {
+                                          ProductId = g.Key,
+                                          TotalOrdered = g.Sum(x => x.Quantity)
+                                      }).ToListAsync();
+
+            var orderItemDictinory = OrderItems.ToDictionary(x => x.ProductId, x => x.TotalOrdered);
+            foreach (var inv in inventories)
+            {
+                int ordered = orderItemDictinory.ContainsKey(inv.ProductId) ? orderItemDictinory[inv.ProductId] : 0;
+
+                int totalStock = inv.StockQuantity + ordered;
+
+                if(totalStock == 0)
+                    continue;
+
+                double ratio = (double)ordered / totalStock;
+                
+                if(ratio >= 0.5)
+                    LowStock.Add(inv);
+            }
+
+
+           return LowStock;
+
+        }
+        public async Task<bool> SetStockLevelAsync(Guid inventoryId, int newQuantity)
+        {
+            var inventory = await _context.Inventories
+                .FirstOrDefaultAsync(i => i.Id == inventoryId);
+
+            if (inventory == null)
+                throw new InvalidOperationException($"Inventory with ID {inventoryId} not found.");
+
+            if (inventory.ReservedQuantity > newQuantity)
+                throw new InvalidOperationException("Error: Reserved quantity exceeds the new avaliable stock.");
+
+            inventory.StockQuantity = newQuantity;
+
+            var result = await _context.SaveChangesAsync();
+            return result > 0;
+        }
+        public async Task<List<Inventory>> GetLowStockItemsInStoreAsync(int threshold, Guid storeId)
+        {
+            List<Inventory> LowStock = new List<Inventory>();
+
+            var inventories = await _context.Inventories
+                                .Include(x => x.Product)
+                                .Include(x => x.Store)
+                                .Where(I => I.StockQuantity <= threshold &&  I.StoreId == storeId).ToListAsync();
+
+            if (!inventories.Any())
+                return LowStock;
+
+            var ProductIds = inventories.Select(i => i.ProductId).ToList();
+
+            var OrderItems = await _context.OrderItems
+                                      .Include(o => o.Inventory)
+                                      .Where(O => ProductIds.Contains(O.ProductId) && O.Inventory.StoreId == storeId)
+                                      .GroupBy(i => i.ProductId)
+                                      .Select(g => new
+                                      {
+                                          ProductId = g.Key,
+                                          TotalOrdered = g.Sum(x => x.Quantity)
+                                      }).ToListAsync();
+
+            var orderItemDictinory = OrderItems.ToDictionary(x => x.ProductId, x => x.TotalOrdered);
+            
+            foreach (var inv in inventories)
+            {
+                int ordered = orderItemDictinory.ContainsKey(inv.ProductId) ? orderItemDictinory[inv.ProductId] : 0;
+
+                int totalStock = inv.StockQuantity + ordered;
+
+                if (totalStock == 0)
+                    continue;
+
+                double ratio = (double)ordered / totalStock;
+
+                if (ratio >= 0.5)
+                    LowStock.Add(inv);
+            }
+
+            return LowStock;
+        }
         #endregion
+
+        public override async Task<Inventory> AddAsync(Inventory inventory)
+        {
+            if (inventory.ReservedQuantity > inventory.StockQuantity)
+                throw new Exception("Reserved cannot exceed stock");
+
+            var addedInventory = await base.AddAsync(inventory);
+
+            return await _context.Inventories
+                .Include(i => i.Store)
+                .Include(i => i.Product)
+                .FirstOrDefaultAsync(i => i.Id == addedInventory.Id);
+
+        }
+
+        public async Task<bool> DeleteAsync(Guid Id)
+        {
+            var inventory = await _context.Inventories
+                             .Where(x => x.Id == Id)
+                             .FirstOrDefaultAsync();
+            if (inventory == null)
+                return false;
+
+            _context.Inventories.Remove(inventory);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<Inventory> UpdateinventoryAsync(Guid Id ,int StockQuantity , int ReservedQuantity)
+        {
+            var inventory = await _context.Inventories
+                              .Where(x => x.Id == Id)
+                              .FirstOrDefaultAsync();
+
+            if (inventory == null)
+                throw new Exception("Inventory not found.");
+
+            inventory.StockQuantity = StockQuantity;
+            inventory.ReservedQuantity = ReservedQuantity;
+
+            await _context.SaveChangesAsync();
+            return await _context.Inventories
+                .Include(i => i.Store)
+                .Include(i => i.Product)
+                .FirstOrDefaultAsync(i => i.Id == Id);
+
+        }
+    
     }
 }

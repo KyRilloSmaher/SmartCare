@@ -34,7 +34,6 @@ namespace SmartCare.InfraStructure.Repositories
                 .ToListAsync();
         }
 
-
         public async Task<IEnumerable<Category>> GetAllCategoriesForAdminAsync()
         {
             return await base.GetAllAsync();
