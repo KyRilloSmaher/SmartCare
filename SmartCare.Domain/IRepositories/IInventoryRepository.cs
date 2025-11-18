@@ -10,12 +10,12 @@ namespace SmartCare.Domain.IRepositories
     public interface IInventoryRepository : IGenericRepository<Inventory>
     {
         Task<Guid> GetBestInventoryIdAsync(Guid productId ,int quantityRequired);
-        Task<List<Inventory>> GetAvailableInventoriesForProductAsync(Guid productId);
+        Task<IEnumerable<Inventory>> GetAvailableInventoriesForProductAsync(Guid productId);
         Task<int> GetTotalStockForProductAsync(Guid productId);
         Task<Inventory> IncreaseProductStockAsync(Guid InventoryId , int quantityToAdd);
         Task<Inventory> DecreaseProductStockAsync(Guid InventoryId , int quantityToSubtract);
         Task<Inventory?> GetStockOfProductInStore(Guid productId, Guid storeId);
-        Task<List<Inventory>> GetAllInventoryInStoreAsync(Guid storeId);
+        Task<IQueryable<Inventory>> GetAllInventoryInStoreAsync(Guid storeId);
 
 
         /// <summary>
@@ -35,5 +35,13 @@ namespace SmartCare.Domain.IRepositories
         /// <returns>True if successful, false if insufficient stock</returns>
         Task<bool> FinalizeStockDeductionForProductAsync(Guid productId, int quantity);
 
+        Task<bool> ReserveStockAsync(Guid inventoryId, int quantity);
+        Task<bool> ReleaseReservedStockAsync(Guid inventoryId, int quantity);
+        Task<bool> TransferStockAsync(Guid fromInventoryId, Guid toInventoryId, int quantity);
+        Task<List<Inventory>> GetLowStockItemsAsync(int threshold);
+        Task<List<Inventory>> GetLowStockItemsInStoreAsync(int threshold, Guid storeId);
+
+        Task<bool> SetStockLevelAsync(Guid inventoryId, int newQuantity);
+        Task<Inventory> UpdateinventoryAsync(Guid Id, int StockQuantity, int ReservedQuantity);
     }
 }
