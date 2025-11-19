@@ -193,5 +193,34 @@
             public const string Delete = AdminPrefix + "/delete" + SingleRoute;
         }
         #endregion
+
+        #region Inventory
+        public static class Inventory
+        {
+            private const string Prefix = Rule + "Inventories";
+            private const string AdminPrefix = Rule + "admin/Inventories";
+
+            public const string GetBestByProductId = Prefix + "/GetBestInventory";
+            public const string GetAvailableByProductId = Prefix + "/GetAvailableInventory";
+            public const string GetTotalStockByProductId = Prefix + "/GetTotalStockByProductId";
+            public const string IncreaseStock = AdminPrefix + "/IncreaseStock";
+            public const string DecreaseStock = AdminPrefix + "/DecreaseStock";
+            public const string GetStockInStore = Prefix + "/GetStockInStore";
+            public const string GetAllInStore = AdminPrefix + "/GetAllInStore";
+            public const string Create = AdminPrefix + "/Create";
+            public const string Update = AdminPrefix + "/Update";
+            public const string Delete = AdminPrefix + "/Delete";
+
+            public const string Reserve = AdminPrefix + "/Reserve";
+            public const string ReleaseReserved = AdminPrefix + "/ReleaseReserved";
+            public const string TransferStock = AdminPrefix + "/TransferStock";
+            public const string GetLowStock = AdminPrefix + "/GetLowStock";
+            public const string GetLowStockInStore = AdminPrefix + "/GetLowStockInStore";
+            public const string SetStock = AdminPrefix + "/SetStock";
+
+        }
+        #endregion
+
+
     }
 }

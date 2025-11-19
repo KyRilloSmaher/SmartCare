@@ -81,6 +81,7 @@ namespace SmartCare.InfraStructure.Extensions
             services.AddScoped<IResponseHandler, ResponseHandler>();
             services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<IOrderService, OrderService>();
+            services.AddScoped<IinventoryService, InventoryService>();
             services.AddScoped<ISqlLockManager, SqlLockManager>();
 
             // ---------- External Services ----------

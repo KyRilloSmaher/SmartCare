@@ -62,6 +62,7 @@ namespace SmartCare.Domain.Constants
         public const string INVALID_RESET_CODE = "The reset code is invalid or has expired.";
         public const string PASSWORD_RESET_CODE_CONFIRMED = "Reset Password Code confirmed successfully.";
         public const string ADDRESS_IS_REQUIRED = "Address is Required ";
+
         // =====================
         // 💊 Product & Inventory
         // =====================
@@ -71,6 +72,7 @@ namespace SmartCare.Domain.Constants
         public const string PRODUCT_NOT_FOUND = "Product not found.";
         public const string PRODUCT_OUT_OF_STOCK = "Product is currently out of stock.";
         public const string INVENTORY_UPDATED = "Inventory updated successfully.";
+        public const string INVENTORY_NOT_FOUND = "Inventory not found.";
         public const string LOW_STOCK_WARNING = "Stock level is below the safe threshold.";
 
         // =====================
