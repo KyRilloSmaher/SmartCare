@@ -13,9 +13,10 @@ namespace SmartCare.Domain.Enums
         Shipped,
         Completed,
         Cancelled,
+        Confirmed,
         Returned,
         PaymentFailed,
         Expired ,
-        Refunded
+        Refunded,
     }
 }

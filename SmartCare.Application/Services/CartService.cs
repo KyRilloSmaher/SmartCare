@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Retry;
@@ -34,7 +35,7 @@ namespace SmartCare.Application.Services
         private readonly IEventBus _eventBus;
         private readonly IBackgroundJobService _backgroundJobService;
         private readonly ILogger<CartService> _logger;
-
+        private readonly IConfiguration _configuration;
         private readonly AsyncRetryPolicy _lockRetryPolicy;
 
         #endregion
@@ -51,7 +52,8 @@ namespace SmartCare.Application.Services
             ISqlLockManager sqlLockManager,
             IInventoryRepository inventoryRepository,
             IEventBus eventBus,
-            ILogger<CartService> logger)
+            ILogger<CartService> logger,
+            IConfiguration configuration)
         {
             _responseHandler = responseHandler ?? throw new ArgumentNullException(nameof(responseHandler));
             _cartRepository = cartRepository ?? throw new ArgumentNullException(nameof(cartRepository));
@@ -74,6 +76,7 @@ namespace SmartCare.Application.Services
                     {
                         _logger.LogWarning(ex, "Lock acquisition retry {Retry} after {Wait}ms", retryCount, wait.TotalMilliseconds);
                     });
+            _configuration = configuration;
         }
 
         #endregion
@@ -180,9 +183,13 @@ namespace SmartCare.Application.Services
                     //  Post-commit jobs
                     eventsToPublish.Add(new ProductStockStatusChangedEvent(product.ProductId, availableStock - dto.Quantity > 0));
                     _backgroundJobService.Enqueue(() => PublishEventsAsync(eventsToPublish));
+                    var expirationMinutes = _configuration.GetValue<int>("ReservationTimes:ForCartExpirationMinutes");
+
                     _backgroundJobService.Schedule(
                         () => CancelReservationPrivate(reservation.Id, inventoryId, cart.Id, product.ProductId, cartItem.Quantity),
-                        TimeSpan.FromMinutes(10));
+                        TimeSpan.FromMinutes(expirationMinutes)
+                    );
+
 
                     var responseDto = _mapper.Map<CartItemResponseDto?>(await _cartRepository.GetCartItemAsync(cartItem.CartItemId));
                     return _responseHandler.Success(responseDto, SystemMessages.ADDED_TO_CART);
@@ -257,6 +264,12 @@ namespace SmartCare.Application.Services
                         await _inventoryRepository.GetTotalStockForProductAsync(product.ProductId) > 0));
 
                     _backgroundJobService.Enqueue(() => PublishEventsAsync(eventsToPublish));
+                    var expirationMinutes = _configuration.GetValue<int>("ReservationTimes:ForCartExpirationMinutes");
+
+                    _backgroundJobService.Schedule(
+                        () => CancelReservationPrivate(reservation.Id, cartItem.InventoryId, cart.Id, product.ProductId, cartItem.Quantity),
+                        TimeSpan.FromMinutes(expirationMinutes)
+                    );
 
                     var responseDto = _mapper.Map<CartItemResponseDto?>(cartItem);
                     return _responseHandler.Success(responseDto, SystemMessages.CART_UPDATED);
@@ -280,7 +293,7 @@ namespace SmartCare.Application.Services
             if (cartItem == null)
                 return _responseHandler.NotFound<bool>(SystemMessages.NOT_FOUND);
 
-            var reservation = await EnsureReservationExistsAsync(cartItem.ReservationId);
+            var reservation = await EnsureReservationExistsAsync(cartItem.ReservationId ,true);
             if (reservation == null)
                 return _responseHandler.NotFound<bool>(SystemMessages.NOT_FOUND);
 

@@ -113,7 +113,7 @@ namespace SmartCare.API.Controllers
         /// <summary>
         /// Delete Entire Cart
         /// </summary>
-        [Authorize(Roles = "DASHBOARD_ADMIN")]
+        //[Authorize(Roles = "DASHBOARD_ADMIN")]
         [HttpDelete(ApplicationRouting.Cart.Delete)]
         [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> DeleteCartAsync(Guid cartId)

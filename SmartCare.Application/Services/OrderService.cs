@@ -439,7 +439,12 @@ namespace SmartCare.Application.Services
                 await _cartRepository.CreateCartAsync(ClientId);
 
                 var respDto = _mapper.Map<PickUpOrderResponseDto?>(order);
-                //respDto.OrderItems = _mapper.Map<IEnumerable<OrderItemResponseDtoForPickup>>(orderItems);
+                respDto.outOfStocks = processResult.OutOfStock;
+                foreach (var item in respDto.items)
+                {
+                    item.IsReadyForPickup = !respDto.outOfStocks.Any(o => o.ProductId == item.product.ProductId);
+
+                }
 
                 return _responseHandler.Success(respDto, SystemMessages.ORDER_PLACED);
             }
@@ -521,6 +526,17 @@ namespace SmartCare.Application.Services
                             RequestedQty = ci.Quantity,
                             AvailableQty = inventory?.StockQuantity ?? 0
                         });
+                    }
+                    else if (inventory.StockQuantity >=ci.Quantity)
+                    {
+                        var reservation = await _reservationRepository.GetByIdAsync(ci.ReservationId, true);
+                        reservation.ExpiredAt = DateTime.UtcNow;
+                        await _reservationRepository.UpdateAsync(reservation);
+                        await  _reservationRepository.CancelReservationAsync(ci.ReservationId, ci.InventoryId, ReservationStatus.Realesed);
+                        ci.InventoryId = inventory.Id;
+                        var newReservation = await _reservationRepository.CreateReservationAsync(ci, ci.Quantity, ReservationStatus.ReservedUntilCheckout);
+                        ci.ReservationId = newReservation.Id;
+
                     }
                 }
 

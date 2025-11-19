@@ -17,24 +17,49 @@ namespace SmartCare.Application.Mappers
 
         private void FromOrderToOrderResponseDto()
         {
+            // BASE mapping with derived includes
             CreateMap<Order, OrderResponseDto>()
-               
+                .Include<OnlineOrder, OrderResponseDto>()
+                .Include<FromStoreOrder, OrderResponseDto>()
                 .ForMember(dest => dest.PaymentId, opt => opt.MapFrom(src => src.PaymentId))
                 .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.TotalPrice))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
                 .ForMember(dest => dest.ClientId, opt => opt.MapFrom(src => src.ClientId))
+                .ForMember(dest => dest.OrderItems, opt => opt.MapFrom(src => src.Items))
                 .ReverseMap();
 
+            // CHILD: Online Order
+            CreateMap<OnlineOrder, OrderResponseDto>()
+                .ForMember(dest => dest.PaymentId, opt => opt.MapFrom(src => src.PaymentId))
+                .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.TotalPrice))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
+                .ForMember(dest => dest.ClientId, opt => opt.MapFrom(src => src.ClientId))
+                .ForMember(dest => dest.OrderItems, opt => opt.MapFrom(src => src.Items))
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
+                .ReverseMap();
 
-            CreateMap<Order, PickUpOrderResponseDto>()
-
-        .ForMember(dest => dest.PaymentId, opt => opt.MapFrom(src => src.PaymentId))
-        .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.TotalPrice))
-        .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
-        .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
-        .ForMember(dest => dest.ClientId, opt => opt.MapFrom(src => src.ClientId))
-        .ReverseMap();
+            // CHILD: Store Order
+            CreateMap<FromStoreOrder, OrderResponseDto>()
+                .ForMember(dest => dest.PaymentId, opt => opt.MapFrom(src => src.PaymentId))
+                .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.TotalPrice))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
+                .ForMember(dest => dest.ClientId, opt => opt.MapFrom(src => src.ClientId))
+                .ForMember(dest => dest.OrderItems, opt => opt.MapFrom(src => src.Items))
+                .ForMember(dest => dest.Store, opt => opt.MapFrom(src => src.Store))
+                .ReverseMap();
+            CreateMap<FromStoreOrder, PickUpOrderResponseDto>()
+                .ForMember(dest => dest.PaymentId, opt => opt.MapFrom(src => src.PaymentId))
+                .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.TotalPrice))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
+                .ForMember(dest => dest.ClientId, opt => opt.MapFrom(src => src.ClientId))
+                .ForMember(dest => dest.items, opt => opt.MapFrom(src => src.Items))
+                .ForMember(dest => dest.storeId, opt => opt.MapFrom(src => src.StoreId))
+                .ForMember(dest => dest.items, opt => opt.MapFrom(src => src.Items))
+                .ReverseMap();
         }
 
         private void FromOrderItemToOrderItemResponse()
@@ -73,7 +98,7 @@ namespace SmartCare.Application.Mappers
         {
             CreateMap<CreateOrderRequestDto, Order>()
 
-                
+
                 .ForMember(dest => dest.TotalPrice, opt => opt.Ignore()) // calculated from items
                 .ForMember(dest => dest.Payment, opt => opt.Ignore()) // created later
                 .ForMember(dest => dest.Items, opt => opt.Ignore()) // populated from cart

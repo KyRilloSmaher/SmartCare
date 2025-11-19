@@ -20,6 +20,8 @@ namespace SmartCare.Infrastructure.Repositories
         private IQueryable<Order> BaseOrderQuery()
         {
             return _context.Orders
+                .Include(o => (o as OnlineOrder).Address)
+                .Include(o => (o as FromStoreOrder).Store)
                 .Include(o => o.Items)
                     .ThenInclude(i => i.Product)
                         .ThenInclude(p => p.Images)

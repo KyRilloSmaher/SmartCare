@@ -22,17 +22,6 @@ namespace SmartCare.API.Controllers
         }
 
         /// <summary>
-        /// Get Order by Id
-        /// </summary>
-        [HttpGet(ApplicationRouting.Order.GetById)]
-        [ProducesResponseType(typeof(Response<OrderResponseDto>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetOrderByIdAsync(Guid id)
-        {
-            var result = await _orderService.GetOrderByIdAsync(id);
-            return ControllersHelperMethods.FinalResponse(result);
-        }
-
-        /// <summary>
         /// Get Order with details by Id
         /// </summary>
         [HttpGet(ApplicationRouting.Order.GetWithDetailsById)]
@@ -42,7 +31,17 @@ namespace SmartCare.API.Controllers
             var result = await _orderService.GetOrderWithDetailsByIdAsync(id);
             return ControllersHelperMethods.FinalResponse(result);
         }
-
+        /// <summary>
+        /// Get Orders For User
+        /// </summary>
+        [HttpGet(ApplicationRouting.Order.GetForUser)]
+        [ProducesResponseType(typeof(Response<IEnumerable<OrderResponseDto>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetOrdersForUserAsync()
+        {   
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var result = await _orderService.GetOrdersByCustomerIdAsync(userId);
+            return ControllersHelperMethods.FinalResponse(result);
+        }
         /// <summary>
         /// Get Orders by Customer Id
         /// </summary>
@@ -185,28 +184,28 @@ namespace SmartCare.API.Controllers
             return ControllersHelperMethods.FinalResponse(result);
         }
 
-        ///// <summary>
-        ///// Update Order Status
-        ///// </summary>
-        //[Authorize(Roles = "DASHBOARD_ADMIN , OWNER")]
-        //[HttpPatch(ApplicationRouting.Order.UpdateStatus)]
-        //[ProducesResponseType(typeof(Response<OrderResponseDto>), StatusCodes.Status200OK)]
-        //public async Task<IActionResult> UpdateOrderStatusAsync(Guid id, OrderStatus newStatus)
-        //{
-        //    var result = await _orderService.UpdateOrderStatusAsync(id, newStatus);
-        //    return ControllersHelperMethods.FinalResponse(result);
-        //}
+        /// <summary>
+        /// Update Order Status
+        /// </summary>
+        [Authorize(Roles = "DASHBOARD_ADMIN , OWNER")]
+        [HttpPatch(ApplicationRouting.Order.UpdateStatus)]
+        [ProducesResponseType(typeof(Response<OrderResponseDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> UpdateOrderStatusAsync(Guid id, OrderStatus newStatus)
+        {
+            var result = await _orderService.UpdateOrderStatusAsync(id, newStatus);
+            return ControllersHelperMethods.FinalResponse(result);
+        }
 
-        ///// <summary>
-        ///// Delete Order
-        ///// </summary>
-        //[Authorize(Roles = "DASHBOARD_ADMIN , OWNER")]
-        //[HttpDelete(ApplicationRouting.Order.Delete)]
-        //[ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
-        //public async Task<IActionResult> DeleteOrderAsync(Guid id)
-        //{
-        //    var result = await _orderService.DeleteOrderAsync(id);
-        //    return ControllersHelperMethods.FinalResponse(result);
-        //}
+        /// <summary>
+        /// Delete Order
+        /// </summary>
+        [Authorize(Roles = "DASHBOARD_ADMIN , OWNER")]
+        [HttpDelete(ApplicationRouting.Order.Delete)]
+        [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> DeleteOrderAsync(Guid id)
+        {
+            var result = await _orderService.DeleteOrderAsync(id);
+            return ControllersHelperMethods.FinalResponse(result);
+        }
     }
 }

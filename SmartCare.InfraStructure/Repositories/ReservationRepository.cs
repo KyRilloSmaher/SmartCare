@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using SmartCare.Application.IServices;
 using SmartCare.Domain.Entities;
 using SmartCare.Domain.Enums;
 using SmartCare.Domain.IRepositories;
@@ -13,10 +15,12 @@ namespace SmartCare.InfraStructure.Repositories
     public class ReservationRepository : GenericRepository<Reservation>, IReservationRepository
     {
         private readonly ApplicationDBContext _context;
+        private readonly IConfiguration _configuration;
 
-        public ReservationRepository(ApplicationDBContext context) : base(context)
+        public ReservationRepository(ApplicationDBContext context, IConfiguration configuration) : base(context)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         #region Methods
@@ -37,7 +41,22 @@ namespace SmartCare.InfraStructure.Repositories
                 return null;
 
             inventory.ReservedQuantity += quantity;
-
+            DateTime ExpirationDate = DateTime.UtcNow;
+            if(status == ReservationStatus.ReservedUntilCheckout)
+            {
+                var expirationMinutes = _configuration.GetValue<int>("ReservationTimes:ForCartExpirationMinutes");
+                ExpirationDate = DateTime.UtcNow.AddMinutes(expirationMinutes);
+            }
+            else if (status == ReservationStatus.ReservedUntilPayment)
+            {
+                var expirationMinutes = _configuration.GetValue<int>("ReservationTimes:ForOrderExpirationMinutes");
+                ExpirationDate = DateTime.UtcNow.AddMinutes(expirationMinutes);
+            }
+            else if (status == ReservationStatus.Extra)
+            {
+                var expirationMinutes = _configuration.GetValue<int>("ReservationTimes:ForPaymentExpirationMinutes");
+                ExpirationDate = DateTime.UtcNow.AddMinutes(expirationMinutes);
+            }
             var reservation = new Reservation
             {
                 Id = Guid.NewGuid(),
@@ -45,7 +64,7 @@ namespace SmartCare.InfraStructure.Repositories
                 QuantityReserved = quantity,
                 ReservedAt = DateTime.UtcNow,
                 Status = status,
-                ExpiredAt = DateTime.UtcNow.AddMinutes(10)
+                ExpiredAt = ExpirationDate
             };
 
             await _context.Reservations.AddAsync(reservation);
@@ -59,8 +78,18 @@ namespace SmartCare.InfraStructure.Repositories
         /// </summary>
         public async Task<bool> CancelReservationAsync(Guid reservationId, Guid inventoryId, ReservationStatus status)
         {
+          
             var reservation = await _context.Reservations.FirstOrDefaultAsync(r => r.Id == reservationId);
             if (reservation == null)
+                return false;
+            if (status == ReservationStatus.Completed)
+            {
+                reservation.Status = status;
+                return true;
+            }
+
+            // Only cancel if expired
+            if (DateTime.UtcNow < reservation.ExpiredAt)
                 return false;
 
             var inventory = await _context.Inventories.FirstOrDefaultAsync(inv => inv.Id == inventoryId);
@@ -104,7 +133,8 @@ namespace SmartCare.InfraStructure.Repositories
 
             inventory.ReservedQuantity += quantityDifference;
             reservation.QuantityReserved = newQuantity;
-            reservation.ExpiredAt = DateTime.UtcNow.AddMinutes(10);
+            var expirationMinutes = _configuration.GetValue<int>("ReservationTimes:ForCartExpirationMinutes");
+            reservation.ExpiredAt = DateTime.UtcNow.AddMinutes(expirationMinutes);
 
             _context.Reservations.Update(reservation);
 

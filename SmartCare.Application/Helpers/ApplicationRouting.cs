@@ -172,8 +172,8 @@
             private const string Prefix = Rule + "orders";
             private const string AdminPrefix = Rule + "admin/orders";
 
-            public const string GetById = Prefix + SingleRoute;
             public const string GetWithDetailsById = Prefix + "/details" + SingleRoute;
+            public const string GetForUser= Rule + "me/orders";
             public const string GetByCustomerId = AdminPrefix + "/by-customer";
             public const string GetOrdersByCustomerAndStatus = Prefix + "/by-customer-and-status";
             public const string GetByStatus = AdminPrefix + "/by-status";

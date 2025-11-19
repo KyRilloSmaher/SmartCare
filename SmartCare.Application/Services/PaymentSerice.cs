@@ -23,6 +23,7 @@ namespace SmartCare.Application.Services
         private readonly IPaymentRepository _paymentRepository;
         private readonly IOrderRepository _orderRepository;
         private readonly IInventoryRepository _inventoryRepository;
+        private readonly IReservationRepository _reservationRepository;
         private readonly IResponseHandler _responseHandler;
         private readonly IMapper _mapper;
         private readonly IEventBus _eventBus;
@@ -89,13 +90,14 @@ namespace SmartCare.Application.Services
             if (payment == null)
                 return _responseHandler.BadRequest<PaymentResult>("Payment not found.");
 
-            order.Status = OrderStatus.Completed;
+            order.Status = OrderStatus.Confirmed;
             order.PaymentId = payment.Id;
             payment.Status = PaymentStatus.Completed;
             var orderItems = order.Items;
             foreach (var item in orderItems)
             {
                 await _inventoryRepository.FinalizeStockDeductionAsync(item.InvetoryId, item.Quantity);
+                await _reservationRepository.CancelReservationAsync(item.ReservationId, item.InvetoryId, ReservationStatus.Completed);
             }
             await _orderRepository.UpdateAsync(order);
             await _paymentRepository.UpdateAsync(payment);
@@ -124,7 +126,10 @@ namespace SmartCare.Application.Services
 
             order.Status = OrderStatus.PaymentFailed;
             payment.Status = PaymentStatus.Failed;
-
+            foreach (var item in order.Items)
+            {
+                await _reservationRepository.CancelReservationAsync(item.ReservationId, item.InvetoryId, ReservationStatus.PaymentFailed);
+            }
             await _orderRepository.UpdateAsync(order);
             await _paymentRepository.UpdateAsync(payment);
 
