@@ -181,10 +181,10 @@ using (var scope = app.Services.CreateScope())
 #endregion
 
 // Configure the HTTP request pipeline.
-
 app.MapHub<PaymentsHub>("/hubs/payments");
-app.MapHub<PaymentsHub>("/hubs/products");
-app.MapHub<PaymentsHub>("/hubs/cart");
+app.MapHub<ProductsHub>("/hubs/products");
+app.MapHub<CartHub>("/hubs/cart");
+
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseHangfireDashboard("/hangfire");

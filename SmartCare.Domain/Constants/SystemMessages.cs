@@ -245,5 +245,429 @@ namespace SmartCare.Domain.Constants
                                                               </body>
                                                             </html>";
 
+        // ====================================
+        // HTML PAGES 
+        // ====================================
+        public const string PaymentSuccessPage =
+        @"<!DOCTYPE html>
+<html lang=""en"">
+<head>
+    <meta charset=""UTF-8"">
+    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+    <title>Payment Successful | SmartCare Pharmacy</title>
+    <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f0f7ff 0%, #e1eeff 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 82, 204, 0.15);
+            overflow: hidden;
+            text-align: center;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e6fd9 0%, #0a4da2 100%);
+            padding: 30px 20px;
+            color: white;
+        }
+        
+        .logo {
+            max-width: 180px;
+            height: auto;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+        
+        .content {
+            padding: 40px 30px;
+        }
+        
+        .success-icon {
+            width: 100px;
+            height: 100px;
+            background-color: #e8f4ff;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 25px;
+            color: #1e6fd9;
+            font-size: 42px;
+        }
+        
+        .content h2 {
+            color: #1a5cb3;
+            font-size: 26px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .content p {
+            color: #4a5568;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+        
+        .app-return {
+            background-color: #f7fbff;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 25px 0;
+            border: 1px solid #e1eeff;
+        }
+        
+        .app-return h3 {
+            color: #1a5cb3;
+            margin-bottom: 15px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .app-return p {
+            font-size: 15px;
+            margin-bottom: 0;
+        }
+        
+        .btn {
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: #1e6fd9;
+            color: white;
+            border: none;
+            margin-top: 10px;
+        }
+        
+        .btn:hover {
+            background-color: #155bb5;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(30, 111, 217, 0.3);
+        }
+        
+        .footer {
+            background-color: #f7fbff;
+            padding: 20px;
+            text-align: center;
+            color: #4a5568;
+            font-size: 14px;
+            border-top: 1px solid #e1eeff;
+        }
+        
+        .footer a {
+            color: #1e6fd9;
+            text-decoration: none;
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                border-radius: 12px;
+            }
+            
+            .header {
+                padding: 25px 15px;
+            }
+            
+            .content {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class=""container"">
+        <div class=""header"">
+            <img src=""https://res.cloudinary.com/dwahjkgbk/image/upload/v1763550528/photo_2025-11-19_13-08-12_wvzvek.jpg"" alt=""SmartCare Pharmacy Logo"" class=""logo"">
+            <h1>SmartCare Pharmacy</h1>
+            <p>Your Health, Our Priority</p>
+        </div>
+        
+        <div class=""content"">
+            <div class=""success-icon"">
+                <i class=""fas fa-check""></i>
+            </div>
+            
+            <h2>Payment Successful!</h2>
+            <p>Your payment has been processed successfully and your order has been placed.</p>
+            
+            <div class=""app-return"">
+                <h3><i class=""fas fa-mobile-alt""></i> Return to Mobile App</h3>
+                <p>Please return to the SmartCare Pharmacy mobile app to continue.</p>
+                <a href=""#"" class=""btn"">
+                    <i class=""fas fa-arrow-left""></i> Back to App
+                </a>
+            </div>
+            
+            <p>You will receive a confirmation with your order details shortly.</p>
+        </div>
+        
+        <div class=""footer"">
+            <p>Need help? <a href=""#"">Contact our support team</a></p>
+            <p>&copy; 2025 SmartCare Pharmacy. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>";
+
+        public const string PaymentFailurePage =
+        @"<!DOCTYPE html>
+<html lang=""en"">
+<head>
+    <meta charset=""UTF-8"">
+    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+    <title>Payment Failed | SmartCare Pharmacy</title>
+    <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #fff5f5 0%, #ffecec 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(204, 0, 0, 0.1);
+            overflow: hidden;
+            text-align: center;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #d93a1e 0%, #a20a0a 100%);
+            padding: 30px 20px;
+            color: white;
+        }
+        
+        .logo {
+            max-width: 180px;
+            height: auto;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+        
+        .content {
+            padding: 40px 30px;
+        }
+        
+        .failure-icon {
+            width: 100px;
+            height: 100px;
+            background-color: #ffe8e6;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 25px;
+            color: #d93a1e;
+            font-size: 42px;
+        }
+        
+        .content h2 {
+            color: #b31a1a;
+            font-size: 26px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .content p {
+            color: #4a5568;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+        
+        .app-return {
+            background-color: #fff5f5;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 25px 0;
+            border: 1px solid #ffd6d6;
+        }
+        
+        .app-return h3 {
+            color: #b31a1a;
+            margin-bottom: 15px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .app-return p {
+            font-size: 15px;
+            margin-bottom: 0;
+        }
+        
+        .btn {
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: #d93a1e;
+            color: white;
+            border: none;
+            margin-top: 10px;
+        }
+        
+        .btn:hover {
+            background-color: #b31a1a;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(217, 58, 30, 0.3);
+        }
+        
+        .support-info {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f7fbff;
+            border-radius: 8px;
+            border-left: 4px solid #1e6fd9;
+        }
+        
+        .support-info p {
+            font-size: 14px;
+            margin-bottom: 0;
+            color: #4a5568;
+        }
+        
+        .support-info a {
+            color: #1e6fd9;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .footer {
+            background-color: #f7fbff;
+            padding: 20px;
+            text-align: center;
+            color: #4a5568;
+            font-size: 14px;
+            border-top: 1px solid #e1eeff;
+        }
+        
+        .footer a {
+            color: #1e6fd9;
+            text-decoration: none;
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                border-radius: 12px;
+            }
+            
+            .header {
+                padding: 25px 15px;
+            }
+            
+            .content {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class=""container"">
+        <div class=""header"">
+            <img src=""https://res.cloudinary.com/dwahjkgbk/image/upload/v1763550528/photo_2025-11-19_13-08-12_wvzvek.jpg"" alt=""SmartCare Pharmacy Logo"" class=""logo"">
+            <h1>SmartCare Pharmacy</h1>
+            <p>Your Health, Our Priority</p>
+        </div>
+        
+        <div class=""content"">
+            <div class=""failure-icon"">
+                <i class=""fas fa-times""></i>
+            </div>
+            
+            <h2>Payment Failed</h2>
+            <p>We're sorry, but your payment could not be processed at this time.</p>
+            
+            <div class=""app-return"">
+                <h3><i class=""fas fa-mobile-alt""></i> Return to Mobile App</h3>
+                <p>Please return to the SmartCare Pharmacy mobile app to try again or use a different payment method.</p>
+                <a href=""#"" class=""btn"">
+                    <i class=""fas fa-arrow-left""></i> Back to App
+                </a>
+            </div>
+            
+            <div class=""support-info"">
+                <p>If you continue to experience issues, please <a href=""#"">contact our support team</a> for assistance.</p>
+            </div>
+        </div>
+        
+        <div class=""footer"">
+            <p>Need help? <a href=""#"">Contact our support team</a></p>
+            <p>&copy; 2025 SmartCare Pharmacy. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>";
     }
 }

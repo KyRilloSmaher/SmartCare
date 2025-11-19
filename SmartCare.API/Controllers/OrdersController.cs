@@ -46,6 +46,7 @@ namespace SmartCare.API.Controllers
         /// Get Orders by Customer Id
         /// </summary>
         [HttpGet(ApplicationRouting.Order.GetByCustomerId)]
+        [Authorize(Roles = "DASHBOARD_ADMIN , OWNER")]
         [ProducesResponseType(typeof(Response<IEnumerable<OrderResponseDto>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetOrdersByCustomerIdAsync(string clientId)
         {

@@ -20,6 +20,7 @@ namespace SmartCare.Application.Services
     public class PaymentService : IPaymentService
     {
         private readonly IPaymentGetway _paymentGateway;
+        private readonly IClientRepository _clientRepository;
         private readonly IPaymentRepository _paymentRepository;
         private readonly IOrderRepository _orderRepository;
         private readonly IInventoryRepository _inventoryRepository;
@@ -37,7 +38,9 @@ namespace SmartCare.Application.Services
             IMapper mapper,
             IEventBus eventBus,
             ILogger<PaymentService> logger,
-            IInventoryRepository inventoryRepository)
+            IInventoryRepository inventoryRepository,
+            IClientRepository clientRepository,
+            IReservationRepository reservationRepository)
         {
             _paymentGateway = paymentGateway;
             _paymentRepository = paymentRepository;
@@ -47,6 +50,8 @@ namespace SmartCare.Application.Services
             _eventBus = eventBus;
             _logger = logger;
             _inventoryRepository = inventoryRepository;
+            _clientRepository = clientRepository;
+            _reservationRepository = reservationRepository;
         }
 
 
@@ -99,6 +104,8 @@ namespace SmartCare.Application.Services
                 await _inventoryRepository.FinalizeStockDeductionAsync(item.InvetoryId, item.Quantity);
                 await _reservationRepository.CancelReservationAsync(item.ReservationId, item.InvetoryId, ReservationStatus.Completed);
             }
+            var client = await _clientRepository.GetByIdAsync(order.ClientId, true);
+            client.OrdersCount += 1;
             await _orderRepository.UpdateAsync(order);
             await _paymentRepository.UpdateAsync(payment);
 

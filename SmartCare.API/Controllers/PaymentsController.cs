@@ -4,6 +4,7 @@ using SmartCare.API.Helpers;
 using SmartCare.Application.DTOs.Payment;
 using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.IServices;
+using SmartCare.Domain.Constants;
 
 namespace SmartCare.API.Controllers
 {
@@ -64,14 +65,19 @@ namespace SmartCare.API.Controllers
         public async Task<IActionResult> Success(Guid orderId)
         {
             var result = await _paymentService.MarkPaymentSuccessAsync(orderId);
-            return ControllersHelperMethods.FinalResponse(result);
+            if (result.Succeeded)
+            {
+                return Content(SystemMessages.PaymentSuccessPage, "text/html");
+            }
+            return Content(SystemMessages.PaymentFailurePage, "text/html");
         }
 
         [HttpGet("fail/{orderId}")]
         public async Task<IActionResult> Fail(Guid orderId)
         {
             var result = await _paymentService.MarkPaymentFailureAsync(orderId);
-            return ControllersHelperMethods.FinalResponse(result);
+            //return ControllersHelperMethods.FinalResponse(result);
+            return Content(SystemMessages.PaymentFailurePage, "text/html");
         }
 
        

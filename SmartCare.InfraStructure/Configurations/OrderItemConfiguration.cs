@@ -43,9 +43,9 @@ namespace SmartCare.InfraStructure.Configurations
                 .HasForeignKey<OrderItem>(o => o.InvetoryId);
 
 
-            builder.HasIndex(oi => oi.ProductId);
-            builder.HasIndex(oi => oi.OrderId);
-            builder.HasIndex(oi => oi.InvetoryId);
+            //builder.HasIndex(oi => oi.ProductId);
+            //builder.HasIndex(oi => oi.OrderId);
+            //builder.HasIndex(oi => oi.InvetoryId);
 
             
 
