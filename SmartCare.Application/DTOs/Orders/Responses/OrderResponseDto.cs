@@ -1,4 +1,5 @@
 ﻿using SmartCare.Application.DTOs.Address.Responses;
+using SmartCare.Application.DTOs.Stores.Responses;
 using SmartCare.Domain.Enums;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,8 @@ namespace SmartCare.Application.DTOs.Orders.Responses
         public Guid Id { get; set; }
         public string? ClientId { get; set; }
         public int? PaymentId { get; set; }
-        public AddressResponseDto Address { get; set; }
+        public AddressResponseDto? Address { get; set; }
+        public StoreResponseDto? Store { get; set; }
         public decimal TotalPrice { get; set; }
         public OrderStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }

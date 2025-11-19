@@ -72,36 +72,27 @@ namespace SmartCare.Application.Services
 
         public async Task<Response<IEnumerable<OrderResponseDto>>> GetOrdersByCustomerIdAsync(string clientId)
         {
-            _logger.LogDebug("GetOrdersByCustomerIdAsync called for ClientId={ClientId}", clientId);
-
             if (string.IsNullOrWhiteSpace(clientId))
                 return _responseHandler.BadRequest<IEnumerable<OrderResponseDto>>(SystemMessages.BAD_REQUEST);
 
             var client = await _clientRepository.GetByIdAsync(clientId);
             if (client == null)
             {
-                _logger.LogWarning("Client not found for ClientId={ClientId}", clientId);
                 return _responseHandler.BadRequest<IEnumerable<OrderResponseDto>>(SystemMessages.USER_NOT_FOUND);
             }
-
             var orders = await _orderRepository.GetOrdersByCustomerIdAsync(clientId);
             var dto = _mapper.Map<IEnumerable<OrderResponseDto>>(orders);
-
-            _logger.LogInformation("Retrieved {Count} orders for client {ClientId}", orders.Count(), clientId);
             return _responseHandler.Success(dto);
         }
 
         public async Task<Response<OrderResponseDto?>> GetOrderWithDetailsByIdAsync(Guid orderId)
         {
-            _logger.LogDebug("GetOrderWithDetailsByIdAsync called for OrderId={OrderId}", orderId);
-
             if (orderId == Guid.Empty)
                 return _responseHandler.BadRequest<OrderResponseDto?>(SystemMessages.BAD_REQUEST);
 
             var order = await _orderRepository.GetOrderWithDetailsByIdAsync(orderId);
             if (order == null)
             {
-                _logger.LogWarning("Order not found OrderId={OrderId}", orderId);
                 return _responseHandler.NotFound<OrderResponseDto?>(SystemMessages.ORDER_NOT_FOUND);
             }
 
@@ -111,15 +102,13 @@ namespace SmartCare.Application.Services
 
         public async Task<Response<OrderResponseDto>> GetOrderByIdAsync(Guid orderId)
         {
-            _logger.LogDebug("GetOrderByIdAsync called for OrderId={OrderId}", orderId);
-
+           
             if (orderId == Guid.Empty)
                 return _responseHandler.BadRequest<OrderResponseDto>(SystemMessages.BAD_REQUEST);
 
             var order = await _orderRepository.GetByIdAsync(orderId);
             if (order == null)
             {
-                _logger.LogWarning("Order not found OrderId={OrderId}", orderId);
                 return _responseHandler.NotFound<OrderResponseDto>(SystemMessages.ORDER_NOT_FOUND);
             }
 
@@ -129,21 +118,19 @@ namespace SmartCare.Application.Services
 
         public async Task<Response<int>> GetTotalOrdersCountAsync(Guid? storeId = null)
         {
-            _logger.LogDebug("GetTotalOrdersCountAsync called for StoreId={StoreId}", storeId);
             var count = await _orderRepository.GetTotalOrdersCountAsync(storeId);
             return _responseHandler.Success(count);
         }
 
         public async Task<Response<decimal>> GetTotalRevenueAsync(Guid? storeId = null)
         {
-            _logger.LogDebug("GetTotalRevenueAsync called for StoreId={StoreId}", storeId);
             var revenue = await _orderRepository.GetTotalRevenueAsync(storeId);
             return _responseHandler.Success(revenue);
         }
 
         public async Task<Response<IEnumerable<OrderResponseDto>>> GetOrdersByStatus(OrderStatus status, Guid? storeId = null)
         {
-            _logger.LogDebug("GetOrdersByStatus called for Status={Status}, StoreId={StoreId}", status, storeId);
+          
 
             if (!Enum.IsDefined(typeof(OrderStatus), status))
                 return _responseHandler.BadRequest<IEnumerable<OrderResponseDto>>(SystemMessages.INVALID_ORDER_STATUS);
@@ -151,38 +138,30 @@ namespace SmartCare.Application.Services
             var orders = await _orderRepository.GetOrdersByStatusAsync(status, storeId);
             var dto = _mapper.Map<IEnumerable<OrderResponseDto>>(orders);
 
-            _logger.LogInformation("Retrieved {Count} orders with status {Status}", orders.Count(), status);
             return _responseHandler.Success(dto);
         }
 
         public async Task<Response<IEnumerable<OrderResponseDto>>> GetOrdersWithDetailsAsync()
         {
-            _logger.LogDebug("GetOrdersWithDetailsAsync called");
+           
             var orders = await _orderRepository.GetOrdersWithDetailsAsync();
             var dto = _mapper.Map<IEnumerable<OrderResponseDto>>(orders);
-
-            _logger.LogInformation("Retrieved {Count} orders with details", orders.Count());
             return _responseHandler.Success(dto);
         }
 
         public async Task<Response<IEnumerable<OrderResponseDto>>> GetOrdersByDateRangeAsync(DateTime startDate, DateTime endDate, Guid? storeId = null)
         {
-            _logger.LogDebug("GetOrdersByDateRangeAsync called Start={Start}, End={End}, StoreId={StoreId}", startDate, endDate, storeId);
-
             if (startDate > endDate)
                 return _responseHandler.BadRequest<IEnumerable<OrderResponseDto>>(SystemMessages.INVALID_DATE_RANGE);
 
             var orders = await _orderRepository.GetOrdersByDateRangeAsync(startDate, endDate, storeId);
             var dto = _mapper.Map<IEnumerable<OrderResponseDto>>(orders);
-
-            _logger.LogInformation("Retrieved {Count} orders in date range", orders.Count());
             return _responseHandler.Success(dto);
         }
 
         public async Task<Response<IEnumerable<OrderResponseDto>>> GetOrdersByCustomerAndStatusAsync(string customerId, OrderStatus status)
         {
-            _logger.LogDebug("GetOrdersByCustomerAndStatusAsync called for Customer={Customer}, Status={Status}", customerId, status);
-
+          
             if (string.IsNullOrWhiteSpace(customerId))
                 return _responseHandler.BadRequest<IEnumerable<OrderResponseDto>>(SystemMessages.BAD_REQUEST);
 
@@ -191,28 +170,21 @@ namespace SmartCare.Application.Services
 
             var orders = await _orderRepository.GetOrdersByCustomerAndStatusAsync(customerId, status);
             var dto = _mapper.Map<IEnumerable<OrderResponseDto>>(orders);
-
-            _logger.LogInformation("Retrieved {Count} orders for customer {Customer} with status {Status}", orders.Count(), customerId, status);
             return _responseHandler.Success(dto);
         }
 
         public async Task<Response<IEnumerable<OrderResponseDto>>> GetTopNOrdersByValueAsync(int n, Guid? storeId = null)
         {
-            _logger.LogDebug("GetTopNOrdersByValueAsync called N={N}, StoreId={StoreId}", n, storeId);
-
             if (n <= 0)
                 return _responseHandler.BadRequest<IEnumerable<OrderResponseDto>>(SystemMessages.INVALID_INPUT);
 
             var orders = await _orderRepository.GetTopNOrdersByValueAsync(n, storeId);
             var dto = _mapper.Map<IEnumerable<OrderResponseDto>>(orders);
-
-            _logger.LogInformation("Retrieved top {N} orders by value", n);
             return _responseHandler.Success(dto);
         }
 
         public async Task<Response<IEnumerable<OrderResponseDto>>> GetRecentOrdersAsync(int days, Guid? storeId = null)
         {
-            _logger.LogDebug("GetRecentOrdersAsync called Days={Days}, StoreId={StoreId}", days, storeId);
 
             if (days <= 0)
                 return _responseHandler.BadRequest<IEnumerable<OrderResponseDto>>(SystemMessages.INVALID_INPUT);
@@ -220,21 +192,19 @@ namespace SmartCare.Application.Services
             var orders = await _orderRepository.GetRecentOrdersAsync(days, storeId);
             var dto = _mapper.Map<IEnumerable<OrderResponseDto>>(orders);
 
-            _logger.LogInformation("Retrieved {Count} recent orders in last {Days} days", orders.Count(), days);
             return _responseHandler.Success(dto);
         }
 
         public async Task<Response<Dictionary<OrderStatus, int>>> GetOrderCountByStatusAsync(Guid? storeId = null)
         {
-            _logger.LogDebug("GetOrderCountByStatusAsync called StoreId={StoreId}", storeId);
+           
             var counts = await _orderRepository.GetOrderCountByStatusAsync(storeId);
             return _responseHandler.Success(counts);
         }
 
         public async Task<Response<OrderResponseDto>> UpdateOrderStatusAsync(Guid orderId, OrderStatus newStatus)
         {
-            _logger.LogInformation("UpdateOrderStatusAsync called OrderId={OrderId}, NewStatus={NewStatus}", orderId, newStatus);
-
+           
             if (orderId == Guid.Empty)
                 return _responseHandler.BadRequest<OrderResponseDto>(SystemMessages.BAD_REQUEST);
 
@@ -244,14 +214,14 @@ namespace SmartCare.Application.Services
             var order = await _orderRepository.GetByIdAsync(orderId, true);
             if (order == null)
             {
-                _logger.LogWarning("Order not found OrderId={OrderId}", orderId);
+               
                 return _responseHandler.NotFound<OrderResponseDto>(SystemMessages.ORDER_NOT_FOUND);
             }
 
-            // Domain rules: prevent illegal transitions (example)
+            // Domain rules: prevent illegal transitions
             if (!IsValidStatusTransition(order.Status, newStatus))
             {
-                _logger.LogWarning("Invalid status transition from {Old} to {New} for OrderId={OrderId}", order.Status, newStatus, orderId);
+                
                 return _responseHandler.BadRequest<OrderResponseDto>(SystemMessages.BAD_REQUEST);
             }
 
@@ -265,20 +235,16 @@ namespace SmartCare.Application.Services
             }
 
             var dto = _mapper.Map<OrderResponseDto>(order);
-            _logger.LogInformation("Order status updated for OrderId={OrderId} to {Status}", orderId, newStatus);
+            
             return _responseHandler.Success(dto);
         }
         public async Task<Response<OrderResponseDto?>> CreateOnlineOrderFromCartAsync( string ClientId ,  CreateOnlineOrderRequestDto dto)
         {
-            // Validate dto
-            if (dto == null)
-                return _responseHandler.BadRequest<OrderResponseDto?>(SystemMessages.BAD_REQUEST);
 
             // Validate client
             var client = await _clientRepository.GetByIdAsync(ClientId);
             if (client == null)
             {
-                _logger.LogWarning("Client not found ClientId={ClientId}", ClientId);
                 return _responseHandler.BadRequest<OrderResponseDto?>(SystemMessages.USER_NOT_FOUND);
             }
 
@@ -286,14 +252,13 @@ namespace SmartCare.Application.Services
             var cart = await _cartRepository.GetByIdAsync(dto.CartId,true);
             if (cart == null || !string.Equals(cart.ClientId, ClientId, StringComparison.OrdinalIgnoreCase))
             {
-                _logger.LogWarning("Cart not found or mismatched ClientId={ClientId} CartId={CartId}", ClientId, dto.CartId);
+               
                 return _responseHandler.BadRequest<OrderResponseDto?>(SystemMessages.CART_NOT_FOUND);
             }
 
             var cartItems = await _cartRepository.GetCartItemsAsync(cart.Id);
             if (cartItems == null || !cartItems.Any())
             {
-                _logger.LogWarning("Empty cart for CartId={CartId}", cart.Id);
                 return _responseHandler.BadRequest<OrderResponseDto?>(SystemMessages.CART_EMPTY);
             }
 
@@ -323,7 +288,7 @@ namespace SmartCare.Application.Services
                 var added = await _orderRepository.AddAsync(order);
                 if (added == null)
                 {
-                    _logger.LogError("Failed to add order to repository OrderId={OrderId}", order.Id);
+                  
                     await _orderRepository.RollBackAsync();
                     return _responseHandler.Failed<OrderResponseDto?>(SystemMessages.SERVER_ERROR);
                 }
@@ -344,7 +309,6 @@ namespace SmartCare.Application.Services
                 var itemsAdded = await _orderRepository.AddOrderItemsAsync(orderItems);
                 if (!itemsAdded)
                 {
-                    _logger.LogError("Failed adding order items for OrderId={OrderId}", order.Id);
                     await _orderRepository.RollBackAsync();
                     return _responseHandler.Failed<OrderResponseDto?>(SystemMessages.SERVER_ERROR);
                 }
@@ -353,7 +317,7 @@ namespace SmartCare.Application.Services
                 var reservationUpdate = await UpdateReservationsForOrderAsync(cartItems);
                 if (!reservationUpdate.Success)
                 {
-                    _logger.LogError("Failed updating reservations for OrderId={OrderId}", order.Id);
+                    
                     await _orderRepository.RollBackAsync();
                     return _responseHandler.Failed<OrderResponseDto?>(reservationUpdate.ErrorMessage);
                 }
@@ -373,8 +337,6 @@ namespace SmartCare.Application.Services
                 // Return DTO (with items)
                 var respDto = _mapper.Map<OrderResponseDto?>(order);
                 respDto.OrderItems = _mapper.Map<IEnumerable<OrderItemResponseDto>>(orderItems);
-
-                _logger.LogInformation("Order created successfully OrderId={OrderId} ClientId={ClientId}", order.Id, ClientId);
                 return _responseHandler.Success(respDto, SystemMessages.ORDER_PLACED);
             }
             catch (Exception ex)
@@ -386,8 +348,6 @@ namespace SmartCare.Application.Services
         }
         public async Task<Response<PickUpOrderResponseDto?>> CreatePickupOrderFromCartAsync(string ClientId, CreatePickUpOrderRequestDto dto)
         {
-            if (dto == null)
-                return _responseHandler.BadRequest<PickUpOrderResponseDto?>(SystemMessages.BAD_REQUEST);
 
             var client = await _clientRepository.GetByIdAsync(ClientId);
             if (client == null)
@@ -424,8 +384,12 @@ namespace SmartCare.Application.Services
 
                     if (processResult.OutOfStock.Any())
                     {
+                        var responseData = new PickUpOrderResponseDto
+                        {
+                            outOfStocks = processResult.OutOfStock
+                        };
                         return _responseHandler.BadRequest<PickUpOrderResponseDto?>(
-                             new PickUpOrderResponseDto { outOfStocks = processResult.OutOfStock } ,
+                             responseData,
                             "Some items are out of stock."
                         );
                     }
@@ -475,7 +439,12 @@ namespace SmartCare.Application.Services
                 await _cartRepository.CreateCartAsync(ClientId);
 
                 var respDto = _mapper.Map<PickUpOrderResponseDto?>(order);
-                //respDto.OrderItems = _mapper.Map<IEnumerable<OrderItemResponseDtoForPickup>>(orderItems);
+                respDto.outOfStocks = processResult.OutOfStock;
+                foreach (var item in respDto.items)
+                {
+                    item.IsReadyForPickup = !respDto.outOfStocks.Any(o => o.ProductId == item.product.ProductId);
+
+                }
 
                 return _responseHandler.Success(respDto, SystemMessages.ORDER_PLACED);
             }
@@ -491,15 +460,13 @@ namespace SmartCare.Application.Services
 
         public async Task<Response<bool>> DeleteOrderAsync(Guid orderId)
         {
-            _logger.LogInformation("DeleteOrderAsync called for OrderId={OrderId}", orderId);
-
+           
             if (orderId == Guid.Empty)
                 return _responseHandler.BadRequest<bool>(SystemMessages.BAD_REQUEST);
 
             var order = await _orderRepository.GetByIdAsync(orderId);
             if (order == null)
             {
-                _logger.LogWarning("Order not found for deletion OrderId={OrderId}", orderId);
                 return _responseHandler.NotFound<bool>(SystemMessages.ORDER_NOT_FOUND);
             }
 
@@ -516,7 +483,7 @@ namespace SmartCare.Application.Services
                 return _responseHandler.Failed<bool>(SystemMessages.FAILED);
             }
 
-            _logger.LogInformation("Order deleted OrderId={OrderId}", orderId);
+            
             return _responseHandler.Success(true, SystemMessages.RECORD_DELETED);
         }
 
@@ -534,9 +501,7 @@ namespace SmartCare.Application.Services
             return true;
         }
 
-
-        private async Task<(bool Success, string ErrorMessage, List<OutOfStockItemDto> OutOfStock)>
-            ProcessOrderByTypeAsync(Order order, IEnumerable<CartItem> cartItems, Guid? storeId)
+        private async Task<(bool Success, string ErrorMessage, List<OutOfStockItemDto> OutOfStock)>ProcessOrderByTypeAsync(Order order, IEnumerable<CartItem> cartItems, Guid? storeId)
         {
             var outOfStockList = new List<OutOfStockItemDto>();
 
@@ -561,6 +526,17 @@ namespace SmartCare.Application.Services
                             RequestedQty = ci.Quantity,
                             AvailableQty = inventory?.StockQuantity ?? 0
                         });
+                    }
+                    else if (inventory.StockQuantity >=ci.Quantity)
+                    {
+                        var reservation = await _reservationRepository.GetByIdAsync(ci.ReservationId, true);
+                        reservation.ExpiredAt = DateTime.UtcNow;
+                        await _reservationRepository.UpdateAsync(reservation);
+                        await  _reservationRepository.CancelReservationAsync(ci.ReservationId, ci.InventoryId, ReservationStatus.Realesed);
+                        ci.InventoryId = inventory.Id;
+                        var newReservation = await _reservationRepository.CreateReservationAsync(ci, ci.Quantity, ReservationStatus.ReservedUntilCheckout);
+                        ci.ReservationId = newReservation.Id;
+
                     }
                 }
 
@@ -589,9 +565,6 @@ namespace SmartCare.Application.Services
             return (false, SystemMessages.INVALID_ORDER_TYPE, outOfStockList);
         }
 
-
-
-
         private async Task<(bool Success, string ErrorMessage)> UpdateReservationsForOrderAsync(IEnumerable<CartItem> cartItems)
         {
             foreach (var ci in cartItems)
@@ -601,7 +574,6 @@ namespace SmartCare.Application.Services
                 var reservation = await _reservationRepository.GetByIdAsync(ci.ReservationId);
                 if (reservation == null)
                 {
-                    _logger.LogWarning("Reservation not found for CartItem {CartItemId}", ci.CartItemId);
                     return (false, SystemMessages.RESERVATION_FAILED);
                 }
 
@@ -609,7 +581,6 @@ namespace SmartCare.Application.Services
                 var updated = await _reservationRepository.UpdateAsync(reservation);
                 if (updated is null)
                 {
-                    _logger.LogError("Failed to update reservation ReservationId={ReservationId}", reservation.Id);
                     return (false, SystemMessages.RESERVATION_FAILED);
                 }
             }
@@ -646,7 +617,7 @@ namespace SmartCare.Application.Services
 
         public async Task HandleExpiredPaymentAsync(Guid orderId)
         {
-            _logger.LogInformation("HandleExpiredPaymentAsync started for OrderId={OrderId}", orderId);
+           
             try
             {
                 var order = await _orderRepository.GetByIdAsync(orderId, true);
@@ -665,11 +636,9 @@ namespace SmartCare.Application.Services
                     await _paymentService.TryCancelOrRefundAsync(order.Id);
                 }
 
-                _logger.LogInformation("Expired payment handled and order cancelled OrderId={OrderId}", orderId);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error while handling expired payment for OrderId={OrderId}", orderId);
             }
         }
 

@@ -20,6 +20,8 @@ namespace SmartCare.Infrastructure.Repositories
         private IQueryable<Order> BaseOrderQuery()
         {
             return _context.Orders
+                .Include(o => (o as OnlineOrder).Address)
+                .Include(o => (o as FromStoreOrder).Store)
                 .Include(o => o.Items)
                     .ThenInclude(i => i.Product)
                         .ThenInclude(p => p.Images)
@@ -103,6 +105,7 @@ namespace SmartCare.Infrastructure.Repositories
             if (storeId.HasValue)
             {
                 query = query.OfType<FromStoreOrder>()
+                             .Include(o => o.Store)
                              .Where(o => o.StoreId == storeId.Value);
             }
 
@@ -142,6 +145,7 @@ namespace SmartCare.Infrastructure.Repositories
             if (storeId.HasValue)
             {
                 query = query.OfType<FromStoreOrder>()
+                              .Include(o => o.Store)
                              .Where(o => o.StoreId == storeId.Value);
             }
 

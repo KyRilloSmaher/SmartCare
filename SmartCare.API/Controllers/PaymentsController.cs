@@ -31,6 +31,7 @@ namespace SmartCare.API.Controllers
         [HttpPost("webhook")]
         public async Task<IActionResult> HandleWebhook()
         {
+            Console.WriteLine("*******************************HandleWebhook----------------------------");
             var json = await new StreamReader(Request.Body).ReadToEndAsync();
             var signature = Request.Headers["Stripe-Signature"];
             var webhookSecret = _config["StripeSettings:WebhookSecret"];

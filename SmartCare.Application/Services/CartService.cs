@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Retry;
@@ -34,7 +35,7 @@ namespace SmartCare.Application.Services
         private readonly IEventBus _eventBus;
         private readonly IBackgroundJobService _backgroundJobService;
         private readonly ILogger<CartService> _logger;
-
+        private readonly IConfiguration _configuration;
         private readonly AsyncRetryPolicy _lockRetryPolicy;
 
         #endregion
@@ -51,7 +52,8 @@ namespace SmartCare.Application.Services
             ISqlLockManager sqlLockManager,
             IInventoryRepository inventoryRepository,
             IEventBus eventBus,
-            ILogger<CartService> logger)
+            ILogger<CartService> logger,
+            IConfiguration configuration)
         {
             _responseHandler = responseHandler ?? throw new ArgumentNullException(nameof(responseHandler));
             _cartRepository = cartRepository ?? throw new ArgumentNullException(nameof(cartRepository));
@@ -74,6 +76,7 @@ namespace SmartCare.Application.Services
                     {
                         _logger.LogWarning(ex, "Lock acquisition retry {Retry} after {Wait}ms", retryCount, wait.TotalMilliseconds);
                     });
+            _configuration = configuration;
         }
 
         #endregion
@@ -140,7 +143,7 @@ namespace SmartCare.Application.Services
 
                 try
                 {
-                    // 1️⃣ Check available stock
+                    //  Check available stock
                     var availableStock = await _inventoryRepository.GetTotalStockForProductAsync(product.ProductId);
                     if (availableStock < dto.Quantity)
                         return await FailTransactionAsync<CartItemResponseDto?>(SystemMessages.INSUFFICIENT_STOCK);
@@ -149,7 +152,7 @@ namespace SmartCare.Application.Services
                     if (inventoryId == Guid.Empty)
                         return await FailTransactionAsync<CartItemResponseDto?>(SystemMessages.INSUFFICIENT_STOCK);
 
-                    // 2️⃣ Create and save CartItem first
+                    //  Create and save CartItem first
                     var cartItem = new CartItem
                     {
                         CartItemId = Guid.NewGuid(),
@@ -162,9 +165,9 @@ namespace SmartCare.Application.Services
                     };
 
                     await _cartRepository.AddCartItemAsync(cartItem);
-                    await _cartRepository.SaveChangesAsync(); // ✅ Save to generate CartItemId for FK
+                    await _cartRepository.SaveChangesAsync(); 
 
-                    // 3️⃣ Create Reservation using the saved CartItem
+                    // Create Reservation using the saved CartItem
                     var reservation = await _reservationRepository.CreateReservationAsync(
                         cartItem, dto.Quantity, ReservationStatus.ReservedUntilCheckout);
 
@@ -177,12 +180,16 @@ namespace SmartCare.Application.Services
                     await _cartRepository.CalculateCartTotalAsync(cart.Id);
                     await _cartRepository.CommitTransactionAsync();
 
-                    // 4️⃣ Post-commit jobs
+                    //  Post-commit jobs
                     eventsToPublish.Add(new ProductStockStatusChangedEvent(product.ProductId, availableStock - dto.Quantity > 0));
                     _backgroundJobService.Enqueue(() => PublishEventsAsync(eventsToPublish));
+                    var expirationMinutes = _configuration.GetValue<int>("ReservationTimes:ForCartExpirationMinutes");
+
                     _backgroundJobService.Schedule(
                         () => CancelReservationPrivate(reservation.Id, inventoryId, cart.Id, product.ProductId, cartItem.Quantity),
-                        TimeSpan.FromMinutes(10));
+                        TimeSpan.FromMinutes(expirationMinutes)
+                    );
+
 
                     var responseDto = _mapper.Map<CartItemResponseDto?>(await _cartRepository.GetCartItemAsync(cartItem.CartItemId));
                     return _responseHandler.Success(responseDto, SystemMessages.ADDED_TO_CART);
@@ -257,6 +264,12 @@ namespace SmartCare.Application.Services
                         await _inventoryRepository.GetTotalStockForProductAsync(product.ProductId) > 0));
 
                     _backgroundJobService.Enqueue(() => PublishEventsAsync(eventsToPublish));
+                    var expirationMinutes = _configuration.GetValue<int>("ReservationTimes:ForCartExpirationMinutes");
+
+                    _backgroundJobService.Schedule(
+                        () => CancelReservationPrivate(reservation.Id, cartItem.InventoryId, cart.Id, product.ProductId, cartItem.Quantity),
+                        TimeSpan.FromMinutes(expirationMinutes)
+                    );
 
                     var responseDto = _mapper.Map<CartItemResponseDto?>(cartItem);
                     return _responseHandler.Success(responseDto, SystemMessages.CART_UPDATED);
@@ -280,7 +293,7 @@ namespace SmartCare.Application.Services
             if (cartItem == null)
                 return _responseHandler.NotFound<bool>(SystemMessages.NOT_FOUND);
 
-            var reservation = await EnsureReservationExistsAsync(cartItem.ReservationId);
+            var reservation = await EnsureReservationExistsAsync(cartItem.ReservationId ,true);
             if (reservation == null)
                 return _responseHandler.NotFound<bool>(SystemMessages.NOT_FOUND);
 
@@ -346,12 +359,12 @@ namespace SmartCare.Application.Services
                     foreach (var item in cartItems)
                     {
                         await _cartRepository.RemoveCartItemAsync(item);
-                        await _reservationRepository.CancelReservationAsync(item.ReservationId, item.InventoryId, ReservationStatus.Realesed);
+                        
                     }
 
+                    await _cartRepository.CommitTransactionAsync();
                     await _cartRepository.CalculateCartTotalAsync(cart.Id);
 
-                    await _cartRepository.CommitTransactionAsync();
 
                     // Post-commit events
                     var stockEvents = new List<ProductStockStatusChangedEvent>();
@@ -504,19 +517,11 @@ namespace SmartCare.Application.Services
                     _logger.LogError("Failed to cancel reservation {ReservationId}", reservationId);
                 }
 
-                // recalc cart total if cartId known - try to find cart containing reservation (best-effort)
-                try
-                {
                     var cart = await _cartRepository.GetByIdAsync(CartId);
                     if (cart != null)
                     {
                         await _cartRepository.CalculateCartTotalAsync(cart.Id);
                     }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Failed to calculate cart total after cancelling reservation {ReservationId}", reservationId);
-                }
 
                 // publish ReservationExpiredEvent (post-commit via background job)
                 var eventsToPublish = new List<object>

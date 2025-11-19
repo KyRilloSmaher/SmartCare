@@ -73,12 +73,42 @@ namespace SmartCare.API.Controllers
 
             return Ok(list);
         }
-                [HttpGet("order-statues")]
+        [HttpGet("order-statues")]
         public async Task<IActionResult> GetOrderStatues()
         {
 
             var list = Enum.GetValues(typeof(OrderStatus))
                 .Cast<OrderStatus>()
+                .Select(e => new
+                {
+                    Value = (int)e,
+                    DisplayName = e.ToString()
+                })
+                .ToList();
+
+            return Ok(list);
+        }
+        [HttpGet("order-Types")]
+        public async Task<IActionResult> GetOrderTypes()
+        {
+
+            var list = Enum.GetValues(typeof(OrderType))
+                .Cast<OrderType>()
+                .Select(e => new
+                {
+                    Value = (int)e,
+                    DisplayName = e.ToString()
+                })
+                .ToList();
+
+            return Ok(list);
+        }
+        [HttpGet("Reservation-statues")]
+        public async Task<IActionResult> GetReservationstatues()
+        {
+
+            var list = Enum.GetValues(typeof(ReservationStatus))
+                .Cast<ReservationStatus>()
                 .Select(e => new
                 {
                     Value = (int)e,

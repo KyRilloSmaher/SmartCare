@@ -143,8 +143,8 @@ namespace SmartCare.InfraStructure.Repositories
             if (cart == null)
                 throw new Exception($"Cart {cartId} not found.");
 
-            var total = await _context.CartItems
-                .Where(ci => ci.CartId == cartId)
+            var total = await _context.CartItems.Include(ci=>ci.Reservation)
+                .Where(ci => ci.CartId == cartId && ci.Reservation.Status == ReservationStatus.ReservedUntilCheckout)
                 .SumAsync(ci => (decimal)(ci.Quantity * ci.UnitPrice));
 
             cart.TotalPrice = total;
@@ -171,8 +171,8 @@ namespace SmartCare.InfraStructure.Repositories
 
         public async Task<bool> CheckIfProductExistInCart(Guid cartId, Guid productId)
         {
-            return await _context.CartItems
-                .AnyAsync(ci => ci.CartId == cartId && ci.ProductId == productId);
+            return await _context.CartItems.Include(ci=>ci.Reservation)
+                .AnyAsync(ci => ci.CartId == cartId && ci.ProductId == productId && ci.Reservation.Status == ReservationStatus.ReservedUntilCheckout);
         }
 
         #endregion

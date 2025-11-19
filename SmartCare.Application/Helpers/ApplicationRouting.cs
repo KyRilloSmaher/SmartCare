@@ -134,8 +134,8 @@
             public const string Create = Prefix + "/create";
             public const string UpdateItem = Prefix + "/update-item";
             public const string RemoveItem = Prefix + "/remove-item";
-            public const string Clear = Prefix + "/clear";
-            public const string Delete = Prefix + "/{cartId}";
+            public const string Clear = Prefix + "/clear"+ SingleRoute ;
+            public const string Delete = AdminPrefix + "/Delete/{cartId}";
         }
         #endregion
 
@@ -172,13 +172,13 @@
             private const string Prefix = Rule + "orders";
             private const string AdminPrefix = Rule + "admin/orders";
 
-            public const string GetById = Prefix + SingleRoute;
             public const string GetWithDetailsById = Prefix + "/details" + SingleRoute;
-            public const string GetByCustomerId = Prefix + "/by-customer";
+            public const string GetForUser= Rule + "me/orders";
+            public const string GetByCustomerId = AdminPrefix + "/by-customer";
             public const string GetOrdersByCustomerAndStatus = Prefix + "/by-customer-and-status";
             public const string GetByStatus = AdminPrefix + "/by-status";
             public const string GetByDateRange = AdminPrefix + "/by-date-range";
-            public const string GetAllWithDetails = Prefix + "/with-details";
+            public const string GetAllWithDetails = AdminPrefix + "/with-details";
             public const string GetTopNByValue = AdminPrefix + "/top-value";
             public const string GetRecent = AdminPrefix + "/recent";
             public const string GetTotalCount = AdminPrefix + "/total-count";
@@ -188,7 +188,7 @@
 
             public const string CreateOnline = Prefix + "/create-online-order";
             public const string CreatePickUp = Prefix + "/create-pickup-order";
-            public const string Update = Prefix + "/update";
+            public const string Update = AdminPrefix + "/update";
             public const string UpdateStatus = AdminPrefix + "/update-status" + SingleRoute;
             public const string Delete = AdminPrefix + "/delete" + SingleRoute;
         }

@@ -102,9 +102,9 @@ namespace SmartCare.API.Controllers
         /// </summary>
         [HttpDelete(ApplicationRouting.Cart.Clear)]
         [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> ClearCartAsync([FromQuery] Guid cartId)
+        public async Task<IActionResult> ClearCartAsync([FromRoute] Guid id)
         {
-            var result = await _cartService.ClearCartAsync(cartId);
+            var result = await _cartService.ClearCartAsync(id);
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -113,7 +113,7 @@ namespace SmartCare.API.Controllers
         /// <summary>
         /// Delete Entire Cart
         /// </summary>
-        [Authorize(Roles = "DASHBOARD_ADMIN")]
+        //[Authorize(Roles = "DASHBOARD_ADMIN")]
         [HttpDelete(ApplicationRouting.Cart.Delete)]
         [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> DeleteCartAsync(Guid cartId)

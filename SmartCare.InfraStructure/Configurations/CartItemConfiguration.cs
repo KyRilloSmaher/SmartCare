@@ -44,7 +44,7 @@ namespace SmartCare.InfraStructure.Configurations
                 .WithOne(c => c.CartItem)
                 .HasForeignKey<Reservation>(c => c.CartItemId);
 
-            builder.HasIndex(c => new { c.CartId, c.ProductId }).IsUnique();
+            //builder.HasIndex(c => new { c.CartId, c.ProductId }).IsUnique();
             builder.HasIndex(c => c.InventoryId);
             builder.HasIndex(c => c.ReservationId);
 
