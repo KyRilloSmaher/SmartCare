@@ -353,7 +353,7 @@ namespace SmartCare.Application.Services
             if (client == null)
                 return _responseHandler.BadRequest<PickUpOrderResponseDto?>(SystemMessages.USER_NOT_FOUND);
 
-            var cart = await _cartRepository.GetByIdAsync(dto.CartId);
+            var cart = await _cartRepository.GetByIdAsync(dto.CartId,true);
             if (cart == null || !string.Equals(cart.ClientId, ClientId, StringComparison.OrdinalIgnoreCase))
                 return _responseHandler.BadRequest<PickUpOrderResponseDto?>(SystemMessages.CART_NOT_FOUND);
 

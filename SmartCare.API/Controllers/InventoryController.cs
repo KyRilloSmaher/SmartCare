@@ -51,6 +51,52 @@ namespace SmartCare.API.Controllers
         }
 
 
+        [HttpGet(ApplicationRouting.Inventory.GetStockInStore)]
+        [ProducesResponseType(typeof(Response<InventoryUserResponseDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetStockOfProductInStore(Guid productId, Guid storeId)
+        {
+            var result = await _InventoryService.GetStockOfProductInStore(productId, storeId);
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+
+
+        [HttpGet(ApplicationRouting.Inventory.GetAllInStore)]
+        [ProducesResponseType(typeof(Response<List<InventoryAdminResponseDto>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAllInventoryInStore(Guid storeId, int pageNumber, int pageSize)
+        {
+            var result = await _InventoryService.GetAllInventoryInStore(storeId, pageNumber, pageSize);
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+
+
+
+
+        [HttpGet(ApplicationRouting.Inventory.GetLowStock)]
+        [ProducesResponseType(typeof(Response<List<InventoryAdminResponseDto>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetLowStockItemsAsync(int threshold)
+        {
+            var result = await _InventoryService.GetLowStockItemsAsync(threshold);
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+
+
+        [HttpGet(ApplicationRouting.Inventory.GetLowStockInStore)]
+        [ProducesResponseType(typeof(Response<List<InventoryAdminResponseDto>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetLowStockItemsInStoreAsync(int threshold, Guid storeId)
+        {
+            var result = await _InventoryService.GetLowStockItemsInStoreAsync(threshold, storeId);
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+
+        [HttpPost(ApplicationRouting.Inventory.Create)]
+        [ProducesResponseType(typeof(Response<InventoryAdminResponseDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> CreateInventoryAsync(CreateInventoryRequestDto inventoryDto)
+        {
+            var result = await _InventoryService.CreateInventoryAsync(inventoryDto);
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+
+
         [HttpPut(ApplicationRouting.Inventory.IncreaseStock)]
         [ProducesResponseType(typeof(Response<InventoryAdminResponseDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> IncreaseProductStock(Guid InventoryId, int quantityToAdd)
@@ -69,33 +115,6 @@ namespace SmartCare.API.Controllers
         }
 
 
-        [HttpGet(ApplicationRouting.Inventory.GetStockInStore)]
-        [ProducesResponseType(typeof(Response<InventoryUserResponseDto>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetStockOfProductInStore(Guid productId, Guid storeId)
-        {
-            var result = await _InventoryService.GetStockOfProductInStore(productId , storeId);
-            return ControllersHelperMethods.FinalResponse(result);
-        }
-
-
-        [HttpGet(ApplicationRouting.Inventory.GetAllInStore)]
-        [ProducesResponseType(typeof(Response<List<InventoryAdminResponseDto>>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAllInventoryInStore(Guid storeId , int pageNumber, int pageSize)
-        {
-            var result = await _InventoryService.GetAllInventoryInStore(storeId,pageNumber,pageSize);
-            return ControllersHelperMethods.FinalResponse(result);
-        }
-
-
-        [HttpPost(ApplicationRouting.Inventory.Create)]
-        [ProducesResponseType(typeof(Response<InventoryAdminResponseDto>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> CreateInventoryAsync(CreateInventoryRequestDto inventoryDto)
-        {
-            var result = await _InventoryService.CreateInventoryAsync(inventoryDto);
-            return ControllersHelperMethods.FinalResponse(result);
-        }
-
-
         [HttpPut(ApplicationRouting.Inventory.Update)]
         [ProducesResponseType(typeof(Response<InventoryAdminResponseDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateInventoryAsync(UpdateInventoryRequestDto inventoryDto)
@@ -103,31 +122,21 @@ namespace SmartCare.API.Controllers
             var result = await _InventoryService.UpdateInventoryAsync(inventoryDto);
             return ControllersHelperMethods.FinalResponse(result);
         }
-
-
-        [HttpDelete(ApplicationRouting.Inventory.Delete)]
-        [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> DeleteInventoryAsync(Guid Id)
-        {
-            var result = await _InventoryService.DeleteInventoryAsync(Id);
-            return ControllersHelperMethods.FinalResponse(result);
-        }
-
-
         [HttpPatch(ApplicationRouting.Inventory.Reserve)]
         [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> ReserveStockAsync(Guid inventoryId, int quantity)
         {
-            var result = await _InventoryService.ReserveStockAsync(inventoryId , quantity);
+            var result = await _InventoryService.ReserveStockAsync(inventoryId, quantity);
             return ControllersHelperMethods.FinalResponse(result);
         }
+
 
 
         [HttpPatch(ApplicationRouting.Inventory.ReleaseReserved)]
         [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> ReleaseReservedStockAsync(Guid inventoryId, int quantity)
         {
-            var result = await _InventoryService.ReleaseReservedStockAsync(inventoryId , quantity);
+            var result = await _InventoryService.ReleaseReservedStockAsync(inventoryId, quantity);
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -136,25 +145,7 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> TransferStockAsync(Guid fromInventoryId, Guid toInventoryId, int quantity)
         {
-            var result = await _InventoryService.TransferStockAsync(fromInventoryId , toInventoryId ,quantity);
-            return ControllersHelperMethods.FinalResponse(result);
-        }
-
-
-        [HttpGet(ApplicationRouting.Inventory.GetLowStock)]
-        [ProducesResponseType(typeof(Response<List<InventoryAdminResponseDto>>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetLowStockItemsAsync(int threshold)
-        {
-            var result = await _InventoryService.GetLowStockItemsAsync(threshold);
-            return ControllersHelperMethods.FinalResponse(result);
-        }
-
-
-        [HttpGet(ApplicationRouting.Inventory.GetLowStockInStore)]
-        [ProducesResponseType(typeof(Response<List<InventoryAdminResponseDto>>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetLowStockItemsInStoreAsync(int threshold, Guid storeId)
-        {
-            var result = await _InventoryService.GetLowStockItemsInStoreAsync(threshold , storeId);
+            var result = await _InventoryService.TransferStockAsync(fromInventoryId, toInventoryId, quantity);
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -166,6 +157,15 @@ namespace SmartCare.API.Controllers
             var result = await _InventoryService.SetStockLevelAsync(inventoryId , newQuantity);
             return ControllersHelperMethods.FinalResponse(result);
         }
+
+        [HttpDelete(ApplicationRouting.Inventory.Delete)]
+        [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> DeleteInventoryAsync(Guid Id)
+        {
+            var result = await _InventoryService.DeleteInventoryAsync(Id);
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+
 
     }
 }
