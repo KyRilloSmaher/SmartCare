@@ -1,4 +1,6 @@
-﻿using SmartCare.Application.DTOs.Client.Requests;
+﻿using SmartCare.Application.DTOs.Address.Requests;
+using SmartCare.Application.DTOs.Address.Responses;
+using SmartCare.Application.DTOs.Client.Requests;
 using SmartCare.Application.DTOs.Client.Responses;
 using SmartCare.Application.Handlers.ResponseHandler;
 using System;

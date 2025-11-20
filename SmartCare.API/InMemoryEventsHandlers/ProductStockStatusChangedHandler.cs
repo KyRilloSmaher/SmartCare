@@ -27,7 +27,7 @@ namespace SmartCare.API.EventHandlers
                     isAvailable = evt.isAvailable
                 });
 
-            Console.WriteLine($"[SignalR] Product {evt.ProductId} stock updated → isAvailable: {evt.isAvailable}");
+            Console.WriteLine($"[SignalR------] Product {evt.ProductId} stock updated 12333333 isAvailable: {evt.isAvailable}");
         }
     }
 }

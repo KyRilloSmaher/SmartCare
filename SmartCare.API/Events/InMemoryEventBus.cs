@@ -20,11 +20,14 @@ namespace SmartCare.API.Events
 
         public async Task PublishAsync<TEvent>(TEvent @event)
         {
+            Console.WriteLine("-------------------------PUBLISH  ASYNC ---------------------");
             foreach (var handler in _handlers)
             {
                 try
                 {
+                    Console.WriteLine("-------------------------handler is not Null  ASYNC ---------------------");
                     await handler(@event);
+                    Console.WriteLine($"Event handler ");
                 }
                 catch (Exception ex)
                 {

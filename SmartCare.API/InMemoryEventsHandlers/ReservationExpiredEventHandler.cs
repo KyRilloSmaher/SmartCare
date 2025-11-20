@@ -13,25 +13,37 @@ namespace SmartCare.API.InMemoryEventsHandlers
         public ReservationExpiredEventHandler(IEventBus eventBus, IHubContext<CartHub> hubContext)
         {
             _hubContext = hubContext;
+            Console.WriteLine("[DI] ReservationExpiredEventHandler constructed!");
 
-            // subscribe to the event
-            eventBus.Subscribe<ReservationExpiredEvent>(HandleAsync);
+            eventBus.Subscribe<ReservationExpiredEvent>(async evt =>
+            {
+                Console.WriteLine("[Subscribe] Handler registered for ReservationExpiredEvent");
+                await HandleAsync(evt);
+            });
         }
 
         private async Task HandleAsync(ReservationExpiredEvent evt)
         {
-            await _hubContext.Clients.Group($"cart:{evt.CartId}")
-                .SendAsync("ReservationExpired", new
-                {
-                    productId = evt.ProductId,
-                    quantity = evt.Quantity,
-                    message = evt.Message
-                });
+            Console.WriteLine("########## Handler Fired ##########");
 
-            Console.WriteLine(
-                $"[SignalR] Reservation expired for product {evt.ProductId} – client {evt.CartId}"
-            );
+            try
+            {
+                await _hubContext.Clients.Group($"cart:{evt.CartId}")
+                    .SendAsync("ReservationExpired", new
+                    {
+                        productId = evt.ProductId,
+                        quantity = evt.Quantity,
+                        message = evt.Message
+                    });
+
+                Console.WriteLine($"[SignalR] Reservation expired for product {evt.ProductId} – cart {evt.CartId}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[SignalR ERROR] {ex.Message}");
+            }
         }
+
     }
 
 }

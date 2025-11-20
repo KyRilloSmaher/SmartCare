@@ -15,13 +15,18 @@ namespace SmartCare.Application.Mappers
         public AddressamppingProfile()
         {
             CreateAddressRequestToAddress();
+            UpdateAddressRequestToAddress();
             AddressToAddressResponseDto();
         }
 
         void CreateAddressRequestToAddress()
         {
             CreateMap<CreateAddressRequestDto, Address>();
-        } 
+        }
+        void UpdateAddressRequestToAddress()
+        {
+            CreateMap<UpdateAddressRequestDto, Address>();
+        }
         void AddressToAddressResponseDto()
         {
             CreateMap<Address, AddressResponseDto>();
