@@ -19,6 +19,9 @@ using SmartCare.API.Hubs;
 using SmartCare.API.Events;
 using SmartCare.API.InMemoryEventsHandlers;
 using SmartCare.Application.commons;
+using SmartCare.API.EventHandlers;
+using SmartCare.Application.IServices;
+using SmartCare.Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -148,9 +151,12 @@ builder.Services.AddSignalR();
 
 // Register Event Bus
 builder.Services.AddSingleton<IEventBus, InMemoryEventBus>();
+builder.Services.AddScoped<IEventPublisherService, EventPublisherService>();
 
-// Add your events handlers
+// Add  events handlers
 builder.Services.AddSingleton<PaymentStatusChangedHandler>();
+builder.Services.AddSingleton<ProductStockStatusChangedHandler>();
+builder.Services.AddSingleton<ReservationExpiredEventHandler>();
 
 #endregion
 
@@ -179,6 +185,12 @@ using (var scope = app.Services.CreateScope())
     }
 }
 #endregion
+using (var scope = app.Services.CreateScope())
+{
+    scope.ServiceProvider.GetRequiredService<PaymentStatusChangedHandler>();
+    scope.ServiceProvider.GetRequiredService<ProductStockStatusChangedHandler>();
+    scope.ServiceProvider.GetRequiredService<ReservationExpiredEventHandler>();
+}
 
 // Configure the HTTP request pipeline.
 app.MapHub<PaymentsHub>("/hubs/payments");

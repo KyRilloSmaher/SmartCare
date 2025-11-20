@@ -7,8 +7,10 @@ using System.Threading.Tasks;
 
 namespace SmartCare.Domain.IRepositories
 {
-    public interface IAdressRepository : IGenericRepository<Address>
+    public interface IAddressRepository : IGenericRepository<Address>
     {
-
+        Task<IEnumerable<Address>> GetClientAddressesAsync(string clientId);
+        Task<Address?> GetClientAddressByIdAsync(string clientId, Guid addressId);
+        Task<Address?> GetPrimaryAddressAsync(string clientId);
     }
 }

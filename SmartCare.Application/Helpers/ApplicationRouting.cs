@@ -220,7 +220,19 @@
 
         }
         #endregion
+        #region Client Address Endpoints
+        public static class ClientAddress
+        {
+            private const string Prefix = Rule + "Client/addresses";
 
+            public const string Add = Prefix + "/Add";
+            public const string GetAll = Prefix;
+            public const string Delete = Prefix + "/Remove/{addressId}";
+            public const string Update = Prefix + "/Update";
+            public const string SetAsPrimary = Prefix+ "/{addressId}/set-primary";
+        }
+
+        #endregion
 
     }
 }

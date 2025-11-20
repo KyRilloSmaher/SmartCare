@@ -33,7 +33,7 @@ namespace SmartCare.InfraStructure.Extensions
             // ---------- Repositories ----------
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddScoped<IClientRepository, ClientRepository>();
-            services.AddScoped<IAdressRepository, AdressRepository>();
+            services.AddScoped<IAddressRepository, AdressRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<ICompanyRepository, CompanyRepository>();
             services.AddScoped<IStoreRepository, StoreRepository>();
@@ -66,6 +66,7 @@ namespace SmartCare.InfraStructure.Extensions
 
             // ---------- Application Services ----------
             services.AddScoped<IAuthenticationService, AuthenticationService>();
+            services.AddScoped<IAddressService, AddressService>();
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<ICompanyService, CompanyService>();
             services.AddScoped<IClientService, ClientService>();

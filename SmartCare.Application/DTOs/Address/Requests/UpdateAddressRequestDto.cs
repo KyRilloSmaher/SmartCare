@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.DTOs.Address.Responses
+namespace SmartCare.Application.DTOs.Address.Requests
 {
-    public class AddressResponseDto
+    public class UpdateAddressRequestDto
     {
         public Guid Id { get; set; }
         public string address { get; set; }

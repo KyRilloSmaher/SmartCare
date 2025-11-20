@@ -1,4 +1,5 @@
-﻿using SmartCare.Domain.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using SmartCare.Domain.Entities;
 using SmartCare.Domain.IRepositories;
 using SmartCare.InfraStructure.DbContexts;
 using System;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace SmartCare.InfraStructure.Repositories
 {
-    public class AdressRepository : GenericRepository<Address>, IAdressRepository
+    public class AdressRepository : GenericRepository<Address>, IAddressRepository
     {
         private readonly ApplicationDBContext _context;
 
@@ -19,6 +20,23 @@ namespace SmartCare.InfraStructure.Repositories
 
         }
 
+        public async Task<Address?>  GetClientAddressByIdAsync(string clientId, Guid addressId)
+        {
+            return await _context.Addresses.AsNoTracking()
+                .FirstOrDefaultAsync(a => a.ClientId == clientId && a.Id == addressId);
+        }
 
+        public async Task<IEnumerable<Address>> GetClientAddressesAsync(string clientId)
+        {
+            return await _context.Addresses.AsNoTracking()
+                .Where(a => a.ClientId == clientId)
+                .ToListAsync();
+        }
+
+        public async Task<Address?> GetPrimaryAddressAsync(string clientId)
+        {
+            return await _context.Addresses.AsTracking()
+                .FirstOrDefaultAsync(a => a.ClientId == clientId && a.IsPrimary);
+        }
     }
 }

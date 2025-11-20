@@ -29,6 +29,7 @@ namespace SmartCare.Application.Services
         private readonly IMapper _mapper;
         private readonly IEventBus _eventBus;
         private readonly ILogger<PaymentService> _logger;
+        private readonly IBackgroundJobService _backgroundJobService;
 
         public PaymentService(
             IPaymentGetway paymentGateway,
@@ -40,7 +41,8 @@ namespace SmartCare.Application.Services
             ILogger<PaymentService> logger,
             IInventoryRepository inventoryRepository,
             IClientRepository clientRepository,
-            IReservationRepository reservationRepository)
+            IReservationRepository reservationRepository,
+            IBackgroundJobService backgroundJobService)
         {
             _paymentGateway = paymentGateway;
             _paymentRepository = paymentRepository;
@@ -52,6 +54,7 @@ namespace SmartCare.Application.Services
             _inventoryRepository = inventoryRepository;
             _clientRepository = clientRepository;
             _reservationRepository = reservationRepository;
+            _backgroundJobService = backgroundJobService;
         }
 
 
@@ -63,7 +66,7 @@ namespace SmartCare.Application.Services
 
             var request = new PaymentSessionRequest
             {
-                 
+
                 Amount = order.TotalPrice,
                 SuccessUrl = $"{req.ReturnUrl}/success/{order.Id}",
                 CancelUrl = $"{req.ReturnUrl}/fail/{order.Id}",
@@ -108,14 +111,16 @@ namespace SmartCare.Application.Services
             client.OrdersCount += 1;
             await _orderRepository.UpdateAsync(order);
             await _paymentRepository.UpdateAsync(payment);
+            _backgroundJobService.Enqueue<IEventPublisherService>(publisher =>
+                publisher.PublishPaymentStatusChanged(
+                    order.Id,
+                    order.ClientId,
+                    "success",
+                    "Payment completed successfully!"
+                )
+            );
 
-            await _eventBus.PublishAsync(new PaymentStatusChangedEvent(
-                order.Id,
-                order.ClientId,
-                "success",
-                "Payment completed successfully!"
-            ));
-            PaymentResult result = new PaymentResult(true , SystemMessages.PAYMENT_PROCESSED , payment.SessionId);
+            PaymentResult result = new PaymentResult(true, SystemMessages.PAYMENT_PROCESSED, payment.SessionId);
             return _responseHandler.Success(result);
         }
 
@@ -139,19 +144,21 @@ namespace SmartCare.Application.Services
             }
             await _orderRepository.UpdateAsync(order);
             await _paymentRepository.UpdateAsync(payment);
+            _backgroundJobService.Enqueue<IEventPublisherService>(publisher =>
+                publisher.PublishPaymentStatusChanged(
+                    order.Id,
+                    order.ClientId,
+                    "success",
+                   "Payment failed or was canceled."
+                )
+            );
 
-            await _eventBus.PublishAsync(new PaymentStatusChangedEvent(
-                order.Id,
-                order.ClientId,
-                "failed",
-                "Payment failed or was canceled."
-            ));
 
             PaymentResult result = new PaymentResult(true, SystemMessages.PAYMENT_FAILED, payment.SessionId);
             return _responseHandler.Success(result);
         }
 
-     
+
         public async Task HandleWebhookEventAsync(Event webhookEvent)
         {
             switch (webhookEvent.Type)
@@ -195,7 +202,7 @@ namespace SmartCare.Application.Services
             if (paymentIntent.Metadata.TryGetValue("orderId", out var orderIdString) &&
                 Guid.TryParse(orderIdString, out var orderId))
             {
-                 await MarkPaymentFailureAsync(orderId);
+                await MarkPaymentFailureAsync(orderId);
                 _logger.LogInformation("❌ Payment failed for order {OrderId}", orderId);
             }
             else
@@ -221,13 +228,15 @@ namespace SmartCare.Application.Services
 
                 await _paymentRepository.UpdateAsync(payment);
                 await _orderRepository.UpdateAsync(order);
-
-                await _eventBus.PublishAsync(new PaymentStatusChangedEvent(
-                    order.Id,
-                    order.ClientId,
-                    "cancelled",
+                _backgroundJobService.Enqueue<IEventPublisherService>(publisher =>
+    publisher.PublishPaymentStatusChanged(
+        order.Id,
+        order.ClientId,
+ "cancelled",
                     "Order and payment have been cancelled."
-                ));
+    )
+);
+
 
                 return _responseHandler.Success(new PaymentResult(true, "Payment cancelled successfully", payment.SessionId));
             }
@@ -247,13 +256,14 @@ namespace SmartCare.Application.Services
 
                     await _paymentRepository.UpdateAsync(payment);
                     await _orderRepository.UpdateAsync(order);
-
-                    await _eventBus.PublishAsync(new PaymentStatusChangedEvent(
-                        order.Id,
-                        order.ClientId,
-                        "refunded",
+                    _backgroundJobService.Enqueue<IEventPublisherService>(publisher =>
+publisher.PublishPaymentStatusChanged(
+order.Id,
+order.ClientId,
+     "refunded",
                         "Payment refunded successfully."
-                    ));
+)
+);
 
                     return _responseHandler.Success(new PaymentResult(true, "Payment refunded successfully", payment.SessionId));
                 }
