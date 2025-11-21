@@ -99,7 +99,7 @@ namespace SmartCare.InfraStructure.Repositories
             return await _context.Inventories
                               .Include(x => x.Product)
                               .Include(x => x.Store)
-                .AsNoTracking()
+                .AsTracking()
                 .FirstOrDefaultAsync(i => i.ProductId == productId && i.StoreId == storeId);
 
         }

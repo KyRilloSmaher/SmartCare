@@ -14,6 +14,7 @@ namespace SmartCare.Domain.Enums
         Extra,
         PaymentTimeOut,
         PaymentFailed,
-        Completed
+        Completed,
+        OrderTimeOut
     }
 }

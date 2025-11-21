@@ -8,7 +8,7 @@ using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Application.IServices;
 using SmartCare.Application.Mappers;
-using SmartCare.Application.Services;
+using SmartCare.InfraStructure.Services;
 using SmartCare.Domain.Entities;
 using SmartCare.Domain.Helpers;
 using SmartCare.Domain.IRepositories;
@@ -21,8 +21,8 @@ using System.Security.Claims;
 using System.Text;
 using Hangfire;
 using SmartCare.Application.Handlers.ResponsesHandler;
-using SmartCare.Application.Commons;
 using SmartCare.Infrastructure.Repositories;
+using SmartCare.Application.commens;
 
 namespace SmartCare.InfraStructure.Extensions
 {

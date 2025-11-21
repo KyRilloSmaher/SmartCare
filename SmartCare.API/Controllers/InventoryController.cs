@@ -7,7 +7,6 @@ using SmartCare.Application.DTOs.Inventory.Request;
 using SmartCare.Application.DTOs.Inventory.Response;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Application.IServices;
-using SmartCare.Application.Services;
 using SmartCare.Domain.Entities;
 using static SmartCare.API.Helpers.ApplicationRouting;
 
