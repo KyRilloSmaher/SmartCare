@@ -6,7 +6,7 @@ using SmartCare.API.Helpers;
 using SmartCare.Application.DTOs.Favorites.Requests;
 using SmartCare.Application.DTOs.Rates.Requests;
 using SmartCare.Application.IServices;
-using SmartCare.Application.Services;
+using SmartCare.InfraStructure.Services;
 using System.Security.Claims;
 
 namespace SmartCare.API.Controllers

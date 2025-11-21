@@ -1,6 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using SmartCare.Application.Commons;
+using SmartCare.Application.commens;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace SmartCare.InfraStructure.DbContexts
 {
-        public class SqlLockManager : ISqlLockManager
+    public class SqlLockManager : ISqlLockManager
         {
             private readonly ApplicationDBContext _context;
 

@@ -16,12 +16,14 @@ using SmartCare.API.Middlewares;
 using SmartCare.InfraStructure.Seed;
 using Hangfire;
 using SmartCare.API.Hubs;
-using SmartCare.API.Events;
+using SmartCare.Application.Messaging;
 using SmartCare.API.InMemoryEventsHandlers;
-using SmartCare.Application.commons;
 using SmartCare.API.EventHandlers;
 using SmartCare.Application.IServices;
-using SmartCare.Application.Services;
+using SmartCare.InfraStructure.Messaging;
+using SmartCare.Application.InMemoryEventsHandlers;
+using SmartCare.Application.Notifications;
+using SmartCare.InfraStructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -152,11 +154,13 @@ builder.Services.AddSignalR();
 // Register Event Bus
 builder.Services.AddSingleton<IEventBus, InMemoryEventBus>();
 builder.Services.AddScoped<IEventPublisherService, EventPublisherService>();
+builder.Services.AddScoped<INotificationSender, SignalRNotificationSender>();
 
 // Add  events handlers
-builder.Services.AddSingleton<PaymentStatusChangedHandler>();
-builder.Services.AddSingleton<ProductStockStatusChangedHandler>();
-builder.Services.AddSingleton<ReservationExpiredEventHandler>();
+builder.Services.AddScoped<PaymentStatusChangedHandler>();
+builder.Services.AddScoped<ProductStockStatusChangedHandler>();
+builder.Services.AddScoped<ReservationExpiredEventHandler>();
+builder.Services.AddScoped<OrderExpireAlertHandler>();
 
 #endregion
 
@@ -190,12 +194,15 @@ using (var scope = app.Services.CreateScope())
     scope.ServiceProvider.GetRequiredService<PaymentStatusChangedHandler>();
     scope.ServiceProvider.GetRequiredService<ProductStockStatusChangedHandler>();
     scope.ServiceProvider.GetRequiredService<ReservationExpiredEventHandler>();
+    scope.ServiceProvider.GetRequiredService<OrderExpireAlertHandler>();
 }
 
 // Configure the HTTP request pipeline.
 app.MapHub<PaymentsHub>("/hubs/payments");
 app.MapHub<ProductsHub>("/hubs/products");
 app.MapHub<CartHub>("/hubs/cart");
+app.MapHub<CartHub>("/hubs/orders");
+app.MapHub<CartHub>("/hubs/users");
 
 app.UseSwagger();
 app.UseSwaggerUI();

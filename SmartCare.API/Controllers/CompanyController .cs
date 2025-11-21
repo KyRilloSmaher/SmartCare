@@ -6,7 +6,6 @@ using SmartCare.Application.DTOs.Caregory.Response;
 using SmartCare.Application.DTOs.Companies.Responses;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Application.IServices;
-using SmartCare.Application.Services;
 
 namespace SmartCare.API.Controllers
 {

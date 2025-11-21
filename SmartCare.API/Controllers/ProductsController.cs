@@ -1,15 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SmartCare.API.Helpers;
-using SmartCare.Application.Companies.Requests;
-using SmartCare.Application.DTOs.Companies.Responses;
 using SmartCare.Application.DTOs.Product.Requests;
 using SmartCare.Application.IServices;
-using SmartCare.Application.Services;
-using SmartCare.Domain.Entities;
+
 using SmartCare.Domain.Projection_Models;
-using System.Linq.Expressions;
 
 namespace SmartCare.API.Controllers
 {
