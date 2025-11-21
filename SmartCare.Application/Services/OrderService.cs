@@ -238,224 +238,29 @@ namespace SmartCare.Application.Services
             
             return _responseHandler.Success(dto);
         }
-        public async Task<Response<OrderResponseDto?>> CreateOnlineOrderFromCartAsync( string ClientId ,  CreateOnlineOrderRequestDto dto)
+        public async Task<Response<OrderResponseDto?>> CreateOnlineOrderFromCartAsync(
+            string clientId, CreateOnlineOrderRequestDto dto)
         {
-
-            // Validate client
-            var client = await _clientRepository.GetByIdAsync(ClientId);
-            if (client == null)
-            {
-                return _responseHandler.BadRequest<OrderResponseDto?>(SystemMessages.USER_NOT_FOUND);
-            }
-
-            // Fetch cart and items
-            var cart = await _cartRepository.GetByIdAsync(dto.CartId,true);
-            if (cart == null || !string.Equals(cart.ClientId, ClientId, StringComparison.OrdinalIgnoreCase))
-            {
-               
-                return _responseHandler.BadRequest<OrderResponseDto?>(SystemMessages.CART_NOT_FOUND);
-            }
-
-            var cartItems = await _cartRepository.GetCartItemsAsync(cart.Id);
-            if (cartItems == null || !cartItems.Any())
-            {
-                return _responseHandler.BadRequest<OrderResponseDto?>(SystemMessages.CART_EMPTY);
-            }
-
-            var order = new OnlineOrder
-            {
-                Id = Guid.NewGuid(),
-                ClientId = ClientId,
-                Status = OrderStatus.Pending,
-                TotalPrice = cart.TotalPrice,
-                OrderType = OrderType.Online,
-                ShippingAddressId = dto.deliveryAddressId
-            };
-
-            // Begin transaction
-            await _orderRepository.BeginTransactionAsync();
-            try
-            {
-                // Process type-specific checks (stock/reservations)
-                var processResult = await ProcessOrderByTypeAsync(order, cartItems, null);
-                if (!processResult.Success)
-                {
-                    await _orderRepository.RollBackAsync();
-                    return _responseHandler.Failed<OrderResponseDto?>(processResult.ErrorMessage);
-                }
-
-                // Save order
-                var added = await _orderRepository.AddAsync(order);
-                if (added == null)
-                {
-                  
-                    await _orderRepository.RollBackAsync();
-                    return _responseHandler.Failed<OrderResponseDto?>(SystemMessages.SERVER_ERROR);
-                }
-
-                // Convert cart items -> order items and persist
-                var orderItems = cartItems.Select(ci => new OrderItem
-                {
-                    Id = Guid.NewGuid(),
-                    OrderId = order.Id,
-                    ProductId = ci.ProductId,
-                    Quantity = ci.Quantity,
-                    UnitPrice = ci.UnitPrice,
-                    SubTotal = ci.SubTotal,
-                    InvetoryId = ci.InventoryId,
-                    ReservationId = ci.ReservationId
-                }).ToList();
-
-                var itemsAdded = await _orderRepository.AddOrderItemsAsync(orderItems);
-                if (!itemsAdded)
-                {
-                    await _orderRepository.RollBackAsync();
-                    return _responseHandler.Failed<OrderResponseDto?>(SystemMessages.SERVER_ERROR);
-                }
-
-                // Update reservations statuses to ReservedUntilPayment
-                var reservationUpdate = await UpdateReservationsForOrderAsync(cartItems);
-                if (!reservationUpdate.Success)
-                {
-                    
-                    await _orderRepository.RollBackAsync();
-                    return _responseHandler.Failed<OrderResponseDto?>(reservationUpdate.ErrorMessage);
-                }
-
-                // Commit transaction
-                await _orderRepository.CommitTransactionAsync();
-
-                // Schedule expiration job (10 minutes window)
-                _backgroundJobService.Schedule(
-                    () => HandleExpiredPaymentAsync(order.Id),
-                    TimeSpan.FromMinutes(10));
-
-                // Clear/Archive cart
-                await _cartRepository.DeleteAsync(cart);
-                await _cartRepository.CreateCartAsync(ClientId);
-
-                // Return DTO (with items)
-                var respDto = _mapper.Map<OrderResponseDto?>(order);
-                respDto.OrderItems = _mapper.Map<IEnumerable<OrderItemResponseDto>>(orderItems);
-                return _responseHandler.Success(respDto, SystemMessages.ORDER_PLACED);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Unexpected error during CreateOrderFromCartAsync CartId={CartId}", dto.CartId);
-                await _orderRepository.RollBackAsync();
-                return _responseHandler.Failed<OrderResponseDto?>(SystemMessages.SERVER_ERROR);
-            }
-        }
-        public async Task<Response<PickUpOrderResponseDto?>> CreatePickupOrderFromCartAsync(string ClientId, CreatePickUpOrderRequestDto dto)
-        {
-
-            var client = await _clientRepository.GetByIdAsync(ClientId);
-            if (client == null)
-                return _responseHandler.BadRequest<PickUpOrderResponseDto?>(SystemMessages.USER_NOT_FOUND);
-
-            var cart = await _cartRepository.GetByIdAsync(dto.CartId,true);
-            if (cart == null || !string.Equals(cart.ClientId, ClientId, StringComparison.OrdinalIgnoreCase))
-                return _responseHandler.BadRequest<PickUpOrderResponseDto?>(SystemMessages.CART_NOT_FOUND);
-
-            var cartItems = await _cartRepository.GetCartItemsAsync(cart.Id);
-            if (cartItems == null || !cartItems.Any())
-                return _responseHandler.BadRequest<PickUpOrderResponseDto?>(SystemMessages.CART_EMPTY);
-
-            Order order = new FromStoreOrder
-            {
-                Id = Guid.NewGuid(),
-                ClientId = ClientId,
-                Status = OrderStatus.Pending,
-                TotalPrice = cart.TotalPrice,
-                OrderType = OrderType.InStore,
-                StoreId = dto.storeId
-            };
-
-            await _orderRepository.BeginTransactionAsync();
-
-            try
-            {
-                // Check stock with out-of-stock response
-                var processResult = await ProcessOrderByTypeAsync(order, cartItems, dto.storeId);
-
-                if (!processResult.Success)
-                {
-                    await _orderRepository.RollBackAsync();
-
-                    if (processResult.OutOfStock.Any())
-                    {
-                        var responseData = new PickUpOrderResponseDto
-                        {
-                            outOfStocks = processResult.OutOfStock
-                        };
-                        return _responseHandler.BadRequest<PickUpOrderResponseDto?>(
-                             responseData,
-                            "Some items are out of stock."
-                        );
-                    }
-
-                    return _responseHandler.Failed<PickUpOrderResponseDto?>(processResult.ErrorMessage);
-                }
-
-                var added = await _orderRepository.AddAsync(order);
-                if (added == null)
-                {
-                    await _orderRepository.RollBackAsync();
-                    return _responseHandler.Failed<PickUpOrderResponseDto?>(SystemMessages.SERVER_ERROR);
-                }
-
-                var orderItems = cartItems.Select(ci => new OrderItem
-                {
-                    Id = Guid.NewGuid(),
-                    OrderId = order.Id,
-                    ProductId = ci.ProductId,
-                    Quantity = ci.Quantity,
-                    UnitPrice = ci.UnitPrice,
-                    SubTotal = ci.SubTotal,
-                    InvetoryId = ci.InventoryId,
-                    ReservationId = ci.ReservationId
-                }).ToList();
-
-                if (!await _orderRepository.AddOrderItemsAsync(orderItems))
-                {
-                    await _orderRepository.RollBackAsync();
-                    return _responseHandler.Failed<PickUpOrderResponseDto?>(SystemMessages.SERVER_ERROR);
-                }
-
-                var reservationUpdate = await UpdateReservationsForOrderAsync(cartItems);
-                if (!reservationUpdate.Success)
-                {
-                    await _orderRepository.RollBackAsync();
-                    return _responseHandler.Failed<PickUpOrderResponseDto?>(reservationUpdate.ErrorMessage);
-                }
-
-                await _orderRepository.CommitTransactionAsync();
-
-                _backgroundJobService.Schedule(
-                    () => HandleExpiredPaymentAsync(order.Id),
-                    TimeSpan.FromMinutes(10));
-
-                await _cartRepository.DeleteAsync(cart);
-                await _cartRepository.CreateCartAsync(ClientId);
-
-                var respDto = _mapper.Map<PickUpOrderResponseDto?>(order);
-                respDto.outOfStocks = processResult.OutOfStock;
-                foreach (var item in respDto.items)
-                {
-                    item.IsReadyForPickup = !respDto.outOfStocks.Any(o => o.ProductId == item.product.ProductId);
-
-                }
-
-                return _responseHandler.Success(respDto, SystemMessages.ORDER_PLACED);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Unexpected error during CreatePickupOrderFromCartAsync CartId={CartId}", dto.CartId);
-                await _orderRepository.RollBackAsync();
-                return _responseHandler.Failed<PickUpOrderResponseDto?>(SystemMessages.SERVER_ERROR);
-            }
+            return await CreateOrderFromCartInternalAsync(
+                clientId,
+                dto.CartId,
+                orderType: OrderType.Online,
+                storeId: null,
+                deliveryAddressId: dto.deliveryAddressId
+            );
         }
 
+        public async Task<Response<PickUpOrderResponseDto?>> CreatePickupOrderFromCartAsync(
+            string clientId, CreatePickUpOrderRequestDto dto)
+        {
+            return await CreateOrderFromCartInternalAsync(
+                clientId,
+                dto.CartId,
+                orderType: OrderType.InStore,
+                storeId: dto.storeId,
+                deliveryAddressId: null
+            );
+        }
 
 
         public async Task<Response<bool>> DeleteOrderAsync(Guid orderId)
@@ -501,7 +306,143 @@ namespace SmartCare.Application.Services
             return true;
         }
 
-        private async Task<(bool Success, string ErrorMessage, List<OutOfStockItemDto> OutOfStock)>ProcessOrderByTypeAsync(Order order, IEnumerable<CartItem> cartItems, Guid? storeId)
+        private async Task<Response<T?>> CreateOrderFromCartInternalAsync<T>(string clientId,Guid cartId,OrderType orderType,Guid? storeId,Guid? deliveryAddressId)
+        {
+            //Validate client
+            var client = await _clientRepository.GetByIdAsync(clientId);
+            if (client == null)
+                return _responseHandler.BadRequest<T?>(SystemMessages.USER_NOT_FOUND);
+
+            //Fetch cart
+            var cart = await _cartRepository.GetByIdAsync(cartId,true);
+            if (cart == null || !string.Equals(cart.ClientId, clientId, StringComparison.OrdinalIgnoreCase))
+                return _responseHandler.BadRequest<T?>(SystemMessages.CART_NOT_FOUND);
+
+            var cartItems = await _cartRepository.GetCartItemsAsync(cart.Id);
+            if (!cartItems.Any())
+                return _responseHandler.BadRequest<T?>(SystemMessages.CART_EMPTY);
+
+            // Build order object
+            Order order = orderType == OrderType.Online
+                ? new OnlineOrder
+                {
+                    Id = Guid.NewGuid(),
+                    ClientId = clientId,
+                    Status = OrderStatus.Pending,
+                    TotalPrice = cart.TotalPrice,
+                    OrderType = OrderType.Online,
+                    ShippingAddressId = (Guid)deliveryAddressId
+                }
+                : new FromStoreOrder
+                {
+                    Id = Guid.NewGuid(),
+                    ClientId = clientId,
+                    Status = OrderStatus.Pending,
+                    TotalPrice = cart.TotalPrice,
+                    OrderType = OrderType.InStore,
+                    StoreId = (Guid)storeId
+                };
+
+            //Begin Transaction
+            await _orderRepository.BeginTransactionAsync();
+
+            try
+            {
+                // Check stock & reservations
+                var process = await ProcessOrderByTypeAsync(order, cartItems, storeId);
+                if (!process.Success)
+                {
+                    await _orderRepository.RollBackAsync();
+
+                    // special case only for pickup
+                    if (typeof(T) == typeof(PickUpOrderResponseDto) && process.OutOfStock.Any())
+                    {
+                        var pickUpResp = new PickUpOrderResponseDto
+                        {
+                            outOfStocks = process.OutOfStock
+                        };
+
+                        return _responseHandler.BadRequest<T?>(pickUpResp,"Some items are out of stock.");
+                    }
+
+                    return _responseHandler.Failed<T?>(process.ErrorMessage);
+                }
+
+                //Save order
+                var savedOrder = await _orderRepository.AddAsync(order);
+                if (savedOrder == null)
+                {
+                    await _orderRepository.RollBackAsync();
+                    return _responseHandler.Failed<T?>(SystemMessages.SERVER_ERROR);
+                }
+
+                // Save order items
+                var orderItems = BuildOrderItems(order.Id, cartItems);
+                if (!await _orderRepository.AddOrderItemsAsync(orderItems))
+                {
+                    await _orderRepository.RollBackAsync();
+                    return _responseHandler.Failed<T?>(SystemMessages.SERVER_ERROR);
+                }
+
+                //Update reservations (ReservedUntilPayment)
+                var reservationUpdate = await UpdateReservationsForOrderAsync(cartItems);
+                if (!reservationUpdate.Success)
+                {
+                    await _orderRepository.RollBackAsync();
+                    return _responseHandler.Failed<T?>(reservationUpdate.ErrorMessage);
+                }
+
+                //Commit transaction
+                await _orderRepository.CommitTransactionAsync();
+
+                //Schedule expiration job
+                _backgroundJobService.Schedule(
+                    () => HandleExpiredPaymentAsync(order.Id),
+                    TimeSpan.FromMinutes(10));
+
+                //Clear cart
+                await _cartRepository.DeleteAsync(cart);
+                await _cartRepository.CreateCartAsync(clientId);
+
+                //Build Response
+                var responseDto = _mapper.Map<T>(order);
+
+                if (responseDto is PickUpOrderResponseDto pickupResp)
+                {
+                    pickupResp.outOfStocks = process.OutOfStock;
+                    foreach (var item in pickupResp.items)
+                    {
+                        item.IsReadyForPickup = !pickupResp.outOfStocks
+                            .Any(o => o.ProductId == item.product.ProductId);
+                    }
+                }
+
+                return _responseHandler.Success(responseDto,SystemMessages.ORDER_PLACED);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "Unexpected error during CreateOrderFromCartInternalAsync CartId={CartId}", cartId);
+
+                await _orderRepository.RollBackAsync();
+                return _responseHandler.Failed<T?>(SystemMessages.SERVER_ERROR);
+            }
+        }
+        private List<OrderItem> BuildOrderItems(Guid orderId, IEnumerable<CartItem> cartItems)
+        {
+            return cartItems.Select(ci => new OrderItem
+            {
+                Id = Guid.NewGuid(),
+                OrderId = orderId,
+                ProductId = ci.ProductId,
+                Quantity = ci.Quantity,
+                UnitPrice = ci.UnitPrice,
+                SubTotal = ci.SubTotal,
+                InvetoryId = ci.InventoryId,
+                ReservationId = ci.ReservationId
+            }).ToList();
+        }
+        private async Task<(bool Success, string ErrorMessage, List<OutOfStockItemDto> OutOfStock)> ProcessOrderByTypeAsync(Order order, IEnumerable<CartItem> cartItems, Guid? storeId)
         {
             var outOfStockList = new List<OutOfStockItemDto>();
 
@@ -527,12 +468,12 @@ namespace SmartCare.Application.Services
                             AvailableQty = inventory?.StockQuantity ?? 0
                         });
                     }
-                    else if (inventory.StockQuantity >=ci.Quantity)
+                    else if (inventory.StockQuantity >= ci.Quantity)
                     {
                         var reservation = await _reservationRepository.GetByIdAsync(ci.ReservationId, true);
                         reservation.ExpiredAt = DateTime.UtcNow;
                         await _reservationRepository.UpdateAsync(reservation);
-                        await  _reservationRepository.CancelReservationAsync(ci.ReservationId, ci.InventoryId, ReservationStatus.Realesed);
+                        await _reservationRepository.CancelReservationAsync(ci.ReservationId, ci.InventoryId, ReservationStatus.Realesed);
                         ci.InventoryId = inventory.Id;
                         var newReservation = await _reservationRepository.CreateReservationAsync(ci, ci.Quantity, ReservationStatus.ReservedUntilCheckout);
                         ci.ReservationId = newReservation.Id;
