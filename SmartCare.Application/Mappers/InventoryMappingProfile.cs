@@ -71,6 +71,7 @@ namespace SmartCare.Application.Mappers
                     .ForMember(dest => dest.StoreId, opt => opt.MapFrom(src => src.StoreId))
                     .ForMember(dest => dest.AvailableQuantity, opt => opt.MapFrom(src => src.StockQuantity - src.ReservedQuantity))
                     .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.NameEn))
+                    .ForMember(dest => dest.StoreName , opt => opt.MapFrom(src => src.Store.Name))
                     .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Store.Address))
                     .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.Store.Phone));
         }
