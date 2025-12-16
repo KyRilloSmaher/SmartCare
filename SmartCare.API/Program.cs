@@ -169,10 +169,6 @@ builder.Services.Configure<InputSanitizationMiddleware>(
 
 var app = builder.Build();
 
-#region Security Middlewares
-app.UseMiddleware <RateLimitingMiddleware>();
-app.UseMiddleware<InputSanitizationMiddleware>();
-#endregion
 
 #region Seeding Data
 using (var scope = app.Services.CreateScope())
@@ -197,19 +193,35 @@ using (var scope = app.Services.CreateScope())
     scope.ServiceProvider.GetRequiredService<OrderExpireAlertHandler>();
 }
 
-// Configure the HTTP request pipeline.
-app.MapHub<PaymentsHub>("/hubs/payments");
-app.MapHub<ProductsHub>("/hubs/products");
-app.MapHub<CartHub>("/hubs/cart");
-app.MapHub<CartHub>("/hubs/orders");
-app.MapHub<CartHub>("/hubs/users");
+
+
+
+app.UseMiddleware<RateLimitingMiddleware>();
+
+
+app.UseHttpsRedirection();
+
+
 
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseHangfireDashboard("/hangfire");
+
+
 app.UseMiddleware<ErrorHandlerMiddleware>();
-app.UseHttpsRedirection();
+
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseCors(CORS);
+
 app.MapControllers();
+
+app.MapHub<PaymentsHub>("/hubs/payments");
+app.MapHub<ProductsHub>("/hubs/products");
+app.MapHub<CartHub>("/hubs/cart");
+app.MapHub<OrderHub>("/hubs/orders");
+app.MapHub<UserNotificationHub>("/hubs/users");
+
+
 app.Run();

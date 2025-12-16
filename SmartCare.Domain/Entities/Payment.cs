@@ -16,7 +16,9 @@ namespace SmartCare.Domain.Entities
         public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
         public string? PaymentIntentId { get; set; }
         public string? SessionId { get; set; }
+        public string? url { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime ExpiredAt { get; set; } = DateTime.UtcNow;
         public Order Order { get; set; }
     }
 }

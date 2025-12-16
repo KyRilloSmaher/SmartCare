@@ -37,24 +37,17 @@ namespace SmartCare.Domain.Entities
 
             public bool IsAvailable { get; set; }
 
-            //these might represent text search or AI embedding fields
-            public string? SearchVector { get; set; }
-
-            public string? EmbeddingVector { get; set; }
-
             public string? DosageForm { get; set; }
 
             // Navigation properties
             
             public  Category Category { get; set; }
-
             public  Company Company { get; set; }
             public  ICollection<CartItem> CartItems { get; set; }
             public  ICollection<Inventory> Inventories { get; set; }
             public  ICollection<OrderItem> OrderItems { get; set; }
             public  ICollection<Favorite> Favorites { get; set; }
             public  ICollection<ProductImage> Images { get; set; }
-
             public ICollection<Rate> Rates { get; set; }
         }
     }

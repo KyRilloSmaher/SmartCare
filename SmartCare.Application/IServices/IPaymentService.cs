@@ -1,6 +1,7 @@
 ﻿using SmartCare.Application.DTOs.payment;
 using SmartCare.Application.DTOs.Payment;
 using SmartCare.Application.Handlers.ResponseHandler;
+using SmartCare.Domain.Entities;
 using Stripe;
 using Stripe.Checkout;
 using System;
@@ -18,5 +19,6 @@ namespace SmartCare.Application.IServices
         Task<Response<PaymentResult>> MarkPaymentFailureAsync(Guid orderId);
         Task<Response<PaymentResult>> TryCancelOrRefundAsync(Guid orderId);
         Task HandleWebhookEventAsync(Event webhookEvent);
+        Task<Payment> GetPaymentByOrderIdAsync(Guid orderId);
     }
 }

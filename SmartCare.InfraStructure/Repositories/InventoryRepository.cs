@@ -246,7 +246,7 @@ namespace SmartCare.InfraStructure.Repositories
             List<Inventory> LowStock = new List<Inventory>();
 
             var inventories = await _context.Inventories
-                                .Include(x => x.OrderItem)
+                                .Include(x => x.OrderItems)
                                 .Include(x => x.Product)
                                 .Include(x => x.Store)
                                 .Where(I => I.StockQuantity <= threshold).ToListAsync();

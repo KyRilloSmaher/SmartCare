@@ -45,7 +45,7 @@ namespace SmartCare.InfraStructure.Configurations
                 .OnDelete(DeleteBehavior.NoAction);
 
 
-            builder.HasIndex(p => p.OrderId);
+            builder.HasIndex(p => p.OrderId).IsUnique();
             builder.HasIndex(p => p.SessionId);
             builder.HasIndex(p => p.PaymentIntentId);
 

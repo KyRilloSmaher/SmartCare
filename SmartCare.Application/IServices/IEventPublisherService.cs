@@ -9,10 +9,10 @@ namespace SmartCare.Application.IServices
 
         public interface IEventPublisherService
         {
-        Task PublishReservationExpired(Guid cartId, Guid productId, int quantity);
+        Task PublishReservationExpired(Guid cartId, Guid productId, int quantity, string userid);
         Task PublishPaymentStatusChanged(Guid orderId, string clientId, string status, string message);
         Task PublishProductStockStatusChanged(Guid productId, bool isAvailable);
-        Task PublishOrderExpirationNotification(Guid orderId);
+        Task PublishOrderExpirationNotification(string userid ,Guid orderId);
     }
 
     

@@ -192,7 +192,13 @@ namespace SmartCare.Infrastructure.Repositories
 
             return await query.ToListAsync();
         }
-
+        public async override Task<bool> DeleteAsync(Order entity)
+        {
+            entity.IsDeleted = true;
+            _dbContext.Orders.Update(entity);
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
         #endregion
     }
 }

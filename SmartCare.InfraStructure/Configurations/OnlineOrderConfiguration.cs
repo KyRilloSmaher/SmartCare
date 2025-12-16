@@ -20,7 +20,7 @@ namespace SmartCare.InfraStructure.Configurations
             builder.HasOne(o => o.Address)
                    .WithMany()
                    .HasForeignKey(o => o.ShippingAddressId)
-                   .OnDelete(DeleteBehavior.Restrict);
+                   .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

@@ -31,11 +31,11 @@ namespace SmartCare.InfraStructure.Configurations
             builder.HasMany(x => x.Items)
                 .WithOne(x => x.Cart)
                 .HasForeignKey(x => x.CartId);
+            builder.HasOne(c => c.Client)
+                   .WithMany(c => c.Carts)
+                   .HasForeignKey(c => c.ClientId)
+                   .OnDelete(DeleteBehavior.NoAction);
 
-
-
-            //builder.HasIndex(x => x.ClientId)
-            //    .IsUnique();
 
             builder.HasIndex(x => x.status);
                 

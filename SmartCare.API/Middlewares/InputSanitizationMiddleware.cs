@@ -33,6 +33,13 @@ namespace SmartCare.API.Middlewares
 
         public async Task InvokeAsync(HttpContext context)
         {
+            // 🚨 Skip sanitization for Stripe Webhook (must keep RAW BODY)
+            if (context.Request.Path.Equals("/api/payments/webhook", StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogWarning("sanitization for Stripe Webhook");
+                await _next(context);
+                return;
+            }
             // Sanitize Query Parameters
             foreach (var key in context.Request.Query.Keys.ToList())
             {

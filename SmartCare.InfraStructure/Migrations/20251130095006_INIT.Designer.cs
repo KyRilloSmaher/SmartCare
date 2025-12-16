@@ -13,8 +13,8 @@ using SmartCare.InfraStructure.DbContexts;
 namespace SmartCare.InfraStructure.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    [Migration("20251115090831_init-2")]
-    partial class init2
+    [Migration("20251130095006_INIT")]
+    partial class INIT
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -219,8 +219,7 @@ namespace SmartCare.InfraStructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ClientId")
-                        .IsUnique();
+                    b.HasIndex("ClientId");
 
                     b.HasIndex("status");
 
@@ -256,14 +255,13 @@ namespace SmartCare.InfraStructure.Migrations
 
                     b.HasKey("CartItemId");
 
+                    b.HasIndex("CartId");
+
                     b.HasIndex("InventoryId");
 
                     b.HasIndex("ProductId");
 
                     b.HasIndex("ReservationId");
-
-                    b.HasIndex("CartId", "ProductId")
-                        .IsUnique();
 
                     b.ToTable("CartItem", (string)null);
                 });
@@ -342,6 +340,9 @@ namespace SmartCare.InfraStructure.Migrations
 
                     b.Property<int>("Gender")
                         .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<string>("LastName")
                         .IsRequired()
@@ -516,6 +517,9 @@ namespace SmartCare.InfraStructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<int>("OrderType")
                         .HasColumnType("int");
 
@@ -572,8 +576,7 @@ namespace SmartCare.InfraStructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("InvetoryId")
-                        .IsUnique();
+                    b.HasIndex("InvetoryId");
 
                     b.HasIndex("OrderId");
 
@@ -665,10 +668,6 @@ namespace SmartCare.InfraStructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("EmbeddingVector")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
                     b.Property<bool>("IsAvailable")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
@@ -695,10 +694,6 @@ namespace SmartCare.InfraStructure.Migrations
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("SearchVector")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<string>("SideEffects")
                         .HasMaxLength(500)
@@ -782,11 +777,13 @@ namespace SmartCare.InfraStructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ClientId");
-
                     b.HasIndex("ProductId");
 
                     b.HasIndex("Value");
+
+                    b.HasIndex("ClientId", "ProductId")
+                        .IsUnique()
+                        .HasFilter("[ClientId] IS NOT NULL");
 
                     b.ToTable("Rate", (string)null);
                 });
@@ -967,9 +964,9 @@ namespace SmartCare.InfraStructure.Migrations
             modelBuilder.Entity("SmartCare.Domain.Entities.Cart", b =>
                 {
                     b.HasOne("SmartCare.Domain.Entities.Client", "Client")
-                        .WithOne("Cart")
-                        .HasForeignKey("SmartCare.Domain.Entities.Cart", "ClientId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .WithMany("Carts")
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Client");
@@ -1053,8 +1050,8 @@ namespace SmartCare.InfraStructure.Migrations
             modelBuilder.Entity("SmartCare.Domain.Entities.OrderItem", b =>
                 {
                     b.HasOne("SmartCare.Domain.Entities.Inventory", "Inventory")
-                        .WithOne("OrderItem")
-                        .HasForeignKey("SmartCare.Domain.Entities.OrderItem", "InvetoryId")
+                        .WithMany("OrderItems")
+                        .HasForeignKey("InvetoryId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
@@ -1187,7 +1184,7 @@ namespace SmartCare.InfraStructure.Migrations
                     b.HasOne("SmartCare.Domain.Entities.Address", "Address")
                         .WithMany()
                         .HasForeignKey("ShippingAddressId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Address");
@@ -1218,8 +1215,7 @@ namespace SmartCare.InfraStructure.Migrations
                 {
                     b.Navigation("Addresses");
 
-                    b.Navigation("Cart")
-                        .IsRequired();
+                    b.Navigation("Carts");
 
                     b.Navigation("Favorites");
 
@@ -1237,8 +1233,7 @@ namespace SmartCare.InfraStructure.Migrations
                 {
                     b.Navigation("CartItems");
 
-                    b.Navigation("OrderItem")
-                        .IsRequired();
+                    b.Navigation("OrderItems");
                 });
 
             modelBuilder.Entity("SmartCare.Domain.Entities.Order", b =>

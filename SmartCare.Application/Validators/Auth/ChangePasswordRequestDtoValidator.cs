@@ -17,9 +17,17 @@ namespace SmartCare.Application.Validators.Auth
                 .NotEmpty().WithMessage("Current password is required.");
 
             RuleFor(x => x.NewPassword)
-                .NotEmpty().WithMessage("New password is required.")
-                .Must(p => Constants.IsValid(Constants.StringType.PASSWORD, p))
-                .WithMessage("Password must contain upper/lower case letters, digits, symbols, and be at least 12 characters long.");
+                 .NotEmpty().WithMessage("New password is required.")
+                 .Custom((password, context) =>
+                 {
+                     var errors = Constants.GetPasswordErrors(password);
+
+                     foreach (var error in errors)
+                     {
+                         context.AddFailure(error);
+                     }
+                 });
+
         }
     }
 }

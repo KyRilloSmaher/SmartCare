@@ -1,72 +1,72 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
 using SmartCare.API.Hubs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.Notifications
 {
+    [Authorize]
     public class SignalRNotificationSender : INotificationSender
     {
-        private readonly IHubContext<UserNotificationHub> _hub;
-        private readonly IHubContext<OrderHub> _orderHub;
+        private readonly IHubContext<UserNotificationHub> _userHub;
         private readonly IHubContext<ProductsHub> _productHub;
-        private readonly IHubContext<PaymentsHub> _paymentHub;
-        private readonly IHubContext<CartHub> _cartHub;
 
-        public SignalRNotificationSender(IHubContext<UserNotificationHub> hub, IHubContext<ProductsHub> productHub, IHubContext<PaymentsHub> paymentHub, IHubContext<CartHub> cartHub, IHubContext<OrderHub> orderHub)
+        public SignalRNotificationSender(
+            IHubContext<UserNotificationHub> userHub,
+            IHubContext<ProductsHub> productHub)
         {
-            _hub = hub;
+            _userHub = userHub;
             _productHub = productHub;
-            _paymentHub = paymentHub;
-            _cartHub = cartHub;
-            _orderHub = orderHub;
         }
 
+        // ===== BASIC METHODS =====
         public Task SendToUserAsync(string userId, string method, object payload, CancellationToken ct = default)
+            => _userHub.Clients.User(userId).SendAsync(method, payload, ct);
+
+        public Task SendToUserGroupAsync(string userId, string method, object payload, CancellationToken ct = default)
+            => _userHub.Clients.Group($"user:{userId}").SendAsync(method, payload, ct);
+
+        // =============================
+        //         USER NOTIFICATIONS
+        // =============================
+
+        // Order Expired
+        public async Task SendOrderExpiration(string userId, Guid orderId, object payload, CancellationToken ct = default)
         {
-            // using user identifier from claims mapping (SignalR user identifiers)
-            return _hub.Clients.User(userId).SendAsync(method, payload, ct);
+            await _userHub.Clients.Group($"user:{userId}")
+                .SendAsync("OrderExpire", payload, ct);
+
+            Console.WriteLine($"[SignalR] OrderExpire -> User {userId}, Order {orderId}");
         }
 
-        public Task SendToGroupAsync(string groupName, string method, object payload, CancellationToken ct = default)
-            => _hub.Clients.Group(groupName).SendAsync(method, payload, ct);
-
-        public async Task SendOrderExpiration(Guid groupName , object payload, CancellationToken ct = default)
+        // Payment Status Change
+        public async Task SendPaymentStatusChangedAsync(string userId, object payload, CancellationToken ct = default)
         {
-            // Push notification to the right client group
-            await _orderHub.Clients.Group($"order:{groupName}")
-                .SendAsync("OrderExpire", payload);
+            await _userHub.Clients.Group($"user:{userId}")
+                .SendAsync("PaymentStatusChanged", payload, ct);
 
-            Console.WriteLine($"[SignalR] Sent Expiration Alert for Order {groupName} ");
+            Console.WriteLine($"[SignalR] PaymentStatusChanged -> User {userId}");
         }
+
+        // Reservation Expired / Cart Updated
+        public async Task SendCartUpdatedAsync(string userId, Guid cartId, object payload, CancellationToken ct = default)
+        {
+            await _userHub.Clients.Group($"user:{userId}")
+                .SendAsync("ReservationExpired", payload, ct);
+
+            Console.WriteLine($"[SignalR] ReservationExpired -> User {userId}, Cart {cartId}");
+        }
+
+        // =============================
+        //    PRODUCT NOTIFICATIONS
+        // =============================
         public async Task SendProductStockStatusChangedAsync(Guid productId, object payload, CancellationToken ct = default)
         {
-            // Push notification to the right client group
             await _productHub.Clients.Group($"product:{productId}")
-                .SendAsync("ProductStockStatusChanged", payload);
+                .SendAsync("ProductStockStatusChanged", payload, ct);
 
-            Console.WriteLine($"[SignalR] Product {productId} stock updated ");
+            Console.WriteLine($"[SignalR] ProductStockStatusChanged -> Product {productId}");
         }
-        public async Task SendPaymentStatusChangedAsync(string clientId, object payload, CancellationToken ct = default)
-        {
-            // Push notification to the right client group
-            await _paymentHub.Clients.Group($"client:{clientId}")
-                .SendAsync("PaymentStatusChanged", payload);
-
-            Console.WriteLine($"[SignalR] Sent PaymentStatusChanged for Client {clientId} ");
-        }
-
-        public async Task SendCartUpdatedAsync(Guid cartId, object payload, CancellationToken ct = default)
-        {
-            // Push notification to the right client group
-            await _cartHub.Clients.Group($"cart:{cartId}")
-                .SendAsync("ReservationExpired", payload);
-
-            Console.WriteLine($"[SignalR] Sent CartUpdated for cartId {cartId} ");
-        }
-
     }
 }
