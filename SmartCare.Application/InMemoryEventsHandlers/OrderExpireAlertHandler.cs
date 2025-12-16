@@ -19,7 +19,7 @@ namespace SmartCare.Application.InMemoryEventsHandlers
         private async Task HandleAsync(OrderExpiredEvent evt)
         {
             // Push notification to the right client group
-            await _notificationSender.SendOrderExpiration(evt.OrderId, new
+            await _notificationSender.SendOrderExpiration(evt.UserId , evt.OrderId, new
             {
                 orderId = evt.OrderId,
                 message = evt.Message

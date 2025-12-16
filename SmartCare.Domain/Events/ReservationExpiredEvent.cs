@@ -7,13 +7,15 @@
         public Guid ProductId { get; }
         public int Quantity { get; }
         public string Message { get; }
+        public string UserId { get; }
 
-        public ReservationExpiredEvent(Guid cartId, Guid productId, int quantity, string message)
+        public ReservationExpiredEvent(Guid cartId, Guid productId, int quantity, string message, string userId)
         {
             CartId = cartId;
             ProductId = productId;
             Quantity = quantity;
             Message = message;
+            UserId = userId;
         }
     }
 }

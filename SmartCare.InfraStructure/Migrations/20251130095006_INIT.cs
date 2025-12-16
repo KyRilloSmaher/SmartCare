@@ -7,7 +7,7 @@ using NetTopologySuite.Geometries;
 namespace SmartCare.InfraStructure.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class INIT : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -43,6 +43,7 @@ namespace SmartCare.InfraStructure.Migrations
                     RatesCount = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     OrdersCount = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     FavoritesCount = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -234,8 +235,7 @@ namespace SmartCare.InfraStructure.Migrations
                         name: "FK_Cart_AspNetUsers_ClientId",
                         column: x => x.ClientId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -248,7 +248,8 @@ namespace SmartCare.InfraStructure.Migrations
                     OrderType = table.Column<int>(type: "int", nullable: false),
                     TotalPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -306,8 +307,6 @@ namespace SmartCare.InfraStructure.Migrations
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     IsAvailable = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
-                    SearchVector = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
-                    EmbeddingVector = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
                     DosageForm = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true)
                 },
                 constraints: table =>
@@ -378,8 +377,8 @@ namespace SmartCare.InfraStructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    AddressId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    AddressId1 = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    ShippingAddressId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AddressId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -394,13 +393,13 @@ namespace SmartCare.InfraStructure.Migrations
                         name: "FK_OnlineOrders_UserAddress_AddressId",
                         column: x => x.AddressId,
                         principalTable: "UserAddress",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_OnlineOrders_UserAddress_AddressId1",
-                        column: x => x.AddressId1,
-                        principalTable: "UserAddress",
                         principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_OnlineOrders_UserAddress_ShippingAddressId",
+                        column: x => x.ShippingAddressId,
+                        principalTable: "UserAddress",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -644,8 +643,7 @@ namespace SmartCare.InfraStructure.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Cart_ClientId",
                 table: "Cart",
-                column: "ClientId",
-                unique: true);
+                column: "ClientId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Cart_status",
@@ -653,10 +651,9 @@ namespace SmartCare.InfraStructure.Migrations
                 column: "status");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CartItem_CartId_ProductId",
+                name: "IX_CartItem_CartId",
                 table: "CartItem",
-                columns: new[] { "CartId", "ProductId" },
-                unique: true);
+                column: "CartId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CartItem_InventoryId",
@@ -728,9 +725,9 @@ namespace SmartCare.InfraStructure.Migrations
                 column: "AddressId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_OnlineOrders_AddressId1",
+                name: "IX_OnlineOrders_ShippingAddressId",
                 table: "OnlineOrders",
-                column: "AddressId1");
+                column: "ShippingAddressId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Order_ClientId",
@@ -745,8 +742,7 @@ namespace SmartCare.InfraStructure.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_OrderItem_InvetoryId",
                 table: "OrderItem",
-                column: "InvetoryId",
-                unique: true);
+                column: "InvetoryId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OrderItem_OrderId",
@@ -820,9 +816,11 @@ namespace SmartCare.InfraStructure.Migrations
                 column: "Tags");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Rate_ClientId",
+                name: "IX_Rate_ClientId_ProductId",
                 table: "Rate",
-                column: "ClientId");
+                columns: new[] { "ClientId", "ProductId" },
+                unique: true,
+                filter: "[ClientId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Rate_ProductId",

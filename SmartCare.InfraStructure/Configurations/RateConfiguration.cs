@@ -37,6 +37,7 @@ namespace SmartCare.InfraStructure.Configurations
                    .OnDelete(DeleteBehavior.SetNull);
 
             builder.HasIndex(r => r.ProductId);
+            builder.HasIndex(r => new { r.ClientId, r.ProductId }).IsUnique();
             builder.HasIndex(r => r.Value);
         }
     }

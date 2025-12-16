@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Identity;
 using System.Net;
 using System.Web;
 using SmartCare.API.Helpers;
+using SmartCare.Domain.Helpers;
 
 namespace SmartCare.InfraStructure.Services
 {
@@ -32,6 +33,7 @@ namespace SmartCare.InfraStructure.Services
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IImageUploaderService _imageUploaderService;
         private readonly LinkGenerator _linkGenerator;
+        private readonly JwtSettings _jwtSettings;
         private readonly IMapper _mapper;
         private readonly IUrlHelper _urlHelper;
         #endregion
@@ -46,7 +48,8 @@ namespace SmartCare.InfraStructure.Services
             IMapper mapper,
             IImageUploaderService imageUploaderService,
             LinkGenerator linkGenerator,
-            IUrlHelper urlHelper)
+            IUrlHelper urlHelper,
+            JwtSettings jwtSettings)
         {
             _responseHandler = responseHandler;
             _clientRepository = clientRepository;
@@ -57,6 +60,7 @@ namespace SmartCare.InfraStructure.Services
             _imageUploaderService = imageUploaderService;
             _linkGenerator = linkGenerator;
             _urlHelper = urlHelper;
+            _jwtSettings = jwtSettings;
         }
         #endregion
 
@@ -257,7 +261,7 @@ namespace SmartCare.InfraStructure.Services
             {
                 AccessToken = accessToken,
                 RefreshToken = refreshToken,
-                AccessTokenExpiresAt = DateTime.UtcNow.AddDays(7),
+                AccessTokenExpiresAt = DateTime.UtcNow.AddHours(_jwtSettings.AccessTokenLifetimeHours),
                 RefreshTokenExpiresAt = user.RefreshTokenExpiryTime!.Value
             };
 

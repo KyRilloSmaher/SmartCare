@@ -102,6 +102,7 @@ namespace SmartCare.Domain.Constants
         // =====================
         // 💳 Payments & Subscriptions
         // =====================
+        public const string CAN_NOT_PROCESS_PAYMENT = "Order is not in a valid state for payment.";
         public const string PAYMENT_PROCESSED = "Payment processed successfully.";
         public const string PAYMENT_FAILED = "Payment processing failed. Please check your payment details.";
         public const string REFUND_PROCESSED = "Refund processed successfully.";

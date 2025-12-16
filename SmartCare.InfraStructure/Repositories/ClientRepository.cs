@@ -74,7 +74,7 @@ namespace SmartCare.InfraStructure.Repositories
         }
         public async Task<IEnumerable<Client>> GetAllAdminsAsync()
         {
-            return await _ClientManager.GetUsersInRoleAsync("Admin");
+            return await _ClientManager.GetUsersInRoleAsync("ADMIN_DASHBOARD");
         }
 
         // Basic Client Operations
@@ -93,7 +93,8 @@ namespace SmartCare.InfraStructure.Repositories
 
         public async Task<IdentityResult> DeleteClientAsync(Client Client)
         {
-            var result = await _ClientManager.DeleteAsync(Client);
+            Client.IsDeleted = true;
+            var result = await _ClientManager.UpdateAsync(Client);
             return result;
         }
 

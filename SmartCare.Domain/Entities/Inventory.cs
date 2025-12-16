@@ -15,8 +15,8 @@ namespace SmartCare.Domain.Entities
         public int ReservedQuantity { get; set; }
         public Store Store { get; set; }
         public Product Product { get; set; }
-        public  OrderItem OrderItem { get; set; }
-        public  ICollection<CartItem> CartItems { get; set; }
+        public ICollection<OrderItem> OrderItems { get; set; }
+        public ICollection<CartItem> CartItems { get; set; }
 
     }
 }

@@ -180,8 +180,15 @@ namespace SmartCare.InfraStructure.Services
                     await _cartRepository.CalculateCartTotalAsync(cart.Id);
                     await _cartRepository.CommitTransactionAsync();
 
-                    // --- Post-commit jobs ---
-                    _eventPublisherService.PublishProductStockStatusChanged(product.ProductId, availableStock - dto.Quantity > 0);
+
+                     product = await EnsureProductExistsAsync(dto.ProductId);
+                    // --- Post-commit jobs
+                    if (!product.IsAvailable)
+                    {
+                        _backgroundJobService.Enqueue<IEventPublisherService>(publisher =>
+                            publisher.PublishProductStockStatusChanged(cartItem.ProductId, product.IsAvailable));
+                    }
+
 
                     var expirationMinutes = _configuration.GetValue<int>("ReservationTimes:ForCartExpirationMinutes");
                     _backgroundJobService.Schedule(
@@ -246,12 +253,18 @@ namespace SmartCare.InfraStructure.Services
                     cartItem.Quantity = dto.NewQuantity;
                     cartItem.SubTotal = cartItem.UnitPrice * dto.NewQuantity;
                     await _cartRepository.UpdateItemCartAsync(cartItem);
-                    await _cartRepository.CommitTransactionAsync();
                     await _cartRepository.CalculateCartTotalAsync(cart.Id);
+                    await _cartRepository.CommitTransactionAsync();
 
                     // --- Post-commit jobs ---
-                    var availableStockAfter = await _inventoryRepository.GetTotalStockForProductAsync(product.ProductId);
-                    _eventPublisherService.PublishProductStockStatusChanged(product.ProductId, availableStockAfter - dto.NewQuantity > 0);
+
+                    product = await EnsureProductExistsAsync(dto.ProductId);
+                    // --- Post-commit jobs
+                    if (!product.IsAvailable)
+                    {
+                        _backgroundJobService.Enqueue<IEventPublisherService>(publisher =>
+                            publisher.PublishProductStockStatusChanged(cartItem.ProductId, true));
+                    }
 
                     var expirationMinutes = _configuration.GetValue<int>("ReservationTimes:ForCartExpirationMinutes");
 
@@ -300,9 +313,13 @@ namespace SmartCare.InfraStructure.Services
                     await _cartRepository.CommitTransactionAsync();
                     await _cartRepository.CalculateCartTotalAsync(cart.Id);
 
-                    var availableStock = await _inventoryRepository.GetTotalStockForProductAsync(cartItem.ProductId);
-                    _backgroundJobService.Enqueue<IEventPublisherService>(publisher =>
-                        publisher.PublishProductStockStatusChanged(cartItem.ProductId, availableStock > 0));
+                    Product? product = await EnsureProductExistsAsync(cartItem.ProductId);
+                    // --- Post-commit jobs
+                    if (!product.IsAvailable)
+                    {
+                        _backgroundJobService.Enqueue<IEventPublisherService>(publisher =>
+                            publisher.PublishProductStockStatusChanged(cartItem.ProductId, product.IsAvailable));
+                    }
 
                     return _responseHandler.Success(true, SystemMessages.ITEM_REMOVED_FROM_CART);
                 }
@@ -471,33 +488,44 @@ namespace SmartCare.InfraStructure.Services
         /// <summary>
         /// Cancel reservation invoked by background job when reservation TTL expires.
         /// </summary>
-        public async Task CancelReservationPrivate(Guid reservationId, Guid inventoryId, Guid CartId, Guid productId, int quantity)
+        public async Task CancelReservationPrivate(Guid reservationId, Guid inventoryId, Guid cartId, Guid productId, int quantity)
         {
-            _logger.LogError(" cancel reservation {ReservationId}", reservationId);
+            _logger.LogError("Cancel reservation {ReservationId}", reservationId);
+
             try
             {
                 bool done = await _reservationRepository.CancelReservationAsync(reservationId, inventoryId, ReservationStatus.Realesed);
+
                 if (!done)
                 {
                     _logger.LogError("Failed to cancel reservation {ReservationId}", reservationId);
+                    return;
                 }
 
-                    var cart = await _cartRepository.GetByIdAsync(CartId);
-                    if (cart != null)
-                    {
-                        await _cartRepository.CalculateCartTotalAsync(cart.Id);
-                    }
-                // publish ReservationExpiredEvent (post-commit via background job)
-               await  _eventPublisherService.PublishReservationExpired(cart.Id,productId,quantity);
-                var availableStock = await _inventoryRepository.GetTotalStockForProductAsync(productId);
-               await  _eventPublisherService.PublishProductStockStatusChanged(productId, availableStock - quantity > 0);
+                var cart = await _cartRepository.GetByIdAsync(cartId);
 
+                if (cart != null)
+                    await _cartRepository.CalculateCartTotalAsync(cart.Id);
+
+                await _eventPublisherService.PublishReservationExpired(cartId, productId, quantity, cart.ClientId);
+
+                var availableStock = await _inventoryRepository.GetTotalStockForProductAsync(productId);
+                var product = await _productRepository.GetByIdAsync(productId, true);
+
+                if (!product.IsAvailable && availableStock > 0)
+                {
+                    product.IsAvailable = true;
+
+                    await _productRepository.UpdateAsync(product);
+                    await _eventPublisherService.PublishProductStockStatusChanged(productId, true);
+                }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error during CancelReservationPrivate for reservation {ReservationId}", reservationId);
             }
         }
+
 
         #endregion
     }

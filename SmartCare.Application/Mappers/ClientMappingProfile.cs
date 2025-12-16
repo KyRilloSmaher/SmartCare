@@ -24,8 +24,8 @@ namespace SmartCare.Application.Mappers
                         .ForMember(dest => dest.ProfileImageUrl, opt => opt.Ignore()) // handled after upload
                         .ForMember(dest => dest.Favorites, opt => opt.Ignore())
                         .ForMember(dest => dest.Orders, opt => opt.Ignore())
-                        .ForMember(dest => dest.Rates, opt => opt.Ignore())
-                        .ForMember(dest => dest.Cart, opt => opt.Ignore());
+                        .ForMember(dest => dest.Rates, opt => opt.Ignore());
+                      
     
         }
         void ClientToClientDTO()

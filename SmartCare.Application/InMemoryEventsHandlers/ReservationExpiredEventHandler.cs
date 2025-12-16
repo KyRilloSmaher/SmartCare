@@ -29,8 +29,8 @@ namespace SmartCare.API.InMemoryEventsHandlers
             try
             {
 
-                await _notificationSender.SendCartUpdatedAsync(evt.CartId, new
-                {
+                await _notificationSender.SendCartUpdatedAsync(evt.UserId,evt.CartId, new
+                {   
                     productId = evt.ProductId,
                     quantity = evt.Quantity,
                     message = evt.Message

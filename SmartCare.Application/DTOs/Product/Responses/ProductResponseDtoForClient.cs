@@ -20,6 +20,7 @@ namespace SmartCare.Application.DTOs.Product.Responses
         public decimal Price { get; set; }
         public bool IsAvailable { get; set; }
         public string ActiveIngredients { get; set; }
+        public string Tags { get; set; }
         public float DiscountPercentage { get; set; }
 
     }

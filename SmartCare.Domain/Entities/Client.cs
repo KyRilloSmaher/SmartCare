@@ -19,10 +19,11 @@ namespace SmartCare.Domain.Entities
         public int RatesCount { get; set; } = 0;
         public int OrdersCount { get; set; } = 0;
         public int FavoritesCount { get; set; } = 0;
+        public bool IsDeleted { get; set; } = false;
         public ICollection<Address> Addresses { get; set; }
         public  ICollection<Favorite> Favorites { get; set; }
         public  ICollection<Order> Orders { get; set; }
         public ICollection<Rate> Rates { get; set; }
-        public  Cart Cart { get; set; }
+        public ICollection<Cart> Carts { get; set; }
     }
 }

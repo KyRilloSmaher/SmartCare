@@ -15,10 +15,10 @@ namespace SmartCare.InfraStructure.Services
             _eventBus = eventBus;
         }
 
-        public async Task PublishReservationExpired(Guid cartId, Guid productId, int quantity)
+        public async Task PublishReservationExpired(Guid cartId, Guid productId, int quantity, string userid)
         {
             var evt = new ReservationExpiredEvent(cartId, productId, quantity,
-                "Your reservation has expired and the item was removed from your cart.");
+                "Your reservation has expired and the item was removed from your cart." , userid);
             await _eventBus.PublishAsync(evt);
         }
 
@@ -34,9 +34,9 @@ namespace SmartCare.InfraStructure.Services
             await _eventBus.PublishAsync(evt);
         }
 
-        public async Task PublishOrderExpirationNotification(Guid orderId)
+        public async Task PublishOrderExpirationNotification(string userid ,Guid orderId)
         {
-            var evt = new OrderExpiredEvent(orderId);
+            var evt = new OrderExpiredEvent(userid ,orderId);
             await _eventBus.PublishAsync(evt);
         }
     }

@@ -38,16 +38,17 @@ namespace SmartCare.InfraStructure.Configurations
                 .WithMany(o => o.Items)
                 .HasForeignKey(o => o.OrderId);
 
-            builder.HasOne(o => o.Inventory)
-                .WithOne(o => o.OrderItem)
-                .HasForeignKey<OrderItem>(o => o.InvetoryId);
+            builder.HasOne(x => x.Inventory)
+                       .WithMany(i => i.OrderItems)
+                       .HasForeignKey(x => x.InvetoryId)
+                       .OnDelete(DeleteBehavior.NoAction);
 
 
-            //builder.HasIndex(oi => oi.ProductId);
-            //builder.HasIndex(oi => oi.OrderId);
-            //builder.HasIndex(oi => oi.InvetoryId);
+            builder.HasIndex(oi => oi.ProductId);
+            builder.HasIndex(oi => oi.OrderId);
+            builder.HasIndex(oi => oi.InvetoryId);
 
-            
+
 
 
 

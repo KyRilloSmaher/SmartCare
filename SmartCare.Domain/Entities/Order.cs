@@ -16,6 +16,7 @@ namespace SmartCare.Domain.Entities
         public decimal TotalPrice { get; set; }
         public OrderStatus Status { get; set; }
         public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
+        public bool IsDeleted { get; set; } = false;
         public Payment Payment { get; set; }
         public  Client Client { get; set; }
         public  ICollection<OrderItem> Items { get; set; }

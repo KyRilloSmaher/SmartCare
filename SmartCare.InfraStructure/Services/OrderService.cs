@@ -408,6 +408,9 @@ namespace SmartCare.InfraStructure.Services
                     return _responseHandler.Failed<T?>(reservationUpdate.ErrorMessage);
                 }
 
+                //Clear cart
+                await _cartRepository.DeleteAsync(cart);
+                await _cartRepository.CreateCartAsync(clientId);
                 //Commit transaction
                 await _orderRepository.CommitTransactionAsync();
 
@@ -416,9 +419,6 @@ namespace SmartCare.InfraStructure.Services
                     () => ReleaseOrderReservationsAsync(order.Id),
                     TimeSpan.FromMinutes(expirationMinutes));
 
-                //Clear cart
-                await _cartRepository.DeleteAsync(cart);
-                await _cartRepository.CreateCartAsync(clientId);
 
                 //Build Response
                 var responseDto = _mapper.Map<T>(order);
@@ -475,7 +475,7 @@ namespace SmartCare.InfraStructure.Services
                 {
                     var inventory = await _inventoryRepository.GetStockOfProductInStore(ci.ProductId, storeOrder.StoreId);
 
-                    if (inventory == null || inventory.StockQuantity < ci.Quantity)
+                    if (inventory == null || inventory.StockQuantity - inventory.ReservedQuantity < ci.Quantity)
                     {
                         outOfStockList.Add(new OutOfStockItemDto
                         {
@@ -484,7 +484,7 @@ namespace SmartCare.InfraStructure.Services
                             AvailableQty = inventory?.StockQuantity ?? 0
                         });
                     }
-                    else if (inventory.StockQuantity - inventory.ReservedQuantity >= ci.Quantity)
+                    else
                     {
                         var reservation = await _reservationRepository.GetByIdAsync(ci.ReservationId, true);
                         reservation.ExpiredAt = DateTime.UtcNow;
@@ -561,10 +561,19 @@ namespace SmartCare.InfraStructure.Services
                     if (reservation != null && reservation.Status == ReservationStatus.ReservedUntilPayment)
                     {
                         await _reservationRepository.CancelReservationAsync(reservation.Id,item .InvetoryId ,ReservationStatus.OrderTimeOut);
+
+                        var product = await _productRepository.GetByIdAsync(item.ProductId);
+                        // --- Post-commit jobs
+                        if (!product.IsAvailable)
+                        {
+                            _backgroundJobService.Enqueue<IEventPublisherService>(publisher =>
+                                publisher.PublishProductStockStatusChanged(item.ProductId, true));
+                        }
                     }
                 }
                 order.Status= OrderStatus.Expired;
-                await _eventPublisherService.PublishOrderExpirationNotification(orderId);
+               await _orderRepository.UpdateAsync(order);
+                await _eventPublisherService.PublishOrderExpirationNotification(order.ClientId,orderId);
                 _logger.LogInformation("Released reservations for OrderId={OrderId}", orderId);
             }
             catch (Exception ex)

@@ -19,7 +19,47 @@ namespace SmartCare.InfraStructure.Repositories
             _context = context;
         }
 
-        #region Cart Methods
+        #region --- Private Helpers ---
+
+        /// <summary>
+        /// Common include chain for loading carts.
+        /// </summary>
+        private IQueryable<Cart> CartIncludes()
+        {
+            return _context.Carts
+                .Include(c => c.Items
+                    .Where(i => i.Reservation.Status == ReservationStatus.ReservedUntilCheckout))
+                        .ThenInclude(i => i.Reservation)
+                .Include(c => c.Items)
+                    .ThenInclude(i => i.Product)
+                        .ThenInclude(p => p.Images);
+        }
+
+        /// <summary>
+        /// Gets total available stock for a product.
+        /// </summary>
+        private async Task<int> GetTotalStockForProductAsync(Guid productId)
+        {
+            return await _context.Inventories
+                .Where(i => i.ProductId == productId)
+                .SumAsync(i => i.StockQuantity - i.ReservedQuantity);
+        }
+
+        /// <summary>
+        /// Updates product availability automatically based on inventory.
+        /// </summary>
+        private async Task UpdateProductAvailabilityAsync(Guid productId)
+        {
+            var product = await _context.Products.FirstOrDefaultAsync(p => p.ProductId == productId);
+            if (product != null)
+            {
+                product.IsAvailable = ((await GetTotalStockForProductAsync(productId)) > 0);
+            }
+        }
+
+        #endregion
+
+        #region --- Cart Methods ---
 
         public async Task<Cart> CreateCartAsync(string userId)
         {
@@ -30,51 +70,25 @@ namespace SmartCare.InfraStructure.Repositories
             };
 
             await _context.Carts.AddAsync(newCart);
-            await SaveChangesAsync();
             return newCart;
         }
 
         public async Task<Cart?> GetActiveCartAsync(string userId)
         {
-            var cart = await _context.Carts
-                .Include(c => c.Items)
-                    .ThenInclude(ci => ci.Reservation)
-                .Include(c => c.Items)
-                    .ThenInclude(ci => ci.Product)
-                        .ThenInclude(p => p.Images)
+            return await CartIncludes()
                 .Where(c => c.ClientId == userId && c.status == CartStatus.Active)
                 .AsNoTracking()
                 .FirstOrDefaultAsync();
-
-            if (cart != null)
-                cart.Items = cart.Items
-                    .Where(i => i.Reservation.Status == ReservationStatus.ReservedUntilCheckout)
-                    .ToList();
-
-            return cart;
         }
 
-        public async override Task<Cart?> GetByIdAsync(Guid Id, bool AsTracking = false)
+        public override async Task<Cart?> GetByIdAsync(Guid id, bool asTracking = false)
         {
-            var query = _context.Carts
-                .Include(c => c.Items)
-                    .ThenInclude(ci => ci.Reservation)
-                .Include(c => c.Items)
-                    .ThenInclude(ci => ci.Product)
-                        .ThenInclude(p => p.Images)
-                .Where(c => c.Id == Id);
+            var query = CartIncludes().Where(c => c.Id == id);
 
-            if (!AsTracking)
+            if (!asTracking)
                 query = query.AsNoTracking();
 
-            var cart = await query.FirstOrDefaultAsync();
-
-            if (cart != null)
-                cart.Items = cart.Items
-                    .Where(i => i.Reservation.Status == ReservationStatus.ReservedUntilCheckout)
-                    .ToList();
-
-            return cart;
+            return await query.FirstOrDefaultAsync();
         }
 
         public async Task<IEnumerable<CartItem>> GetCartItemsAsync(Guid cartId)
@@ -83,17 +97,9 @@ namespace SmartCare.InfraStructure.Repositories
                 .Include(ci => ci.Product)
                     .ThenInclude(p => p.Images)
                 .Include(ci => ci.Reservation)
-                .Where(ci => ci.CartId == cartId && ci.Reservation.Status == ReservationStatus.ReservedUntilCheckout)
+                .Where(ci => ci.CartId == cartId &&
+                             ci.Reservation.Status == ReservationStatus.ReservedUntilCheckout)
                 .ToListAsync();
-        }
-
-        public async Task<CartItem?> GetCartItemAsync(Guid cartItemId)
-        {
-            return await _context.CartItems
-                .Include(ci => ci.Product)
-                    .ThenInclude(p => p.Images)
-                .AsTracking()
-                .FirstOrDefaultAsync(ci => ci.CartItemId == cartItemId);
         }
 
         public async Task<bool> MarkCartAsCheckedOutAsync(Cart cart)
@@ -103,76 +109,112 @@ namespace SmartCare.InfraStructure.Repositories
             return true;
         }
 
+        public override async Task<bool> DeleteAsync(Cart entity)
+        {
+            entity.status = CartStatus.Abandoned;
+            _context.Carts.Update(entity);
+            return true;
+        }
+
         #endregion
 
-        #region CartItem Methods
+        #region --- CartItem Methods ---
+
+        public async Task<CartItem?> GetCartItemAsync(Guid cartItemId)
+        {
+            return await _context.CartItems
+                .Include(ci => ci.Product)
+                    .ThenInclude(p => p.Images)
+                .Include(ci => ci.Reservation)
+                .FirstOrDefaultAsync(ci => ci.CartItemId == cartItemId);
+        }
 
         public async Task<bool> AddCartItemAsync(CartItem cartItem)
         {
             await _context.CartItems.AddAsync(cartItem);
+            await UpdateProductAvailabilityAsync(cartItem.ProductId);
             return true;
         }
 
         public async Task<bool> UpdateItemCartAsync(CartItem cartItem)
         {
             _context.CartItems.Update(cartItem);
+            await UpdateProductAvailabilityAsync(cartItem.ProductId);
             return true;
         }
 
         public async Task<bool> RemoveCartItemAsync(CartItem cartItem)
         {
+            // restore inventory reservation
             if (cartItem.InventoryId != Guid.Empty)
             {
                 var inventory = await _context.Inventories
                     .FirstOrDefaultAsync(inv => inv.Id == cartItem.InventoryId);
 
                 if (inventory != null)
+                {
                     inventory.ReservedQuantity = Math.Max(0, inventory.ReservedQuantity - cartItem.Quantity);
+                }
             }
 
             _context.CartItems.Remove(cartItem);
+            await UpdateProductAvailabilityAsync(cartItem.ProductId);
             return true;
         }
 
         public async Task<decimal> CalculateCartTotalAsync(Guid cartId)
         {
-            var cart = await _context.Carts
-                .AsTracking()
-                .FirstOrDefaultAsync(c => c.Id == cartId);
-
-            if (cart == null)
-                throw new Exception($"Cart {cartId} not found.");
-
-            var total = await _context.CartItems.Include(ci=>ci.Reservation)
-                .Where(ci => ci.CartId == cartId && ci.Reservation.Status == ReservationStatus.ReservedUntilCheckout)
+            var total = await _context.CartItems
+                .Include(ci => ci.Reservation)
+                .Where(ci => ci.CartId == cartId &&
+                             ci.Reservation.Status == ReservationStatus.ReservedUntilCheckout)
                 .SumAsync(ci => (decimal)(ci.Quantity * ci.UnitPrice));
 
-            cart.TotalPrice = total;
-            _context.Carts.Update(cart);
-            await SaveChangesAsync();
+            var cart = await _context.Carts.FirstOrDefaultAsync(c => c.Id == cartId);
+            if (cart != null)
+            {
+                cart.TotalPrice = total;
+                _context.Carts.Update(cart);
+            }
+
             return total;
         }
 
         public async Task<bool> ClearCartAsync(Cart cart)
         {
-            var cartItems = await _context.CartItems
+            var items = await _context.CartItems
                 .Where(ci => ci.CartId == cart.Id)
                 .ToListAsync();
 
-            _context.CartItems.RemoveRange(cartItems);
-            return true;
-        }
-        public async override  Task<bool> DeleteAsync(Cart entity)
-        {
-            entity.status = CartStatus.Abandoned;
-            await _dbContext.SaveChangesAsync();
+            // release reserved inventory
+            foreach (var item in items)
+            {
+                if (item.InventoryId != Guid.Empty)
+                {
+                    var inventory = await _context.Inventories
+                        .FirstOrDefaultAsync(i => i.Id == item.InventoryId);
+
+                    if (inventory != null)
+                    {
+                        inventory.ReservedQuantity = Math.Max(0, inventory.ReservedQuantity - item.Quantity);
+                    }
+                }
+
+                await UpdateProductAvailabilityAsync(item.ProductId);
+            }
+
+            _context.CartItems.RemoveRange(items);
             return true;
         }
 
         public async Task<bool> CheckIfProductExistInCart(Guid cartId, Guid productId)
         {
-            return await _context.CartItems.Include(ci=>ci.Reservation)
-                .AnyAsync(ci => ci.CartId == cartId && ci.ProductId == productId && ci.Reservation.Status == ReservationStatus.ReservedUntilCheckout);
+            return await _context.CartItems
+                .Include(ci => ci.Reservation)
+                .AnyAsync(ci =>
+                    ci.CartId == cartId &&
+                    ci.ProductId == productId &&
+                    ci.Reservation.Status == ReservationStatus.ReservedUntilCheckout);
         }
 
         #endregion

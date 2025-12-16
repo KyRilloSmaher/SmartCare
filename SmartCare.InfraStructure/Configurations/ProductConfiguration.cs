@@ -62,11 +62,6 @@ namespace SmartCare.InfraStructure.Configurations
             builder.Property(p => p.AverageRating)
                    .HasColumnType("float");
 
-            builder.Property(p => p.SearchVector)
-                   .HasMaxLength(1000);
-
-            builder.Property(p => p.EmbeddingVector)
-                   .HasMaxLength(1000);
 
             builder.HasOne(p => p.Category)
                    .WithMany(c => c.Products)

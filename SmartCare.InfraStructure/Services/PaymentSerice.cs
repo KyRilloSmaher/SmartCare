@@ -70,6 +70,8 @@ namespace SmartCare.InfraStructure.Services
             var order = await _orderRepository.GetByIdAsync(req.OrderId, true);
             if (order == null)
                 return _responseHandler.BadRequest<SessionResponse>(SystemMessages.ORDER_NOT_FOUND);
+            if (order.Status != OrderStatus.Pending)
+                return _responseHandler.BadRequest<SessionResponse>(SystemMessages.CAN_NOT_PROCESS_PAYMENT);
 
             var request = new PaymentSessionRequest
             {
@@ -83,21 +85,14 @@ namespace SmartCare.InfraStructure.Services
             var payment = _mapper.Map<Payment>(session);
             payment.Status = PaymentStatus.Pending;
             payment.OrderId = order.Id;
+            payment.ExpiredAt = DateTime.UtcNow.AddMinutes(PaymentExpirationMinutes);
+            payment.url = session.Url;
 
             // persist payment
             var addedPayment = await _paymentRepository.AddAsync(payment);
             if (addedPayment == null)
             {
                 _logger.LogError("Failed to create payment for order {OrderId}", order.Id);
-                return _responseHandler.Failed<SessionResponse>(SystemMessages.SERVER_ERROR);
-            }
-
-            // persist order.PaymentId
-            order.PaymentId = addedPayment.Id;
-            var updateOrderResult = await _orderRepository.UpdateAsync(order);
-            if (updateOrderResult is null)
-            {
-                _logger.LogError("Failed to attach payment id to order {OrderId}", order.Id);
                 return _responseHandler.Failed<SessionResponse>(SystemMessages.SERVER_ERROR);
             }
 
@@ -108,10 +103,19 @@ namespace SmartCare.InfraStructure.Services
                 _logger.LogWarning("Reservation update failed for Order {OrderId}: {Error}", order.Id, UpdateResult.ErrorMessage);
                 return _responseHandler.BadRequest<SessionResponse>(UpdateResult.ErrorMessage);
             }
+            // persist order.PaymentId
+            order.PaymentId = addedPayment.Id;
+            var updateOrderResult = await _orderRepository.UpdateAsync(order);
+            if (updateOrderResult is null)
+            {
+                _logger.LogError("Failed to attach payment id to order {OrderId}", order.Id);
+                return _responseHandler.Failed<SessionResponse>(SystemMessages.SERVER_ERROR);
+            }
+
 
             var response = new SessionResponse
             {
-                url = session.Url,
+                url = $"{req.ReturnUrl}/stripe-session?orderId={order.Id}",
                 Id = session.Id
             };
 
@@ -437,5 +441,7 @@ namespace SmartCare.InfraStructure.Services
                 }
             }
         }
+
+        public async Task<Payment> GetPaymentByOrderIdAsync(Guid orderId) => await _paymentRepository.GetByOrderIdAsync(orderId);
     }
 }

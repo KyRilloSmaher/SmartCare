@@ -55,10 +55,6 @@ namespace SmartCare.InfraStructure.Configurations
                 .OnDelete(DeleteBehavior.SetNull);
 
 
-            builder.HasOne(c => c.Cart)
-                .WithOne(c => c.Client)
-                .HasForeignKey<Cart>(c => c.ClientId)
-                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

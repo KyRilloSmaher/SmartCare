@@ -47,5 +47,29 @@ namespace SmartCare.Domain.Constants
             var ext = Path.GetExtension(file.FileName).ToLower();
             return AllowedImageExtensions.Contains(ext) && file.Length <= MaxImgSize;
         }
+        public static List<string> GetPasswordErrors(string password)
+        {
+            var errors = new List<string>();
+
+            if (string.IsNullOrEmpty(password)) return errors;
+            if (password.Contains(" "))
+                errors.Add("Password cannot contain spaces.");
+            if (password.Length < 12)
+                errors.Add("Password must be at least 12 characters long.");
+
+            if (!Regex.IsMatch(password, "[A-Z]"))
+                errors.Add("Password must contain an uppercase letter.");
+
+            if (!Regex.IsMatch(password, "[a-z]"))
+                errors.Add("Password must contain a lowercase letter.");
+
+            if (!Regex.IsMatch(password, "[0-9]"))
+                errors.Add("Password must contain a digit.");
+
+            if (!Regex.IsMatch(password, "[^a-zA-Z0-9]"))
+                errors.Add("Password must contain a special character.");
+
+            return errors;
+        }
     }
 }

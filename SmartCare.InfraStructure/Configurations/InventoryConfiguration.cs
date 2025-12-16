@@ -30,10 +30,6 @@ namespace SmartCare.InfraStructure.Configurations
                 .HasForeignKey(x => x.ProductId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            builder.HasOne(x => x.OrderItem)
-                .WithOne(x => x.Inventory)
-                .HasForeignKey<OrderItem>(x => x.InvetoryId)
-                .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasMany(x => x.CartItems)
                 .WithOne(x => x.Inventory)

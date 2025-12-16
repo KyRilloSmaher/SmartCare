@@ -1,19 +1,15 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
 using Polly;
 using System.Text.RegularExpressions;
 
 namespace SmartCare.API.Hubs
 {
+    [Authorize]
     public class OrderHub :Hub
     {
-        public async Task JoinProductGroup(Guid orderId)
-        {
-            await Groups.AddToGroupAsync(Context.ConnectionId, $"Order:{orderId}");
-        }
+        public override async Task OnConnectedAsync() => await base.OnConnectedAsync();
 
-        public async Task LeaveProductGroup(Guid orderId)
-        {
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"Order:{orderId}");
-        }
+        public override async Task OnDisconnectedAsync(Exception? exception) => await base.OnDisconnectedAsync(exception);
     }
 }
