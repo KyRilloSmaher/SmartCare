@@ -12,7 +12,7 @@ namespace SmartCare.Application.DTOs.Orders.Responses
     {
         public Guid Id { get; set; }
         public string? ClientId { get; set; }
-        public int? PaymentId { get; set; }
+        //public int? PaymentId { get; set; }
         public Guid storeId { get; set; }
         public decimal TotalPrice { get; set; }
         public OrderStatus Status { get; set; }

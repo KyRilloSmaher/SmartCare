@@ -24,6 +24,7 @@ using SmartCare.InfraStructure.Messaging;
 using SmartCare.Application.InMemoryEventsHandlers;
 using SmartCare.Application.Notifications;
 using SmartCare.InfraStructure.Services;
+using SmartCare.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -91,6 +92,7 @@ builder.Services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUrlHelper>(x =>
     x.GetRequiredService<IUrlHelperFactory>().GetUrlHelper(x.GetRequiredService<IActionContextAccessor>().ActionContext));
+builder.Services.AddScoped<HtmlTemplateService>();
 
 
 #endregion

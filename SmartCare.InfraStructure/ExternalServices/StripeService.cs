@@ -109,4 +109,42 @@ public class StripeService : IPaymentGetway
         }
     }
 
+
+    public async Task<PaymentIntent> CreatePaymentIntentAsync(
+       decimal amount,
+       string orderId,
+       int version)
+    {
+        var service = new PaymentIntentService();
+
+        return await service.CreateAsync(new PaymentIntentCreateOptions
+        {
+            Amount = (long)(amount * 100),
+            Currency = "usd",
+            AutomaticPaymentMethods = new() { Enabled = true },
+            Metadata = new Dictionary<string, string>
+            {
+                ["orderId"] = orderId,
+                ["version"] = version.ToString()
+            }
+        });
+    }
+
+    public async Task<PaymentIntent> UpdatePaymentIntentAmountAsync(
+        string intentId,
+        decimal amount)
+    {
+        var service = new PaymentIntentService();
+
+        return await service.UpdateAsync(intentId, new PaymentIntentUpdateOptions
+        {
+            Amount = (long)(amount * 100)
+        });
+    }
+
+    public async Task CancelPaymentIntentAsync(string intentId)
+    {
+        var service = new PaymentIntentService();
+        await service.CancelAsync(intentId);
+    }
 }

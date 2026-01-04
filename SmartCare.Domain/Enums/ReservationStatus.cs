@@ -10,11 +10,14 @@ namespace SmartCare.Domain.Enums
     {
         ReservedUntilPayment,
         ReservedUntilCheckout,
+        ReservedUntilPickup,
         Realesed,
         Extra,
         PaymentTimeOut,
         PaymentFailed,
         Completed,
-        OrderTimeOut
+        OrderTimeOut,
+        PickUpExpired,
+        OrderUpdated
     }
 }

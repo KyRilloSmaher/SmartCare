@@ -49,6 +49,18 @@ namespace SmartCare.Infrastructure.Repositories
             return await BaseOrderQuery()
                 .FirstOrDefaultAsync(o => o.Id == orderId);
         }
+        public async Task<Order?> GetOrderByPickUpCode(string pickupCodeHash)
+        {
+            return await _context.Orders
+                                    .OfType<FromStoreOrder>()
+                                    .Include(o => o.Store)
+                                    .Include(o => o.Items)
+                                        .ThenInclude(i => i.Product)
+                                            .ThenInclude(p => p.Images)
+                                    .Include(o => o.Payment)
+                                    .Include(o => o.Client)
+                                    .FirstOrDefaultAsync(o => o.PickupCodeHash == pickupCodeHash);
+        }
 
         public async Task<IEnumerable<Order>> GetOrdersByStatusAsync(OrderStatus status, Guid? storeId = null)
         {
@@ -160,7 +172,7 @@ namespace SmartCare.Infrastructure.Repositories
         {
             await _context.OrderItems.AddRangeAsync(orderItems);
 
-            return await _context.SaveChangesAsync()>0;
+            return await _context.SaveChangesAsync() > 0;
         }
 
 
@@ -199,6 +211,93 @@ namespace SmartCare.Infrastructure.Repositories
             await _dbContext.SaveChangesAsync();
             return true;
         }
+        public async Task UpdateOrderItemsAsync(IEnumerable<OrderItem> orderItems)
+        {
+            foreach (var item in orderItems)
+            {
+                _dbContext.OrderItems.Attach(item);
+
+                _dbContext.Entry(item).Property(x => x.ReservationId).IsModified = true;
+            }
+
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task<OnlineOrder?> GetOnlineOrderAsync(Guid orderId)
+        {
+            return await _dbContext.OnlineOrders
+                .FirstOrDefaultAsync(o => o.Id == orderId);
+        }
+
+        public async Task<FromStoreOrder?> GetOfflineOrderAsync(Guid orderId)
+        {
+            return await _dbContext.FromStoreOrders
+                .FirstOrDefaultAsync(o => o.Id == orderId);
+        }
+
+        public void RemoveOnlineOrder(OnlineOrder onlineOrder)
+        {
+            _dbContext.OnlineOrders.Remove(onlineOrder);
+        }
+
+        public void RemoveOfflineOrder(FromStoreOrder offlineOrder)
+        {
+            _dbContext.FromStoreOrders.Remove(offlineOrder);
+        }
+
+        public async Task AddInOnlineOrderAsync(OnlineOrder onlineOrder)
+        {
+            await _dbContext.OnlineOrders.AddAsync(onlineOrder);
+        }
+
+        public async Task AddInOfflineOrderAsync(FromStoreOrder fromStoreOrder)
+        {
+            await _dbContext.FromStoreOrders.AddAsync(fromStoreOrder);
+        }
+        public async Task SwitchOrderTypeAsync(Order order,OrderType newType,Guid? shippingAddressId,Guid? storeId)
+        {
+            if (order.OrderType == newType)
+                return;
+
+            // Remove old derived row (DB ONLY)
+            if (order.OrderType == OrderType.Online)
+            {
+                await _dbContext.Database.ExecuteSqlRawAsync(
+                    "DELETE FROM OnlineOrders WHERE Id = {0}", order.Id);
+            }
+            else if (order.OrderType == OrderType.InStore)
+            {
+                await _dbContext.Database.ExecuteSqlRawAsync(
+                    "DELETE FROM FromStoreOrders WHERE Id = {0}", order.Id);
+            }
+
+            // Insert new derived row
+            if (newType == OrderType.Online)
+            {
+                await _dbContext.Database.ExecuteSqlRawAsync(
+                    "INSERT INTO OnlineOrders (Id, ShippingAddressId) VALUES ({0}, {1})",
+                    order.Id, shippingAddressId);
+            }
+            else
+            {
+                await _dbContext.Database.ExecuteSqlRawAsync(
+                    "INSERT INTO FromStoreOrders (Id, StoreId) VALUES ({0}, {1})",
+                    order.Id, storeId);
+            }
+
+            // Update base discriminator
+            order.OrderType = newType;
+            //_dbContext.Orders.Update(order);
+        }
+
+        public async Task UpdatePickupCodeHashAsync(Guid orderId, string pickupCodeHash)
+        {
+            await _dbContext.Database.ExecuteSqlRawAsync("UPDATE FromStoreOrders SET PickupCodeHash = {0} WHERE Id = {1}",pickupCodeHash,orderId);
+        }
+
+
+
+
         #endregion
     }
 }

@@ -26,11 +26,11 @@ namespace SmartCare.InfraStructure.Configurations
             builder.Property(r => r.ExpiredAt)
                    .IsRequired();
 
-            builder.HasOne(r => r.CartItem)
-                   .WithOne(r => r.Reservation) 
-                   .HasForeignKey<Reservation>(r => r.CartItemId);
+            builder.HasOne(r => r.OrderItem)
+                   .WithOne(r => r.Reservation)
+                   .HasForeignKey<Reservation>(r => r.OrderItemId);
 
-            builder.HasIndex(r => r.CartItemId);
+            builder.HasIndex(r => r.OrderItemId);
             builder.HasIndex(r => r.ReservedAt);
             builder.HasIndex(r => r.ExpiredAt);
 

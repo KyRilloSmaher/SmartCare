@@ -15,7 +15,7 @@ namespace SmartCare.Application.DTOs.Cart.Responses
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; }
         public decimal TotalPrice { get; set; }
-        public Guid? ReservationId { get; set; }
+        //public Guid? ReservationId { get; set; }
         public DateTime? ReservedUntil { get; set; }
     }
 }

@@ -17,10 +17,10 @@ namespace SmartCare.InfraStructure.Configurations
 
             builder.ToTable("OnlineOrders");
 
-            builder.HasOne(o => o.Address)
-                   .WithMany()
-                   .HasForeignKey(o => o.ShippingAddressId)
-                   .OnDelete(DeleteBehavior.Cascade);
+            //builder.HasOne(o => o.Address)
+            //       .WithMany()
+            //       .HasForeignKey(o => o.ShippingAddressId)
+            //       .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

@@ -18,5 +18,6 @@ namespace SmartCare.Domain.Enums
         PaymentFailed,
         Expired ,
         Refunded,
+        WaitingForPickup
     }
 }

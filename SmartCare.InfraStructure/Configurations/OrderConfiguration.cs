@@ -1,13 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SmartCare.Domain.Entities;
-using SmartCare.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace SmartCare.InfraStructure.Configurations
 {
@@ -24,29 +17,18 @@ namespace SmartCare.InfraStructure.Configurations
                 .HasColumnType("decimal(18,2)");
 
             builder.Property(o => o.Status)
-                   .IsRequired()
-                   .HasDefaultValue(Domain.Enums.OrderStatus.Pending);
-
+                .IsRequired()
+                .HasDefaultValue(Domain.Enums.OrderStatus.Pending);
 
             builder.Property(o => o.CreatedAt)
                 .IsRequired();
 
-
-            builder.HasOne(o => o.Payment)
-                .WithOne(o => o.Order)
-                .HasForeignKey<Order>(o => o.PaymentId);
-
             builder.HasMany(o => o.Items)
-                .WithOne(o => o.Order)
-                .HasForeignKey(o => o.OrderId);
-
-
+                .WithOne(i => i.Order)
+                .HasForeignKey(i => i.OrderId);
 
             builder.HasIndex(o => o.Status);
-
-
-
-
         }
     }
+
 }

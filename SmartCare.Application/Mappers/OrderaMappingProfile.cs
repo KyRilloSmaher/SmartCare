@@ -21,7 +21,7 @@ namespace SmartCare.Application.Mappers
             CreateMap<Order, OrderResponseDto>()
                 .Include<OnlineOrder, OrderResponseDto>()
                 .Include<FromStoreOrder, OrderResponseDto>()
-                .ForMember(dest => dest.PaymentId, opt => opt.MapFrom(src => src.PaymentId))
+                //.ForMember(dest => dest.PaymentId, opt => opt.MapFrom(src => src.PaymentIntentId))
                 .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.TotalPrice))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
@@ -31,7 +31,7 @@ namespace SmartCare.Application.Mappers
 
             // CHILD: Online Order
             CreateMap<OnlineOrder, OrderResponseDto>()
-                .ForMember(dest => dest.PaymentId, opt => opt.MapFrom(src => src.PaymentId))
+                //.ForMember(dest => dest.PaymentId, opt => opt.MapFrom(src => src.PaymentIntentId))
                 .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.TotalPrice))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
@@ -42,7 +42,7 @@ namespace SmartCare.Application.Mappers
 
             // CHILD: Store Order
             CreateMap<FromStoreOrder, OrderResponseDto>()
-                .ForMember(dest => dest.PaymentId, opt => opt.MapFrom(src => src.PaymentId))
+                //.ForMember(dest => dest.PaymentId, opt => opt.MapFrom(src => src.PaymentIntentId))
                 .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.TotalPrice))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
@@ -51,7 +51,7 @@ namespace SmartCare.Application.Mappers
                 .ForMember(dest => dest.Store, opt => opt.MapFrom(src => src.Store))
                 .ReverseMap();
             CreateMap<FromStoreOrder, PickUpOrderResponseDto>()
-                .ForMember(dest => dest.PaymentId, opt => opt.MapFrom(src => src.PaymentId))
+                //.ForMember(dest => dest.PaymentId, opt => opt.MapFrom(src => src.PaymentIntentId))
                 .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.TotalPrice))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
