@@ -37,8 +37,9 @@ namespace SmartCare.Application.Mappings
                 .ForMember(dest => dest.UnitPrice, opt => opt.MapFrom(src => src.UnitPrice))
                 .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.SubTotal))
                 .ForMember(dest => dest.MainImageUrl, opt => opt.MapFrom(src => src.Product.Images.FirstOrDefault(i => i.IsPrimary).Url))
-                .ForMember(dest => dest.ReservationId, opt => opt.MapFrom(src => src.ReservationId))
-                .ForMember(dest => dest.ReservedUntil, opt => opt.MapFrom(src => src.Reservation != null ? src.Reservation.ExpiredAt : (DateTime?)null));
+                //.ForMember(dest => dest.ReservationId, opt => opt.MapFrom(src => src.ReservationId))
+                //.ForMember(dest => dest.ReservedUntil, opt => opt.MapFrom(src => src.Reservation != null ? src.Reservation.ExpiredAt : (DateTime?)null))
+                ;
         }
         void FromUpdateCartItemRequestToCartItem()
         {
@@ -49,9 +50,13 @@ namespace SmartCare.Application.Mappings
         void FromAddCartItemRequestToCartItem()
         {
             CreateMap<AddToCartRequestDto, CartItem>()
-                .ForMember(dest => dest.ProductId, opt => opt.MapFrom(src => src.ProductId))
-                .ForMember(dest => dest.Quantity, opt => opt.MapFrom(src => src.Quantity))
-                .ForMember(dest => dest.CartId, opt => opt.MapFrom(src => src.CartId));
+                     .ForMember(dest => dest.CartItemId, opt => opt.MapFrom(_ => Guid.NewGuid()))
+                     .ForMember(dest => dest.UnitPrice, opt => opt.Ignore())
+                     .ForMember(dest => dest.SubTotal, opt => opt.Ignore())
+                     .ForMember(dest => dest.InventoryId, opt => opt.Ignore())
+                     .ForMember(dest => dest.Cart, opt => opt.Ignore())
+                     .ForMember(dest => dest.Product, opt => opt.Ignore())
+                     .ForMember(dest => dest.Inventory, opt => opt.Ignore());
 
         }   
     }

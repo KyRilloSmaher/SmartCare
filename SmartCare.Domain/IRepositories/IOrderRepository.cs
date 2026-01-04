@@ -1,4 +1,5 @@
-﻿using SmartCare.Domain.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using SmartCare.Domain.Entities;
 using SmartCare.Domain.Enums;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,7 @@ namespace SmartCare.Domain.IRepositories
         Task<IEnumerable<Order>> GetOrdersByCustomerIdAsync(string clientId);
         Task<IEnumerable<Order>> GetOrdersWithDetailsAsync();
         Task<Order?> GetOrderWithDetailsByIdAsync(Guid orderId);
+        Task<Order?> GetOrderByPickUpCode(string code);
         Task<IEnumerable<Order>> GetOrdersByStatusAsync(OrderStatus status, Guid? storeId = null);
         Task<IEnumerable<Order>> GetOrdersByDateRangeAsync(DateTime startDate, DateTime endDate, Guid? storeId = null);
         Task<IEnumerable<Order>> GetOrdersByCustomerAndStatusAsync(string customerId, OrderStatus status);
@@ -24,6 +26,15 @@ namespace SmartCare.Domain.IRepositories
         Task<bool> AddOrderItemsAsync(IEnumerable<OrderItem> orderItems);
         Task<IEnumerable<OnlineOrder>> GetOnlineOrdersAsync();
         Task<IEnumerable<FromStoreOrder>> GetFromStoreOrdersAsync(Guid? storeId = null);
-    }
+        Task UpdateOrderItemsAsync(IEnumerable<OrderItem> orderItems);
+        Task<OnlineOrder?> GetOnlineOrderAsync(Guid orderId);
+        Task<FromStoreOrder?> GetOfflineOrderAsync(Guid orderId);
+        void RemoveOnlineOrder(OnlineOrder onlineOrder);
+        void RemoveOfflineOrder(FromStoreOrder offlineOrder);
+        Task AddInOnlineOrderAsync(OnlineOrder onlineOrder);
+        Task AddInOfflineOrderAsync(FromStoreOrder fromStoreOrder);
+        Task SwitchOrderTypeAsync( Order order,OrderType newType,Guid? shippingAddressId,Guid? storeId);
+        Task UpdatePickupCodeHashAsync(Guid orderId, string pickupCodeHash);
 
+    }
 }

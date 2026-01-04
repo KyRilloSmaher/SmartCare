@@ -196,7 +196,17 @@ namespace SmartCare.API.Controllers
             var result = await _orderService.UpdateOrderStatusAsync(id, newStatus);
             return ControllersHelperMethods.FinalResponse(result);
         }
-
+        /// <summary>
+        /// Update Order Status
+        /// </summary>
+        [HttpPut(ApplicationRouting.Order.Update)]
+        [ProducesResponseType(typeof(Response<OrderResponseDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> UpdateOrderAsync(UpdateOrderRequestDto dto)
+        {
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var result = await _orderService.UpdateOrderAsync(userId, dto);
+            return ControllersHelperMethods.FinalResponse(result);
+        }
         /// <summary>
         /// Delete Order
         /// </summary>

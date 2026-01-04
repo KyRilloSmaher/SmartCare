@@ -18,8 +18,8 @@ namespace SmartCare.Application.Mappers
             CreateMap<Session, Payment>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.Status, opt => opt.Ignore())
-                .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => src.AmountTotal / 100m))
-                .ForMember(dest => dest.SessionId, opt => opt.MapFrom(src => src.Id));
+                .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => src.AmountTotal / 100m));
+               // .ForMember(dest => dest.SessionId, opt => opt.MapFrom(src => src.Id));
 
             // Map from PaymentSessionRequest to Stripe session request (optional)
             CreateMap<PaymentSessionRequest, CreateCheckoutSessionRequest>();

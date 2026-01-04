@@ -94,13 +94,13 @@ namespace SmartCare.InfraStructure.Repositories
 
         }
 
-        public async Task<Inventory?> GetStockOfProductInStore(Guid productId, Guid storeId)
+        public async Task<Inventory?> GetStockOfProductInStore(Guid productId, Guid storeId , int quantity = 1)
         {
             return await _context.Inventories
                               .Include(x => x.Product)
                               .Include(x => x.Store)
                 .AsTracking()
-                .FirstOrDefaultAsync(i => i.ProductId == productId && i.StoreId == storeId);
+                .FirstOrDefaultAsync(i => i.ProductId == productId && i.StoreId == storeId &&( i.StockQuantity - i.ReservedQuantity) >= quantity);
 
         }
 
@@ -113,7 +113,7 @@ namespace SmartCare.InfraStructure.Repositories
             return Inventories;
         }
 
-        public async Task<bool> FinalizeStockDeductionAsync(Guid inventoryId, int quantity)
+        public async Task<bool> FinalizeStockDeductionAsync(Guid inventoryId, int quantity , bool PickUp = false)
         {
 
             var inventory = await _context.Inventories
@@ -130,8 +130,9 @@ namespace SmartCare.InfraStructure.Repositories
                 throw new InvalidOperationException("Cannot finalize deduction. Stock quantity is insufficient.");
 
             // Perform deduction
-            inventory.ReservedQuantity -= quantity;
             inventory.StockQuantity -= quantity;
+            if (PickUp)
+                inventory.ReservedQuantity -= quantity;
 
             var result = await _context.SaveChangesAsync();
             return result > 0;

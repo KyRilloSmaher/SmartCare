@@ -16,10 +16,10 @@ namespace SmartCare.InfraStructure.Configurations
             builder.Property(c => c.ProfileImageUrl)
                 .HasMaxLength(255);
 
-            builder.Property(c => c.Code)
+            builder.Property(c => c.OTP)
                 .HasMaxLength (255);
 
-            builder.HasIndex(c => c.Code)
+            builder.HasIndex(c => c.OTP)
                 .IsUnique();
 
             builder.Property(c => c.BirthDate)

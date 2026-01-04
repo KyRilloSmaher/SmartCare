@@ -1,67 +1,52 @@
-﻿using Microsoft.EntityFrameworkCore;
-using SmartCare.Domain.Entities;
+﻿using SmartCare.Domain.Entities;
 using SmartCare.Domain.Enums;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SmartCare.Domain.IRepositories
 {
-
-    public interface IReservationRepository : IGenericRepository<Reservation>
+    public interface IReservationRepository
     {
         /// <summary>
-        /// Creates a new reservation for a product in a cart.
+        /// Creates a reservation for a product in a specific inventory 
         /// </summary>
-        Task<Reservation?> CreateReservationAsync(CartItem CartItem, int quantity, ReservationStatus status);
+        Task<Reservation> CreateReservationAsync(
+            Guid OrderItemId,
+            Guid productId,
+            Guid inventoryId,
+            int quantity,
+            ReservationStatus status = ReservationStatus.ReservedUntilPickup);
 
         /// <summary>
-        /// Cancels (removes) a reservation.
+        /// Cancels a reservation and releases inventory
         /// </summary>
-        Task<bool> CancelReservationAsync(Guid reservationId,Guid inventoryId , ReservationStatus status);
+        Task<bool> CancelReservationAsync(
+            Guid reservationId,
+            Guid inventoryId,
+            ReservationStatus status = ReservationStatus.Realesed);
 
         /// <summary>
-        /// Updates the quantity of a reservation.
+        /// Updates reservation status and optionally extends expiration
         /// </summary>
-        Task<bool> UpdateReservationQuantityAsync(Reservation reservation, int newQuantity);
+        Task<bool> UpdateReservationStatusAsync(
+            Guid reservationId,
+            ReservationStatus status,
+            int? extendMinutes = null);
 
         /// <summary>
-        /// Removes all reservations related to a given cart.
+        /// Releases all reservations for a given order
         /// </summary>
-        Task<bool> ReleaseAllReservationsForCartAsync(Guid cartId);
+        Task<bool> ReleaseAllReservationsForOrderAsync(Guid orderId);
 
         /// <summary>
-        /// Deletes all expired reservations.
+        /// Get reservation by its ID
         /// </summary>
-        Task<int> RemoveAllExpiredReservationsAsync();
+        Task<Reservation?> GetByIdAsync(Guid reservationId, bool tracking = false);
 
         /// <summary>
-        /// Gets all active (non-expired) reservations for a product.
-        /// </summary>
-        Task<IEnumerable<Reservation>> GetActiveReservationsByProductAsync(Guid productId);
-
-        /// <summary>
-        /// Gets a reservation by its related CartItem ID.
-        /// </summary>
-        Task<Reservation?> GetReservationByCartItemIdAsync(Guid cartItemId);
-
-
-        /// <summary>
-        /// Gets all reservations that are about to expire (within the next few minutes).
-        /// </summary>
-        Task<IEnumerable<Reservation>> GetExpiringReservationsAsync(int minutesUntilExpiration = 5);
-
-        /// <summary>
-        /// Extends the expiration time of a reservation.
-        /// </summary>
-        Task<bool> ExtendReservationAsync(Guid reservationId, int additionalMinutes);
-
-        /// <summary>
-        /// Gets the total reserved quantity for a specific product.
+        /// Get total reserved quantity for a product
         /// </summary>
         Task<int> GetTotalReservedQuantityForProductAsync(Guid productId);
     }
-
 }
