@@ -113,30 +113,40 @@ namespace SmartCare.InfraStructure.Repositories
             return Inventories;
         }
 
-        public async Task<bool> FinalizeStockDeductionAsync(Guid inventoryId, int quantity , bool PickUp = false)
+        public async Task<bool> FinalizeStockDeductionAsync(Guid inventoryId, int quantity, bool pickUp = false)
         {
-
             var inventory = await _context.Inventories
                 .FirstOrDefaultAsync(i => i.Id == inventoryId);
 
             if (inventory == null)
                 throw new InvalidOperationException($"Inventory with ID {inventoryId} not found.");
 
-            // Ensure sufficient reserved and total stock
             if (inventory.ReservedQuantity < quantity)
-                throw new InvalidOperationException("Cannot finalize deduction. Reserved quantity is insufficient.");
+                throw new InvalidOperationException("Insufficient reserved quantity.");
 
             if (inventory.StockQuantity < quantity)
-                throw new InvalidOperationException("Cannot finalize deduction. Stock quantity is insufficient.");
+                throw new InvalidOperationException("Insufficient stock quantity.");
 
-            // Perform deduction
             inventory.StockQuantity -= quantity;
-            if (PickUp)
-                inventory.ReservedQuantity -= quantity;
 
-            var result = await _context.SaveChangesAsync();
-            return result > 0;
+            // 🔥 IMPORTANT: DO NOT LOAD PRODUCT AGAIN
+            var availableStock = await _context.Inventories
+                .Where(inv => inv.ProductId == inventory.ProductId)
+                .SumAsync(inv => inv.StockQuantity - inv.ReservedQuantity);
+
+            var trackedProduct = _context.ChangeTracker
+                .Entries<Product>()
+                .FirstOrDefault(e => e.Entity.ProductId == inventory.ProductId)
+                ?.Entity;
+
+            if (trackedProduct != null)
+            {
+                trackedProduct.IsAvailable = availableStock > 0;
+            }
+
+            return await _context.SaveChangesAsync() > 0;
         }
+
 
         public async Task<bool> FinalizeStockDeductionForProductAsync(Guid productId, int quantity)
         {
@@ -394,6 +404,11 @@ namespace SmartCare.InfraStructure.Repositories
                 .FirstOrDefaultAsync(i => i.Id == Id);
 
         }
-    
+
+        public async Task<bool> IsStockAvailableAsync(Guid inventoryId, Guid productId)
+        { 
+           return await _context.Inventories
+                .AnyAsync(i => i.Id == inventoryId && i.ProductId == productId && (i.StockQuantity - i.ReservedQuantity) > 0);
+        }
     }
 }

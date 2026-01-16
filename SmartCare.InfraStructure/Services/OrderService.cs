@@ -358,7 +358,7 @@ namespace SmartCare.InfraStructure.Services
 
                     if (stock == null)
                     {
-                        step3OutOfStock.Add(BuildOutOfStock(ci, 0));
+                        step3OutOfStock.Add(await BuildOutOfStock(ci, 0));
                         continue;
                     }
 
@@ -370,7 +370,7 @@ namespace SmartCare.InfraStructure.Services
 
                     if (inventoryId == Guid.Empty)
                     {
-                        step3OutOfStock.Add(BuildOutOfStock(ci, 0));
+                        step3OutOfStock.Add(await BuildOutOfStock(ci, 0));
                         continue;
                     }
 
@@ -435,7 +435,7 @@ namespace SmartCare.InfraStructure.Services
 
                     if (inventory.StockQuantity < item.Quantity)
                     {
-                        step7OutOfStock.Add(BuildOutOfStock(new CartItem { ProductId = item.ProductId, Quantity = inventory.StockQuantity }, inventory.StockQuantity));
+                        step7OutOfStock.Add(await BuildOutOfStock(new CartItem { ProductId = item.ProductId, Quantity = inventory.StockQuantity }, inventory.StockQuantity));
                         continue;
                     }
 
@@ -469,23 +469,23 @@ namespace SmartCare.InfraStructure.Services
                 // =====================================================
                 // 10. Post-commit actions
                 // =====================================================
-                if (orderType == OrderType.InStore && pickupCode != null)
-                {
-                    var store = await _storeRepository.GetByIdAsync(storeId!.Value);
+                //if (orderType == OrderType.InStore && pickupCode != null)
+                //{
+                //    var store = await _storeRepository.GetByIdAsync(storeId!.Value);
 
-                    var emailBody = SystemMessages.PICKUP_ORDER_EMAIL_TEMPLATE
-                        .Replace("{{UserName}}", client.UserName)
-                        .Replace("{{PickupCode}}", pickupCode)
-                        .Replace("{{StoreName}}", store.Name)
-                        .Replace("{{StoreAddress}}", store.Address)
-                        .Replace("{{OrderDate}}", order.CreatedAt.ToString("MMMM dd, yyyy"))
-                        .Replace("{{OrderTotal}}", order.TotalPrice.ToString("C"))
-                        .Replace("{{Year}}", DateTime.UtcNow.Year.ToString());
+                //    var emailBody = SystemMessages.PICKUP_ORDER_EMAIL_TEMPLATE
+                //        .Replace("{{UserName}}", client.UserName)
+                //        .Replace("{{PickupCode}}", pickupCode)
+                //        .Replace("{{StoreName}}", store.Name)
+                //        .Replace("{{StoreAddress}}", store.Address)
+                //        .Replace("{{OrderDate}}", order.CreatedAt.ToString("MMMM dd, yyyy"))
+                //        .Replace("{{OrderTotal}}", order.TotalPrice.ToString("C"))
+                //        .Replace("{{Year}}", DateTime.UtcNow.Year.ToString());
 
-                    _backgroundJobService.Schedule(() => _emailService.SendEmailAsync(client.Email, "Your Pickup Order Details", emailBody),
-                                                    TimeSpan.FromSeconds(5));
+                //    _backgroundJobService.Schedule(() => _emailService.SendEmailAsync(client.Email, "Your Pickup Order Details", emailBody),
+                //                                    TimeSpan.FromSeconds(5));
 
-                }
+                //}
                 ScheduleOrderExpiration(order);
                 var response = _mapper.Map<T>(order);
                 return _responseHandler.Success(response, SystemMessages.ORDER_PLACED);
@@ -520,7 +520,7 @@ namespace SmartCare.InfraStructure.Services
                          await _inventoryRepository.GetStockOfProductInStore(ci.ProductId, inventory.StoreId!, ci.Quantity))?.Id ?? Guid.Empty :
                          await _inventoryRepository.GetBestInventoryIdAsync(ci.ProductId, ci.Quantity); if (ci.InventoryId == Guid.Empty
                         )
-                        outOfStock.Add(BuildOutOfStock(ci, 0)); 
+                        outOfStock.Add(await BuildOutOfStock(ci, 0)); 
                 }
                 if (outOfStock.Any()) return BuildStockErrorResponse<OrderResponseDto>(outOfStock);
 
@@ -588,7 +588,7 @@ namespace SmartCare.InfraStructure.Services
                     var inventory = await _inventoryRepository.GetByIdAsync(item.InvetoryId);
                     if (inventory.StockQuantity < item.Quantity) {
                         var cartItem = cartItems.First(c => c.ProductId == item.ProductId);
-                        reservationErrors.Add(BuildOutOfStock(cartItem, inventory.StockQuantity));
+                        reservationErrors.Add(await BuildOutOfStock(cartItem, inventory.StockQuantity));
                         continue;
                     } 
                     var status = newOrderType == OrderType.InStore ?
@@ -699,11 +699,14 @@ namespace SmartCare.InfraStructure.Services
         }
 
 
-        private OutOfStockItemDto BuildOutOfStock(CartItem ci, int available)
+        private async Task<OutOfStockItemDto> BuildOutOfStock(CartItem ci, int available)
         {
+            var product = await _productRepository.GetByIdAsync(ci.ProductId);
             return new OutOfStockItemDto
             {
+
                 ProductId = ci.ProductId,
+                ProductName = product.NameEn,
                 RequestedQty = ci.Quantity,
                 AvailableQty = available
             };
@@ -791,6 +794,7 @@ namespace SmartCare.InfraStructure.Services
         // =====================================================
         public async Task ReleaseOrderReservationsAsync(Guid orderId)
         {
+            _logger.LogInformation("Releasing reservations for OrderId={OrderId}", orderId);
             var order = await _orderRepository.GetOrderWithDetailsByIdAsync(orderId);
             if (order == null)
                 return;

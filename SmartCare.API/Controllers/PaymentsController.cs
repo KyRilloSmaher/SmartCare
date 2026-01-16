@@ -58,6 +58,7 @@ namespace SmartCare.API.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> StripeWebhookAsync()
         {
+            _logger.LogWarning("IInside WebHook");
             var json = await new StreamReader(Request.Body).ReadToEndAsync();
             var signature = Request.Headers["Stripe-Signature"];
             var secret = _configuration["StripeSettings:WebhookSecret"];

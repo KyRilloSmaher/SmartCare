@@ -21,7 +21,7 @@ namespace SmartCare.Domain.IRepositories
         /// <summary>
         /// Gets the active cart for a user if exists.
         /// </summary>
-        Task<Cart?> GetActiveCartAsync(string userId);
+        Task<Cart?> GetActiveCartAsync(string userId , bool track =false);
 
         /// <summary>
         /// Gets a cart by its identifier.

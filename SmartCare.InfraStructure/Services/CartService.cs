@@ -92,7 +92,7 @@ namespace SmartCare.InfraStructure.Services
                 return _responseHandler.BadRequest<CartResponseDto?>(SystemMessages.BAD_REQUEST);
 
             var cart = await _cartRepository.GetByIdAsync(cartId);
-            if (cart == null)
+            if (cart == null || cart.status == CartStatus.Abandoned)
                 return _responseHandler.NotFound<CartResponseDto?>(SystemMessages.NOT_FOUND);
 
             var dto = _mapper.Map<CartResponseDto?>(cart);
@@ -105,7 +105,7 @@ namespace SmartCare.InfraStructure.Services
                 return _responseHandler.BadRequest<CartResponseDto>(SystemMessages.BAD_REQUEST);
 
             var cart = await _cartRepository.GetActiveCartAsync(userId);
-            if (cart == null)
+            if (cart == null || cart.status == CartStatus.Abandoned)
                 return _responseHandler.NotFound<CartResponseDto>(SystemMessages.NOT_FOUND);
 
             var dto = _mapper.Map<CartResponseDto>(cart);
@@ -232,7 +232,7 @@ namespace SmartCare.InfraStructure.Services
             _logger.LogDebug("GetCartItemsAsync called for CartId={CartId}", cartId);
 
             var cart = await EnsureCartExistsAsync(cartId);
-            if (cart == null)
+            if (cart == null || cart.status == CartStatus.Abandoned)
             {
                 _logger.LogWarning("Cart not found for GetCartItemsAsync: {CartId}", cartId);
                 return _responseHandler.NotFound<IEnumerable<CartItemResponseDto>>(SystemMessages.NOT_FOUND);

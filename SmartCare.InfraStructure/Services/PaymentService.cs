@@ -75,9 +75,12 @@ namespace SmartCare.InfraStructure.Services
         #region PaymnetIntent Version 
         public async Task<Response<PaymentIntentResponse>> CreateOrUpdatePaymentAsync(Guid orderId)
         {
-            var order = await _orderRepository.GetOrderWithDetailsByIdAsync(orderId);
+            var order = await _orderRepository.GetByIdAsync(orderId,true);
             if (order == null)
                 return _responseHandler.BadRequest<PaymentIntentResponse>("Order not found");
+
+            _logger.LogInformation("CreateOrUpdatePayment - Order {OrderId} current status: {Status}",
+                orderId, order.Status);
 
             if (order.Status != OrderStatus.Pending)
                 return _responseHandler.BadRequest<PaymentIntentResponse>("Order not payable");
@@ -86,12 +89,9 @@ namespace SmartCare.InfraStructure.Services
 
             if (string.IsNullOrEmpty(order.PaymentIntentId))
             {
-                intent = await _paymentGateway.CreatePaymentIntentAsync(
-                    order.TotalPrice,
-                    order.Id.ToString(),
-                    order.PaymentVersion);
+                intent = await _paymentGateway.CreatePaymentIntentAsync(order.TotalPrice,order.Id.ToString(),order.PaymentVersion);
 
-                order.PaymentIntentId = intent.Id;
+                await _orderRepository.UpdatePaymentIntentIdAsync(order, intent.Id);
 
                 await _paymentRepository.AddAsync(new Payment
                 {
@@ -109,8 +109,7 @@ namespace SmartCare.InfraStructure.Services
                     order.TotalPrice);
             }
 
-            await _orderRepository.UpdateAsync(order);
-
+            _logger.LogInformation("CreateOrUpdatePayment - Completed for Order {OrderId}", orderId);
 
             return _responseHandler.Success(new PaymentIntentResponse
             {
@@ -119,90 +118,162 @@ namespace SmartCare.InfraStructure.Services
                 Amount = order.TotalPrice
             });
         }
+
         private async Task HandlePaymentIntentSucceededAsync(Event stripeEvent)
         {
             if (stripeEvent.Data.Object is not PaymentIntent intent)
                 return;
 
-            //  Read metadata
-            if (!intent.Metadata.TryGetValue("orderId", out var orderIdStr) ||
-                !intent.Metadata.TryGetValue("version", out var versionStr))
-                return;
+            _logger.LogInformation($"Webhook received: {stripeEvent.Type} for {intent.Id}");
 
-            if (!Guid.TryParse(orderIdStr, out var orderId) ||
-                !int.TryParse(versionStr, out var version))
-                return;
-
-            // Load order
-            var order = await _orderRepository.GetOrderWithDetailsByIdAsync(orderId);
-            if (order == null) return;
-
-            // HARD SECURITY CHECKS 
-            if (order.PaymentIntentId != intent.Id) return;
-            if (order.PaymentVersion != version) return;
-            var paidAmount = intent.Amount / 100m;
-            if (decimal.Round(order.TotalPrice, 2) != decimal.Round(paidAmount, 2))
-                return;
-
-            if (order.Status != OrderStatus.Pending) return;
-
-            // Mark order as paid
-            order.Status = OrderStatus.Confirmed;
-
-            var payment = await _paymentRepository.GetByOrderIdAsync(orderId);
-            if (payment == null) return;
-
-            payment.Status = PaymentStatus.Completed;
-
-
-            foreach (var item in order.Items ?? Enumerable.Empty<OrderItem>())
+            // BEGIN TRANSACTION to prevent race conditions
+             await _orderRepository.BeginTransactionAsync();
+            try
             {
-                try
+                // Read metadata
+                if (!intent.Metadata.TryGetValue("orderId", out var orderIdStr) ||
+                    !intent.Metadata.TryGetValue("version", out var versionStr))
                 {
-                    await _inventoryRepository.FinalizeStockDeductionAsync(
-                        item.InvetoryId,
-                        item.Quantity,
-                        order is FromStoreOrder
-                    );
-                    await _reservationRepository.UpdateReservationStatusAsync(
-                        (Guid)item.ReservationId,
-                        ReservationStatus.Completed);
+                    _logger.LogWarning("HandlePaymentIntentSucceeded - Missing metadata");
+                    return;
                 }
-                catch (Exception ex)
+
+                if (!Guid.TryParse(orderIdStr, out var orderId) ||
+                    !int.TryParse(versionStr, out var version))
                 {
-                    _logger.LogError(ex,
-                        "Inventory finalization failed. Order {OrderId}, Inventory {InventoryId}",
-                        order.Id, item.InvetoryId);
+                    _logger.LogWarning("HandlePaymentIntentSucceeded - Invalid metadata format");
+                    return;
                 }
+
+                // Get FRESH data directly from database using raw SQL to bypass EF cache completely
+                var currentStatus = await _orderRepository.GetOrderStatusDirectAsync(orderId);
+
+                _logger.LogInformation("HandlePaymentIntentSucceeded - Order {OrderId} status from DB: {Status}",
+                    orderId, currentStatus);
+                // What A Fucking Bug!
+                //if (currentStatus != OrderStatus.Pending)
+                //{
+                //    _logger.LogWarning("HandlePaymentIntentSucceeded - Order {OrderId} not pending. Status: {Status}",
+                //        orderId, currentStatus);
+                //    return;
+                //}
+
+                // Now load full order details for processing
+                var order = await _orderRepository.GetOrderWithDetailsByIdAsync(orderId, track: true);
+                if (order == null)
+                {
+                    _logger.LogWarning("HandlePaymentIntentSucceeded - Order {OrderId} not found", orderId);
+                    return;
+                }
+
+                // HARD SECURITY CHECKS 
+                if (order.PaymentIntentId != intent.Id)
+                {
+                    _logger.LogWarning("HandlePaymentIntentSucceeded - PaymentIntent mismatch. Expected: {Expected}, Got: {Actual}",
+                        intent.Id, order.PaymentIntentId);
+                    return;
+                }
+
+                if (order.PaymentVersion != version)
+                {
+                    _logger.LogWarning("HandlePaymentIntentSucceeded - Version mismatch. Expected: {Expected}, Got: {Actual}",
+                        version, order.PaymentVersion);
+                    return;
+                }
+
+                var paidAmount = intent.Amount / 100m;
+                if (decimal.Round(order.TotalPrice, 2) != decimal.Round(paidAmount, 2))
+                {
+                    _logger.LogWarning("HandlePaymentIntentSucceeded - Amount mismatch. Expected: {Expected}, Got: {Actual}",
+                        order.TotalPrice, paidAmount);
+                    return;
+                }
+
+                // Double-check status one more time
+                //if (order.Status != OrderStatus.Pending)
+                //{
+                //    _logger.LogWarning("HandlePaymentIntentSucceeded - Order {OrderId} status changed during processing. Status: {Status}",
+                //        orderId, order.Status);
+                //    return;
+                //}
+
+                // Mark order as paid
+                order.Status = OrderStatus.Confirmed;
+
+                var payment = await _paymentRepository.GetByOrderIdAsync(orderId);
+                if (payment == null)
+                {
+                    _logger.LogWarning("HandlePaymentIntentSucceeded - Payment not found for order {OrderId}", orderId);
+                    return;
+                }
+
+                payment.Status = PaymentStatus.Completed;
+
+                foreach (var item in order.Items ?? Enumerable.Empty<OrderItem>())
+                {
+                    try
+                    {
+                        await _inventoryRepository.FinalizeStockDeductionAsync(
+                            item.InvetoryId,
+                            item.Quantity,
+                            order is FromStoreOrder
+                        );
+
+                        await _reservationRepository.UpdateReservationStatusAsync(
+                            (Guid)item.ReservationId,
+                            ReservationStatus.Completed);
+                        PublishProductStockStatusChanged(orderId,await _inventoryRepository.IsStockAvailableAsync(item.InvetoryId,item.ProductId));
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex,
+                            "Inventory finalization failed. Order {OrderId}, Inventory {InventoryId}",
+                            order.Id, item.InvetoryId);
+                    }
+                }
+
+                await IncrementClientOrdersAsync(order.ClientId);
+                await _orderRepository.UpdateAsync(order);
+                await _paymentRepository.UpdateAsync(payment);
+
+                // Clear cart
+                var cart = await _cartRepository.GetActiveCartAsync(order.ClientId);
+                if (cart != null)
+                {
+                    await _cartRepository.DeleteAsync(cart);
+                    await _cartRepository.CreateCartAsync(order.ClientId);
+                }
+                PublishPaymentEvent(order, "success", "Payment completed successfully.");
+
+                var client = await _clientRepository.GetByIdAsync(order.ClientId);
+                if (order.OrderType == OrderType.Online)
+                {
+                    await SendOrderConfirmationEmailAsync(order, client);
+                }
+                else
+                {
+                    var pickupCode = RandomNumberGenerator
+                                        .GetInt32(0, 1_000_000)
+                                        .ToString("D7");
+
+                    await _orderRepository.UpdatePickupCodeHashAsync(
+                        order.Id,
+                        ComputeSha256(pickupCode));
+                    await SendPickupEmailAsync(order, client, pickupCode, ((FromStoreOrder)order).StoreId);
+                }
+
+                _logger.LogInformation("HandlePaymentIntentSucceeded - Successfully processed order {OrderId}", orderId);
             }
-
-            await IncrementClientOrdersAsync(order.ClientId);
-            await _orderRepository.UpdateAsync(order);
-            await _paymentRepository.UpdateAsync(payment);
-            ////  Clear cart
-            var cart = await _cartRepository.GetActiveCartAsync(order.ClientId);
-            await _cartRepository.DeleteAsync(cart);
-            await _cartRepository.CreateCartAsync(order.ClientId);
-
-            PublishPaymentEvent(order, "success", "Payment completed successfully.");
-            var client = await _clientRepository.GetByIdAsync(order.ClientId);
-            if (order.OrderType == OrderType.Online)
+            catch (Exception ex)
             {
-                await SendOrderConfirmationEmailAsync(order, client);
+                _logger.LogError(ex, "HandlePaymentIntentSucceeded - Error processing order {OrderId}");
+                throw; // Rethrow to ensure transaction rollback
             }
-            else
+            finally
             {
-                var pickupCode = RandomNumberGenerator
-                                    .GetInt32(0, 1_000_000)
-                                    .ToString("D7");
-
-                await _orderRepository.UpdatePickupCodeHashAsync(
-                    order.Id,
-                    ComputeSha256(pickupCode));
-                await SendPickupEmailAsync(order, client, pickupCode, ((FromStoreOrder)order).StoreId);
+                await _orderRepository.CommitTransactionAsync();
             }
 
-             
         }
         private async Task HandlePaymentIntentFailedAsync(Event stripeEvent)
         {
@@ -249,15 +320,38 @@ namespace SmartCare.InfraStructure.Services
                     break;
             }
         }
-        public async Task<Response<bool>> MarkOrderPaymentAsCash(Guid OrderId )
+        public async Task<Response<bool>> MarkOrderPaymentAsCash(Guid OrderId)
         {
-            var order = await _orderRepository.GetByIdAsync(OrderId, true);
+            var order = await _orderRepository.GetOrderWithDetailsByIdAsync(OrderId, true);
             if (order == null) return _responseHandler.Failed<bool>(SystemMessages.ORDER_NOT_FOUND);
 
             if (order.Status != OrderStatus.Pending)
                 return _responseHandler.BadRequest<bool>("Order is not payable.");
             order.Status = OrderStatus.Confirmed;
-            // ToDo : Set Payment Cash Case
+            // ToDo : Set Invenorty Logic in Case Set Payment as Cash Case ( this is Not Final)
+            foreach (var item in order.Items ?? Enumerable.Empty<OrderItem>())
+            {
+                try
+                {
+                    await _inventoryRepository.FinalizeStockDeductionAsync(
+                        item.InvetoryId,
+                        item.Quantity,
+                        order is FromStoreOrder
+                    );
+
+                    await _reservationRepository.UpdateReservationStatusAsync(
+                        (Guid)item.ReservationId,
+                        ReservationStatus.Completed);
+                    var isAvailble = await _inventoryRepository.IsStockAvailableAsync(item.InvetoryId, item.ProductId);
+                    PublishProductStockStatusChanged(order.Id, isAvailble);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex,
+                        "Inventory finalization failed. Order {OrderId}, Inventory {InventoryId}",
+                        order.Id, item.InvetoryId);
+                }
+            }
             await _orderRepository.UpdateAsync(order);
             var client = await _clientRepository.GetByIdAsync(order.ClientId);
             if (order.OrderType == OrderType.Online)
@@ -275,10 +369,16 @@ namespace SmartCare.InfraStructure.Services
                     ComputeSha256(pickupCode));
                 await SendPickupEmailAsync(order, client, pickupCode, ((FromStoreOrder)order).StoreId);
             }
+            ////  Clear cart
+            var cart = await _cartRepository.GetActiveCartAsync(order.ClientId ,false);
+            var trackedCart = await _cartRepository.GetByIdAsync(cart.Id, true);
+            await _cartRepository.DeleteAsync(trackedCart);
+            await _cartRepository.CreateCartAsync(order.ClientId);
             return _responseHandler.Success(true);
         }
 
         #endregion
+
         #region Online Payments (Session Version)
 
         //public async Task<Response<SessionResponse>> ProcessPaymentAsync(CreateCheckoutSessionRequest request)
@@ -582,6 +682,11 @@ namespace SmartCare.InfraStructure.Services
         {
             _backgroundJobs.Enqueue<IEventPublisherService>(publisher =>
                 publisher.PublishPaymentStatusChanged(order.Id, order.ClientId, status, message));
+        }
+        private void PublishProductStockStatusChanged(Guid productId , bool isAvailable)
+        {
+            _backgroundJobs.Enqueue<IEventPublisherService>(publisher =>
+                publisher.PublishProductStockStatusChanged(productId,isAvailable));
         }
 
         //private async Task HandleCheckoutCompletedAsync(Event stripeEvent)

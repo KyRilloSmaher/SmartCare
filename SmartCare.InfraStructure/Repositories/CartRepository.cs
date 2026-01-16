@@ -47,15 +47,17 @@ namespace SmartCare.InfraStructure.Repositories
             await AddAsync(cart);
             return cart;
         }
-
-        public async Task<Cart?> GetActiveCartAsync(string userId)
+        public async Task<Cart?> GetActiveCartAsync(string userId, bool track = false)
         {
-            return await CartIncludes()
-                .AsNoTracking()
-                .FirstOrDefaultAsync(c =>
-                    c.ClientId == userId &&
-                    c.status == CartStatus.Active);
+            var query = CartIncludes()
+                .Where(c => c.ClientId == userId && c.status == CartStatus.Active);
+
+            if (!track)
+                query = query.AsNoTracking();
+
+            return await query.FirstOrDefaultAsync();
         }
+
 
         public override async Task<Cart?> GetByIdAsync(Guid id, bool asTracking = false)
         {
@@ -85,10 +87,13 @@ namespace SmartCare.InfraStructure.Repositories
 
         public override async Task<bool> DeleteAsync(Cart cart)
         {
+            if (cart == null) return false;
             cart.status = CartStatus.Abandoned;
-            await UpdateAsync(cart);
+
+            _dbContext.Set<Cart>().Update(cart);
             return true;
         }
+
 
         #endregion
 

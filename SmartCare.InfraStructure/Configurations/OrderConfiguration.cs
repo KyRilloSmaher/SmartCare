@@ -17,8 +17,10 @@ namespace SmartCare.InfraStructure.Configurations
                 .HasColumnType("decimal(18,2)");
 
             builder.Property(o => o.Status)
+                .HasField("_status")                     // <-- important for your custom setter
                 .IsRequired()
-                .HasDefaultValue(Domain.Enums.OrderStatus.Pending);
+                .HasDefaultValue(Domain.Enums.OrderStatus.Pending)
+                .UsePropertyAccessMode(PropertyAccessMode.Property);
 
             builder.Property(o => o.CreatedAt)
                 .IsRequired();
@@ -30,5 +32,4 @@ namespace SmartCare.InfraStructure.Configurations
             builder.HasIndex(o => o.Status);
         }
     }
-
 }
