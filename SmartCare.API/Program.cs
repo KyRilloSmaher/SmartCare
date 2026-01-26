@@ -91,6 +91,11 @@ builder.Services.AddDbContext<ApplicationDBContext>(options =>
 var redisConnectionString = builder.Configuration.GetConnectionString("Redis");
 
 
+if (redisConnectionString != null && redisConnectionString.StartsWith("redis://"))
+{
+    redisConnectionString = redisConnectionString.Replace("redis://", "");
+}
+
 builder.Services.AddStackExchangeRedisCache(option =>
 {
     option.Configuration = redisConnectionString;
