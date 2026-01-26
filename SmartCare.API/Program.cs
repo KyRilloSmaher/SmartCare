@@ -1,30 +1,31 @@
 
+using FluentValidation;
 using FluentValidation.AspNetCore;
+using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using SmartCare.API.EventHandlers;
+using SmartCare.API.Helpers;
+using SmartCare.API.Hubs;
+using SmartCare.API.InMemoryEventsHandlers;
+using SmartCare.API.Middlewares;
+using SmartCare.API.Services;
+using SmartCare.Application.DTOs.Auth.Requests;
+using SmartCare.Application.Handlers.ResponseHandler;
+using SmartCare.Application.InMemoryEventsHandlers;
+using SmartCare.Application.IServices;
+using SmartCare.Application.Messaging;
+using SmartCare.Application.Notifications;
 using SmartCare.InfraStructure.DbContexts;
 using SmartCare.InfraStructure.Extensions;
-using FluentValidation;
-using SmartCare.Application.DTOs.Auth.Requests;
-using SmartCare.API.Helpers;
-using SmartCare.Application.Handlers.ResponseHandler;
-using SmartCare.API.Middlewares;
-using SmartCare.InfraStructure.Seed;
-using Hangfire;
-using SmartCare.API.Hubs;
-using SmartCare.Application.Messaging;
-using SmartCare.API.InMemoryEventsHandlers;
-using SmartCare.API.EventHandlers;
-using SmartCare.Application.IServices;
 using SmartCare.InfraStructure.Messaging;
-using SmartCare.Application.InMemoryEventsHandlers;
-using SmartCare.Application.Notifications;
+using SmartCare.InfraStructure.Seed;
 using SmartCare.InfraStructure.Services;
-using SmartCare.API.Services;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -82,6 +83,19 @@ builder.Services.AddDbContext<ApplicationDBContext>(options =>
     });
 });
 
+
+#endregion
+
+#region Connection To RedisCaching
+
+var redisConnectionString = builder.Configuration.GetConnectionString("Redis");
+
+
+builder.Services.AddStackExchangeRedisCache(option =>
+{
+    option.Configuration = redisConnectionString;
+    option.InstanceName = "SmartCare_";
+});
 
 #endregion
 
@@ -154,7 +168,10 @@ builder.Services.AddSignalR();
 #region Event Bus Registration
 
 // Register Event Bus
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+    ConnectionMultiplexer.Connect(redisConnectionString));
 builder.Services.AddSingleton<IEventBus, InMemoryEventBus>();
+builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
 builder.Services.AddScoped<IEventPublisherService, EventPublisherService>();
 builder.Services.AddScoped<INotificationSender, SignalRNotificationSender>();
 
