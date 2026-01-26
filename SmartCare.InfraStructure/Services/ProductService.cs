@@ -28,18 +28,23 @@ namespace SmartCare.InfraStructure.Services
         private readonly IResponseHandler _responseHandler;
         private readonly IProductRepository _productRepository;
         private readonly IImageUploaderService _imageUploaderService;
+        private readonly IRedisCacheService _redisCacheService;
         private readonly IMapper _mapper;
+        string tag = CacheConstants.Products;
+
 
         #endregion
 
         #region Constructor
-        public ProductService(IResponseHandler responseHandler, IProductRepository productRepository, IImageUploaderService imageUploaderService, IMapper mapper)
+        public ProductService(IResponseHandler responseHandler, IProductRepository productRepository, IImageUploaderService imageUploaderService, IRedisCacheService redisCacheService, IMapper mapper)
         {
             _responseHandler = responseHandler;
             _productRepository = productRepository;
             _imageUploaderService = imageUploaderService;
+            _redisCacheService = redisCacheService;
             _mapper = mapper;
         }
+
         #endregion
 
         #region Methods      
@@ -47,20 +52,56 @@ namespace SmartCare.InfraStructure.Services
         {
             if (productId == Guid.Empty)
                 return _responseHandler.BadRequest<ProductResponseDtoForClient>(SystemMessages.INVALID_INPUT);
+
+            string cacheKey = $"product_details:{productId}";
+
+            var cachedProduct = await _redisCacheService.GetDataAsync<ProductResponseDtoForClient>(cacheKey, tag);
+            if (cachedProduct != null)
+            {
+                return _responseHandler.Success(cachedProduct);
+            }
+
             var product = await _productRepository.GetByIdAsync(productId);
             if (product == null)
                 return _responseHandler.Failed<ProductResponseDtoForClient>(SystemMessages.NOT_FOUND);
-            var ProductDto = _mapper.Map<ProductResponseDtoForClient>(product);
-            return _responseHandler.Success(ProductDto);
+
+            var productDto = _mapper.Map<ProductResponseDtoForClient>(product);
+
+            await _redisCacheService.SetDataAsync(cacheKey, productDto, tag, Time.Default);
+
+            return _responseHandler.Success(productDto);
         }
 
         public async Task<Response<PaginatedResult<ProductResponseDtoForClient>>> GetAllProducts(int pageNumber, int pageSize)
         {
             if (pageNumber <= 0 || pageSize <= 0)
                 return _responseHandler.BadRequest<PaginatedResult<ProductResponseDtoForClient>>(SystemMessages.INVALID_PAGINATION_PARAMETERS);
+
+            string cacheKey = $"products_all_p{pageNumber}_s{pageSize}";
+
+            try
+            {
+                var cachedProducts = await _redisCacheService.GetDataAsync<PaginatedResult<ProductResponseDtoForClient>>(cacheKey,tag);
+
+                if (cachedProducts != null)
+                {
+                    return _responseHandler.Success(cachedProducts);
+                }
+            }
+            catch (Exception)
+            {
+               
+            }
+
             var query = _productRepository.GetAllProductsQuerable();
             var projectedQuery = _mapper.ProjectTo<ProductResponseDtoForClient>(query);
             var paginatedResult = await projectedQuery.ToPaginatedListAsync(pageNumber, pageSize);
+
+            if (paginatedResult != null)
+            {
+                await _redisCacheService.SetDataAsync(cacheKey, paginatedResult,tag ,Time.Default);
+            }
+
             return _responseHandler.Success(paginatedResult);
 
         }
@@ -69,11 +110,35 @@ namespace SmartCare.InfraStructure.Services
         {
             if (pageNumber <= 0 || pageSize <= 0)
                 return _responseHandler.BadRequest<PaginatedResult<ProductResponseDtoForClient>>(SystemMessages.INVALID_PAGINATION_PARAMETERS);
+
+            string cacheKey = $"products_company_{CompanyId}_p{pageNumber}_s{pageSize}";
+
+
+            try
+            {
+                var cachedData = await _redisCacheService.GetDataAsync<PaginatedResult<ProductResponseDtoForClient>>(cacheKey, tag);
+                if (cachedData != null)
+                {
+                    return _responseHandler.Success(cachedData);
+                }
+            }
+            catch (Exception)
+            {
+
+            }
+
             var query = _productRepository.GetProductsByCompanyId(CompanyId);
             if (query == null)
                 return _responseHandler.Failed<PaginatedResult<ProductResponseDtoForClient>>(SystemMessages.NOT_FOUND);
+
             var projectedQuery = _mapper.ProjectTo<ProductResponseDtoForClient>(query);
             var paginatedResult = await projectedQuery.ToPaginatedListAsync(pageNumber, pageSize);
+
+            if (paginatedResult != null)
+            {
+                await _redisCacheService.SetDataAsync(cacheKey, paginatedResult,tag, Time.Default);
+            }
+
             return _responseHandler.Success(paginatedResult);
         }
 
@@ -93,11 +158,36 @@ namespace SmartCare.InfraStructure.Services
         {
             if (pageNumber <= 0 || pageSize <= 0)
                 return _responseHandler.BadRequest<PaginatedResult<ProductResponseDtoForClient>>(SystemMessages.INVALID_PAGINATION_PARAMETERS);
+
+            string cacheKey = $"products_category_{CategoryId}_p{pageNumber}_s{pageSize}";
+
+
+            try
+            {
+                var cachedData = await _redisCacheService.GetDataAsync<PaginatedResult<ProductResponseDtoForClient>>(cacheKey, tag);
+
+                if (cachedData != null)
+                {
+                    return _responseHandler.Success(cachedData);
+                }
+            }
+            catch (Exception)
+            {
+
+            }
+
             var query = _productRepository.GetProductsByCategoryId(CategoryId);
             if (query == null)
                 return _responseHandler.Failed<PaginatedResult<ProductResponseDtoForClient>>(SystemMessages.NOT_FOUND);
+
             var projectedQuery = _mapper.ProjectTo<ProductResponseDtoForClient>(query);
             var paginatedResult = await projectedQuery.ToPaginatedListAsync(pageNumber, pageSize);
+
+            if (paginatedResult != null)
+            {
+                await _redisCacheService.SetDataAsync(cacheKey, paginatedResult, tag, Time.Default);
+            }
+
             return _responseHandler.Success(paginatedResult);
         }
 
@@ -118,11 +208,33 @@ namespace SmartCare.InfraStructure.Services
         {
             if (pageNumber <= 0 || pageSize <= 0)
                 return _responseHandler.BadRequest<PaginatedResult<ProductResponseDtoForClient>>(SystemMessages.INVALID_PAGINATION_PARAMETERS);
+
+            string cacheKey = $"products_most_selling_p{pageNumber}_s{pageSize}";
+
+            try
+            {
+                var cachedData = await _redisCacheService.GetDataAsync<PaginatedResult<ProductResponseDtoForClient>>(cacheKey, tag);
+                if (cachedData != null)
+                {
+                    return _responseHandler.Success(cachedData);
+                }
+            }
+            catch (Exception)
+            {
+            }
+
             var query = _productRepository.GetMostSelling();
             if (query == null)
                 return _responseHandler.Failed<PaginatedResult<ProductResponseDtoForClient>>(SystemMessages.NOT_FOUND);
+
             var projectedQuery = _mapper.ProjectTo<ProductResponseDtoForClient>(query);
             var paginatedResult = await projectedQuery.ToPaginatedListAsync(pageNumber, pageSize);
+
+            if (paginatedResult != null)
+            {
+                await _redisCacheService.SetDataAsync(cacheKey, paginatedResult, tag, Time.Default);
+            }
+
             return _responseHandler.Success(paginatedResult);
         }
 
@@ -130,11 +242,25 @@ namespace SmartCare.InfraStructure.Services
         {
             if (productId == Guid.Empty)
                 return _responseHandler.BadRequest<ProductResponseDtoForAdmin>(SystemMessages.INVALID_INPUT);
+
+            string cacheKey = $"product_admin_{productId}";
+
+            try
+            {
+                var cachedProduct = await _redisCacheService.GetDataAsync<ProductResponseDtoForAdmin>(cacheKey, tag);
+                if (cachedProduct != null) return _responseHandler.Success(cachedProduct);
+            }
+            catch (Exception) { /* Continue to DB */ }
+
             var product = await _productRepository.GetByIdAsync(productId);
             if (product == null)
                 return _responseHandler.Failed<ProductResponseDtoForAdmin>(SystemMessages.NOT_FOUND);
-            var ProductDto = _mapper.Map<ProductResponseDtoForAdmin>(product);
-            return _responseHandler.Success(ProductDto);
+
+            var productDto = _mapper.Map<ProductResponseDtoForAdmin>(product);
+
+            await _redisCacheService.SetDataAsync(cacheKey, productDto, tag, Time.Default);
+
+            return _responseHandler.Success(productDto);
         }
 
         public async Task<Response<ProductResponseDtoForClient>> GetDetailsOfProductByName(string? NameEn)
@@ -142,11 +268,23 @@ namespace SmartCare.InfraStructure.Services
             if (string.IsNullOrWhiteSpace(NameEn))
                 return _responseHandler.Failed<ProductResponseDtoForClient>("Product name must be provided.");
 
+            string cacheKey = $"product_name_{NameEn.ToLower().Replace(" ", "_")}";
+
+            try
+            {
+                var cachedProduct = await _redisCacheService.GetDataAsync<ProductResponseDtoForClient>(cacheKey, tag);
+                if (cachedProduct != null) return _responseHandler.Success(cachedProduct);
+            }
+            catch (Exception) { /* Continue to DB */ }
+
             var product = await _productRepository.SearchProductByNameAsync(NameEn);
             if (product == null)
                 return _responseHandler.Failed<ProductResponseDtoForClient>("Product not found.");
 
             var productDto = _mapper.Map<ProductResponseDtoForClient>(product);
+
+            await _redisCacheService.SetDataAsync(cacheKey, productDto, tag, Time.Default);
+
             return _responseHandler.Success(productDto);
 
         }
@@ -212,6 +350,8 @@ namespace SmartCare.InfraStructure.Services
                 await _productRepository.SaveChangesAsync();
                 await _productRepository.CommitTransactionAsync();
 
+                await _redisCacheService.DeleteKeysByTag(tag);
+
                 var createdProductDto = _mapper.Map<ProductResponseDtoForAdmin>(createdEntity);
                 return _responseHandler.Success(createdProductDto, SystemMessages.SUCCESS);
             }
@@ -233,13 +373,19 @@ namespace SmartCare.InfraStructure.Services
 
         public async Task<Response<ProductResponseDtoForAdmin>> UpdateProductAsync(Guid Id, UpdateProductRequestDto ProductDto)
         {
-            if (Id == Guid.Empty)
+            if (Id == Guid.Empty || ProductDto == null)
                 return _responseHandler.BadRequest<ProductResponseDtoForAdmin>(SystemMessages.INVALID_INPUT);
+
             var product = await _productRepository.GetByIdAsync(Id, true);
             if (product == null)
                 return _responseHandler.NotFound<ProductResponseDtoForAdmin>(SystemMessages.NOT_FOUND);
+
             _mapper.Map(ProductDto, product);
             var updatedProduct = await _productRepository.UpdateAsync(product);
+
+
+            await _redisCacheService.DeleteKeysByTag(tag);
+
             var updatedProductDto = _mapper.Map<ProductResponseDtoForAdmin>(updatedProduct);
             return _responseHandler.Success(updatedProductDto, SystemMessages.RECORD_UPDATED);
         }
@@ -248,10 +394,18 @@ namespace SmartCare.InfraStructure.Services
         {
             if (productId == Guid.Empty)
                 return _responseHandler.BadRequest<bool>(SystemMessages.INVALID_INPUT);
+
             var product = await _productRepository.GetByIdAsync(productId);
             if (product == null)
                 return _responseHandler.NotFound<bool>(SystemMessages.NOT_FOUND);
+
             var result = await _productRepository.DeleteAsync(product);
+
+            if (result)
+            {
+                await _redisCacheService.DeleteKeysByTag(tag);
+            }
+
             return result ? _responseHandler.Success(true, SystemMessages.RECORD_DELETED) : _responseHandler.Failed<bool>(SystemMessages.FAILED);
         }
 
@@ -269,11 +423,34 @@ namespace SmartCare.InfraStructure.Services
         {
             if (pageNumber <= 0 || pageSize <= 0)
                 return _responseHandler.BadRequest<PaginatedResult<ProductResponseDtoForClient>>(SystemMessages.INVALID_PAGINATION_PARAMETERS);
+
+            string cacheKey = $"products_popular_p{pageNumber}_s{pageSize}";
+
+            try
+            {
+                var cachedData = await _redisCacheService.GetDataAsync<PaginatedResult<ProductResponseDtoForClient>>(cacheKey, tag);
+
+                if (cachedData != null)
+                {
+                    return _responseHandler.Success(cachedData);
+                }
+            }
+            catch (Exception)
+            {
+            }
+
             var query = _productRepository.GetMorePopular();
             if (query == null)
                 return _responseHandler.Failed<PaginatedResult<ProductResponseDtoForClient>>(SystemMessages.NOT_FOUND);
+
             var projectedQuery = _mapper.ProjectTo<ProductResponseDtoForClient>(query);
             var paginatedResult = await projectedQuery.ToPaginatedListAsync(pageNumber, pageSize);
+
+            if (paginatedResult != null)
+            {
+                await _redisCacheService.SetDataAsync(cacheKey, paginatedResult, tag, Time.Default);
+            }
+
             return _responseHandler.Success(paginatedResult);
         }
 
