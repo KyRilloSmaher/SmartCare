@@ -17,28 +17,50 @@ namespace SmartCare.InfraStructure.Services
     {
         #region Feilds
         private readonly IStoreRepository _storeRepository;
+        private readonly IRedisCacheService _redisCacheService;
         private readonly IMapper _mapper;
         private readonly IMapService _mapService;
         private readonly IResponseHandler _responseHandler;
+        string tag = CacheConstants.Stories;
+
         #endregion
         #region Constructor
-        public StoreService(IStoreRepository storeRepository, IMapper mapper, IResponseHandler responseHandler, IMapService mapService)
+        public StoreService(IStoreRepository storeRepository,
+            IRedisCacheService redisCacheService,
+            IMapper mapper,
+            IMapService mapService,
+            IResponseHandler responseHandler)
         {
             _storeRepository = storeRepository;
+            _redisCacheService = redisCacheService;
             _mapper = mapper;
-            _responseHandler = responseHandler;
             _mapService = mapService;
+            _responseHandler = responseHandler;
         }
+
         #endregion
         #region Methods
         public async Task<Response<StoreResponseDto>> GetStoreByIdAsync(Guid Id)
         {
             if (Id == Guid.Empty)
                 return _responseHandler.BadRequest<StoreResponseDto>(SystemMessages.INVALID_INPUT);
+
+            string cacheKey = $"store_{Id}";
+
+            try
+            {
+                var cachedStore = await _redisCacheService.GetDataAsync<StoreResponseDto>(cacheKey, tag);
+                if (cachedStore != null) return _responseHandler.Success(cachedStore);
+            }
+            catch (Exception) { }
+
             var store = await _storeRepository.GetByIdAsync(Id);
             if (store == null)
                 return _responseHandler.NotFound<StoreResponseDto>(SystemMessages.NOT_FOUND);
+
             var storeDto = _mapper.Map<StoreResponseDto>(store);
+
+            await _redisCacheService.SetDataAsync(cacheKey, storeDto, tag, Time.Default);
             return _responseHandler.Success(storeDto);
         }
 
@@ -53,15 +75,37 @@ namespace SmartCare.InfraStructure.Services
 
         public async Task<Response<IEnumerable<StoreResponseDto>>> GetAllStoresAsync()
         {
+            string cacheKey = "stores_client_all";
+
+            try
+            {
+                var cachedData = await _redisCacheService.GetDataAsync<IEnumerable<StoreResponseDto>>(cacheKey, tag);
+                if (cachedData != null) return _responseHandler.Success(cachedData);
+            }
+            catch (Exception) { }
+
             var stores = await _storeRepository.GetAllAsync();
             var storeDtos = _mapper.Map<IEnumerable<StoreResponseDto>>(stores);
+
+            await _redisCacheService.SetDataAsync(cacheKey, storeDtos, tag, Time.Default);
             return _responseHandler.Success(storeDtos);
         }
 
         public async Task<Response<IEnumerable<StoreResponseForAdminDto>>> GetAllStoresForAdminAsync()
         {
+            string cacheKey = "stores_admin_all";
+
+            try
+            {
+                var cachedData = await _redisCacheService.GetDataAsync<IEnumerable<StoreResponseForAdminDto>>(cacheKey, tag);
+                if (cachedData != null) return _responseHandler.Success(cachedData);
+            }
+            catch (Exception) { /* Log error if needed */ }
+
             var stores = await _storeRepository.GetAllAsync();
             var storeDtos = _mapper.Map<IEnumerable<StoreResponseForAdminDto>>(stores);
+
+            await _redisCacheService.SetDataAsync(cacheKey, storeDtos, tag, Time.Default);
             return _responseHandler.Success(storeDtos);
         }
 
@@ -69,6 +113,8 @@ namespace SmartCare.InfraStructure.Services
         {
             var store = _mapper.Map<Store>(StoreDto);
             await _storeRepository.AddAsync(store);
+            // Remove cache for store
+            await _redisCacheService.DeleteKeysByTag(tag);
             var createdStoreDto = _mapper.Map<StoreResponseForAdminDto>(store);
             return _responseHandler.Success(createdStoreDto);
 
@@ -83,6 +129,8 @@ namespace SmartCare.InfraStructure.Services
                 return _responseHandler.NotFound<StoreResponseForAdminDto>(SystemMessages.NOT_FOUND);
             _mapper.Map(StoreDto, store);
             await _storeRepository.UpdateAsync(store);
+            // Remove cache for store
+            await _redisCacheService.DeleteKeysByTag(tag);
             var updatedStoreDto = _mapper.Map<StoreResponseForAdminDto>(store);
             return _responseHandler.Success(updatedStoreDto);
 
@@ -97,6 +145,8 @@ namespace SmartCare.InfraStructure.Services
                 return _responseHandler.NotFound<bool>(SystemMessages.NOT_FOUND);
             store.IsDeleted = true;
             await _storeRepository.UpdateAsync(store);
+            // Remove cache for store
+            await _redisCacheService.DeleteKeysByTag(tag);
             return _responseHandler.Success(true);
 
         }
