@@ -19,18 +19,29 @@ namespace SmartCare.InfraStructure.Services
         #region Feilds
         private readonly IResponseHandler _responseHandler;
         private readonly ICategoryRepository _categoryRepository ;
+        private readonly IRedisCacheService _redisCacheService;
         private readonly IImageUploaderService _imageUploaderService ;
         private readonly IMapper _mapper;
+        string tag = CacheConstants.Categories;
+
+
         #endregion
 
         #region Constructor
-        public CategoryService(IResponseHandler responseHandler, ICategoryRepository categoryRepository, IImageUploaderService imageUploaderService, IMapper mapper)
+        public CategoryService(
+            IResponseHandler responseHandler,
+            ICategoryRepository categoryRepository,
+            IRedisCacheService redisCacheService,
+            IImageUploaderService imageUploaderService,
+            IMapper mapper)
         {
             _responseHandler = responseHandler;
             _categoryRepository = categoryRepository;
+            _redisCacheService = redisCacheService;
             _imageUploaderService = imageUploaderService;
             _mapper = mapper;
         }
+
         #endregion
 
         #region Methods
@@ -38,24 +49,62 @@ namespace SmartCare.InfraStructure.Services
         {
             if (Id == Guid.Empty)
                 return _responseHandler.BadRequest<CategoryResponseDto>(SystemMessages.INVALID_INPUT);
+
+            string cacheKey = $"category_{Id}";
+
+            try
+            {
+                var cachedCategory = await _redisCacheService.GetDataAsync<CategoryResponseDto>(cacheKey, tag);
+                if (cachedCategory != null) return _responseHandler.Success(cachedCategory);
+            }
+            catch (Exception) { /* Fallback to DB */ }
+
             var category = await _categoryRepository.GetByIdAsync(Id);
             if (category == null)
                 return _responseHandler.Failed<CategoryResponseDto>(SystemMessages.NOT_FOUND);
+
             var categoryDto = _mapper.Map<CategoryResponseDto>(category);
+
+            await _redisCacheService.SetDataAsync(cacheKey, categoryDto, tag, Time.Default);
+
             return _responseHandler.Success(categoryDto);
         }
 
         public async Task<Response<IEnumerable<CategoryResponseDto>>> GetAllCategorysAsync()
         {
+            string cacheKey = "categories_all_client";
+
+            try
+            {
+                var cached = await _redisCacheService.GetDataAsync<IEnumerable<CategoryResponseDto>>(cacheKey, tag);
+                if (cached != null) return _responseHandler.Success(cached);
+            }
+            catch (Exception) { }
+
             var categories = await _categoryRepository.GetAllCategoriesAsync();
             var categoriesDto = _mapper.Map<IEnumerable<CategoryResponseDto>>(categories);
+
+            await _redisCacheService.SetDataAsync(cacheKey, categoriesDto, tag, Time.Default);
+
             return _responseHandler.Success(categoriesDto);
         }
 
         public async Task<Response<IEnumerable<CategoryResponseForAdminDto>>> GetAllCategorysForAdminAsync()
         {
+            string cacheKey = "categories_all_admin";
+
+            try
+            {
+                var cached = await _redisCacheService.GetDataAsync<IEnumerable<CategoryResponseForAdminDto>>(cacheKey, tag);
+                if (cached != null) return _responseHandler.Success(cached);
+            }
+            catch (Exception) { }
+
             var categories = await _categoryRepository.GetAllCategoriesForAdminAsync();
             var categoriesDto = _mapper.Map<IEnumerable<CategoryResponseForAdminDto>>(categories);
+
+            await _redisCacheService.SetDataAsync(cacheKey, categoriesDto, tag, Time.Default);
+
             return _responseHandler.Success(categoriesDto);
         }
            
@@ -70,6 +119,8 @@ namespace SmartCare.InfraStructure.Services
              _mapper.Map(CategoryDto, category);
             var updatedCategory = await _categoryRepository.UpdateAsync(category);
             await _categoryRepository.SaveChangesAsync();
+            //change version category tag
+            await _redisCacheService.DeleteKeysByTag(tag);
             var updatedCategoryDto = _mapper.Map<CategoryResponseDto>(updatedCategory);
             return _responseHandler.Success(updatedCategoryDto, SystemMessages.RECORD_UPDATED);
         }
@@ -82,6 +133,10 @@ namespace SmartCare.InfraStructure.Services
             if (category == null)
                 return _responseHandler.Failed<bool>(SystemMessages.NOT_FOUND);
             var result = await _categoryRepository.DeleteAsync(category);
+            if (result)
+            {
+                await _redisCacheService.DeleteKeysByTag(tag);
+            }
             return result ? _responseHandler.Success(true, SystemMessages.RECORD_DELETED) : _responseHandler.Failed<bool>(SystemMessages.FAILED);
         }
 
@@ -105,6 +160,8 @@ namespace SmartCare.InfraStructure.Services
             }
             category.LogoUrl = uploadResult.Url.ToString();
             var updateResult = await _categoryRepository.UpdateAsync(category);
+            //change version company tag
+            await _redisCacheService.DeleteKeysByTag(tag);
             return _responseHandler.Success(updateResult.LogoUrl);
         }
 
@@ -138,6 +195,7 @@ namespace SmartCare.InfraStructure.Services
 
                 await _categoryRepository.CommitTransactionAsync();
 
+                await _redisCacheService.DeleteKeysByTag(tag);
                 var createdCategoryDto = _mapper.Map<CategoryResponseForAdminDto>(createResult);
                 return _responseHandler.Success(createdCategoryDto, SystemMessages.SUCCESS);
             }
@@ -152,7 +210,6 @@ namespace SmartCare.InfraStructure.Services
             }
         }
 
-
         public async Task<Response<IEnumerable<CategoryResponseDto>>> SearchCategoriesByNameAsync(string name)
         {
             var categories = await _categoryRepository.SearchCategoryByNameAsync(name);
@@ -165,11 +222,23 @@ namespace SmartCare.InfraStructure.Services
             if (pageNumber <= 0 || pageSize <= 0)
                 return _responseHandler.BadRequest<PaginatedResult<CategoryResponseDto>>(SystemMessages.INVALID_PAGINATION_PARAMETERS);
 
+            string cacheKey = $"categories_all_p{pageNumber}_s{pageSize}";
+
+            try
+            {
+                var cached = await _redisCacheService.GetDataAsync<PaginatedResult<CategoryResponseDto>>(cacheKey, tag);
+                if (cached != null) return _responseHandler.Success(cached);
+            }
+            catch (Exception) { }
+
             var query = _categoryRepository.GetAllCategoriesQuerable();
-
             var projectedQuery = _mapper.ProjectTo<CategoryResponseDto>(query);
-
             var paginatedResult = await projectedQuery.ToPaginatedListAsync(pageNumber, pageSize);
+
+            if (paginatedResult != null)
+            {
+                await _redisCacheService.SetDataAsync(cacheKey, paginatedResult, tag, Time.Default);
+            }
 
             return _responseHandler.Success(paginatedResult);
         }

@@ -18,22 +18,32 @@ namespace SmartCare.InfraStructure.Services
         private readonly IResponseHandler _responseHandler;
         private readonly IBackgroundJobService _backgroundJobService;
         private readonly IClientRepository _clientRepository;
+        private readonly IRedisCacheService _redisCacheService;
         private readonly IRateRepository _rateRepository;
         private readonly IImageUploaderService _imageUploaderService;
         private readonly IMapper _mapper;
+        string tag = CacheConstants.Client;
         #endregion
 
         #region Constructor
-        public ClientService(IClientRepository clientRepository, IImageUploaderService imageUploaderService, IMapper mapper, IResponseHandler responseHandler, IBackgroundJobService backgroundJobService, IRateRepository rateRepository)
+        public ClientService(
+            IResponseHandler responseHandler,
+            IBackgroundJobService backgroundJobService,
+            IClientRepository clientRepository,
+            IRedisCacheService redisCacheService,
+            IRateRepository rateRepository,
+            IImageUploaderService imageUploaderService,
+            IMapper mapper)
         {
             _responseHandler = responseHandler;
+            _backgroundJobService = backgroundJobService;
             _clientRepository = clientRepository;
+            _redisCacheService = redisCacheService;
+            _rateRepository = rateRepository;
             _imageUploaderService = imageUploaderService;
             _mapper = mapper;
-            _responseHandler = responseHandler;
-            _backgroundJobService = backgroundJobService;
-            _rateRepository = rateRepository;
         }
+
         #endregion
 
         #region Methods
@@ -41,10 +51,23 @@ namespace SmartCare.InfraStructure.Services
         {
             if (string.IsNullOrWhiteSpace(id))
                 return _responseHandler.BadRequest<ClientResponseDto?>(SystemMessages.USER_NOT_FOUND);
+
+            string cacheKey = $"client_id_{id}";
+
+            try
+            {
+                var cachedClient = await _redisCacheService.GetDataAsync<ClientResponseDto>(cacheKey, tag);
+                if (cachedClient != null) return _responseHandler.Success(cachedClient);
+            }
+            catch (Exception) { /* Redis logic shouldn't break the app */ }
+
             var client = await _clientRepository.GetByIdAsync(id);
             if (client == null)
                 return _responseHandler.NotFound<ClientResponseDto?>(SystemMessages.USER_NOT_FOUND);
+
             var clientDto = _mapper.Map<ClientResponseDto?>(client);
+
+            await _redisCacheService.SetDataAsync(cacheKey, clientDto, tag, Time.Default);
             return _responseHandler.Success(clientDto);
         }
 
@@ -52,17 +75,41 @@ namespace SmartCare.InfraStructure.Services
         {
             if (string.IsNullOrWhiteSpace(email))
                 return _responseHandler.BadRequest<ClientResponseDto?>(SystemMessages.USER_NOT_FOUND);
+
+            string cacheKey = $"client_email_{email.ToLower()}"; 
+
+            try
+            {
+                var cachedClient = await _redisCacheService.GetDataAsync<ClientResponseDto>(cacheKey, tag);
+                if (cachedClient != null) return _responseHandler.Success(cachedClient);
+            }
+            catch (Exception) { }
+
             var client = await _clientRepository.GetByEmailAsync(email);
             if (client == null)
                 return _responseHandler.NotFound<ClientResponseDto?>(SystemMessages.USER_NOT_FOUND);
+
             var clientDto = _mapper.Map<ClientResponseDto?>(client);
+
+            await _redisCacheService.SetDataAsync(cacheKey, clientDto, tag, Time.Default);
             return _responseHandler.Success(clientDto);
         }
 
         public async Task<Response<IEnumerable<ClientResponseDto>>> GetAllClientsAsync()
         {
+            string cacheKey = "clients_all";
+
+            try
+            {
+                var cachedClients = await _redisCacheService.GetDataAsync<IEnumerable<ClientResponseDto>>(cacheKey, tag);
+                if (cachedClients != null) return _responseHandler.Success(cachedClients);
+            }
+            catch (Exception) { }
+
             var clients = await _clientRepository.GetAllAsync();
             var clientDtos = _mapper.Map<IEnumerable<ClientResponseDto>>(clients);
+
+            await _redisCacheService.SetDataAsync(cacheKey, clientDtos, tag, Time.Default); 
             return _responseHandler.Success(clientDtos);
         }
 
@@ -73,8 +120,18 @@ namespace SmartCare.InfraStructure.Services
             var client = await _clientRepository.GetByIdAsync(Id, true);
             if (client == null)
                 return _responseHandler.NotFound<ClientResponseDto?>(SystemMessages.USER_NOT_FOUND);
+            var oldEmail = client.Email;
             _mapper.Map(ClientDto, client);
             var updatedClient = await _clientRepository.UpdateAsync(client);
+
+            var key = $"client_id_{Id}";
+            await _redisCacheService.RemoveKeyAsync($"client_id_{Id}" ,tag);
+            if (!string.IsNullOrEmpty(oldEmail))
+                await _redisCacheService.RemoveKeyAsync($"client_email_{oldEmail.ToLower()}" , tag);
+
+            await _redisCacheService.RemoveKeyAsync("clients_all", tag);
+            await _redisCacheService.DeleteKeysByTag(tag);
+
             var updatedClientDto = _mapper.Map<ClientResponseDto?>(updatedClient);
             return _responseHandler.Success(updatedClientDto);
         }
@@ -99,7 +156,11 @@ namespace SmartCare.InfraStructure.Services
                     if (DeleteImageResult)
                     {
                         await _clientRepository.CommitTransactionAsync();
-                        // Enqueue background job To mark all client Rates as deleted
+
+                        await _redisCacheService.RemoveKeyAsync($"client_id_{id}", tag);
+                        await _redisCacheService.RemoveKeyAsync("clients_all",tag);
+                        await _redisCacheService.RemoveKeyAsync($"client_email_{client.Email?.ToLower()}" , tag);
+
                         _backgroundJobService.Enqueue(() => _rateRepository.MarkAllClientRatesAsDeleted(id));
                         return _responseHandler.Success<bool>(true, SystemMessages.SUCCESS);
                     }
@@ -134,6 +195,8 @@ namespace SmartCare.InfraStructure.Services
             }
             client.ProfileImageUrl = uploadResult.Url.ToString();
             var updateResult = await _clientRepository.UpdateAsync(client);
+            string cacheKey = $"client_id_{UserId}";
+            await _redisCacheService.RemoveKeyAsync(cacheKey, tag);
             return _responseHandler.Success(updateResult.ProfileImageUrl);
         }
         #endregion

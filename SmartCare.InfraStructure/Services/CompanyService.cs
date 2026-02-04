@@ -24,18 +24,29 @@ namespace SmartCare.InfraStructure.Services
         #region Feilds
         private readonly IResponseHandler _responseHandler;
         private readonly ICompanyRepository _CompanyRepository;
+        private readonly IRedisCacheService _redisCacheService;
         private readonly IImageUploaderService _imageUploaderService;
         private readonly IMapper _mapper;
+        string tag = CacheConstants.Companies;
+
+
         #endregion
 
         #region Constructor
-        public CompanyService(IResponseHandler responseHandler, ICompanyRepository CompanyRepository, IImageUploaderService imageUploaderService, IMapper mapper)
+        public CompanyService(
+            IResponseHandler responseHandler,
+            ICompanyRepository companyRepository,
+            IRedisCacheService redisCacheService,
+            IImageUploaderService imageUploaderService,
+            IMapper mapper)
         {
             _responseHandler = responseHandler;
-            _CompanyRepository = CompanyRepository;
+            _CompanyRepository = companyRepository;
+            _redisCacheService = redisCacheService;
             _imageUploaderService = imageUploaderService;
             _mapper = mapper;
         }
+
         #endregion
 
         #region Methods
@@ -43,27 +54,64 @@ namespace SmartCare.InfraStructure.Services
         {
             if (Id == Guid.Empty)
                 return _responseHandler.BadRequest<CompanyResponseDto>(SystemMessages.INVALID_INPUT);
+
+            string cacheKey = $"company_details_{Id}";
+
+            try
+            {
+                var cached = await _redisCacheService.GetDataAsync<CompanyResponseDto>(cacheKey, tag);
+                if (cached != null) return _responseHandler.Success(cached);
+            }
+            catch (Exception) { }
+
             var Company = await _CompanyRepository.GetByIdAsync(Id);
             if (Company == null)
                 return _responseHandler.NotFound<CompanyResponseDto>(SystemMessages.NOT_FOUND);
+
             var CompanyDto = _mapper.Map<CompanyResponseDto>(Company);
+
+            await _redisCacheService.SetDataAsync(cacheKey, CompanyDto, tag, Time.Default);
+
             return _responseHandler.Success(CompanyDto);
         }
 
         public async Task<Response<IEnumerable<CompanyResponseDto>>> GetAllCompaniesAsync()
         {
+            string cacheKey = "companies_list_client";
+
+            try
+            {
+                var cached = await _redisCacheService.GetDataAsync<IEnumerable<CompanyResponseDto>>(cacheKey, tag);
+                if (cached != null) return _responseHandler.Success(cached);
+            }
+            catch (Exception) { }
+
             var companies = await _CompanyRepository.GetAllCompaniesAsync();
             var companiesDto = _mapper.Map<IEnumerable<CompanyResponseDto>>(companies);
+
+            await _redisCacheService.SetDataAsync(cacheKey, companiesDto, tag, Time.Default);
+
             return _responseHandler.Success(companiesDto);
         }
 
         public async Task<Response<IEnumerable<CompanyResponseForAdminDto>>> GetAllCompaniesForAdminAsync()
         {
+            string cacheKey = "companies_list_admin";
+
+            try
+            {
+                var cached = await _redisCacheService.GetDataAsync<IEnumerable<CompanyResponseForAdminDto>>(cacheKey, tag);
+                if (cached != null) return _responseHandler.Success(cached);
+            }
+            catch (Exception) { }
+
             var companies = await _CompanyRepository.GetAllCompaniesForAdminAsync();
             var companiesDto = _mapper.Map<IEnumerable<CompanyResponseForAdminDto>>(companies);
+
+            await _redisCacheService.SetDataAsync(cacheKey, companiesDto, tag, Time.Default);
+
             return _responseHandler.Success(companiesDto);
         }
-
 
         public async Task<Response<CompanyResponseDto>> UpdateCompanyAsync(Guid Id, UpdateCompanyRequest CompanyDto)
         {
@@ -75,6 +123,8 @@ namespace SmartCare.InfraStructure.Services
             _mapper.Map(CompanyDto, Company);
             var updatedCompany = await _CompanyRepository.UpdateAsync(Company);
             await _CompanyRepository.SaveChangesAsync();
+            //change version company tag
+            await _redisCacheService.DeleteKeysByTag(tag);
             var updatedCompanyDto = _mapper.Map<CompanyResponseDto>(updatedCompany);
             return _responseHandler.Success(updatedCompanyDto, SystemMessages.RECORD_UPDATED);
         }
@@ -87,6 +137,10 @@ namespace SmartCare.InfraStructure.Services
             if (Company == null)
                 return _responseHandler.NotFound<bool>(SystemMessages.NOT_FOUND);
             var result = await _CompanyRepository.DeleteAsync(Company);
+            if (result)
+            {
+                await _redisCacheService.DeleteKeysByTag(tag);
+            }
             return result ? _responseHandler.Success(true, SystemMessages.RECORD_DELETED) : _responseHandler.Failed<bool>(SystemMessages.FAILED);
         }
         public async Task<Response<PaginatedResult<CompanyResponseDto>>> GetAllCompaniesPaginatedAsync(int pageNumber, int pageSize)
@@ -94,11 +148,23 @@ namespace SmartCare.InfraStructure.Services
             if (pageNumber <= 0 || pageSize <= 0)
                 return _responseHandler.BadRequest<PaginatedResult<CompanyResponseDto>>(SystemMessages.INVALID_PAGINATION_PARAMETERS);
 
+            string cacheKey = $"companies_all_p{pageNumber}_s{pageSize}";
+
+            try
+            {
+                var cachedData = await _redisCacheService.GetDataAsync<PaginatedResult<CompanyResponseDto>>(cacheKey, tag);
+                if (cachedData != null) return _responseHandler.Success(cachedData);
+            }
+            catch (Exception) { /* Fallback to DB */ }
+
             var query = _CompanyRepository.GetAllCompaniesQuerable();
-
             var projectedQuery = _mapper.ProjectTo<CompanyResponseDto>(query);
-
             var paginatedResult = await projectedQuery.ToPaginatedListAsync(pageNumber, pageSize);
+
+            if (paginatedResult != null)
+            {
+                await _redisCacheService.SetDataAsync(cacheKey, paginatedResult, tag, Time.Default);
+            }
 
             return _responseHandler.Success(paginatedResult);
         }
@@ -122,6 +188,8 @@ namespace SmartCare.InfraStructure.Services
             }
             Company.LogoUrl = uploadResult.Url.ToString();
             var updateResult = await _CompanyRepository.UpdateAsync(Company);
+            
+            await _redisCacheService.DeleteKeysByTag(tag);
             return _responseHandler.Success(updateResult.LogoUrl);
         }
 
@@ -159,6 +227,8 @@ namespace SmartCare.InfraStructure.Services
                 // Commit changes
                 await _CompanyRepository.SaveChangesAsync();
                 await _CompanyRepository.CommitTransactionAsync();
+                
+                await _redisCacheService.DeleteKeysByTag(tag);
 
                 var createdCompanyDto = _mapper.Map<CompanyResponseForAdminDto>(createdEntity);
                 return _responseHandler.Success(createdCompanyDto, SystemMessages.SUCCESS);

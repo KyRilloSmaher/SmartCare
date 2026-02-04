@@ -26,20 +26,26 @@ namespace SmartCare.InfraStructure.Services
         private readonly IResponseHandler _responseHandler;
         private readonly IClientRepository _clientRepository;
         private readonly IAddressRepository _addressRepository;
+        private readonly IRedisCacheService _redisCacheService;
         private readonly IMapper _mapper;
+        string tag = CacheConstants.Addresses;
+
         #endregion
         #region Constructor
         public AddressService(
             IResponseHandler responseHandler,
             IClientRepository clientRepository,
-            IMapper mapper,
-            IAddressRepository addressRepository)
+            IAddressRepository addressRepository,
+            IRedisCacheService redisCacheService,
+            IMapper mapper)
         {
             _responseHandler = responseHandler;
             _clientRepository = clientRepository;
-            _mapper = mapper;
             _addressRepository = addressRepository;
+            _redisCacheService = redisCacheService;
+            _mapper = mapper;
         }
+
         #endregion
 
         #region Service Methods
@@ -61,6 +67,9 @@ namespace SmartCare.InfraStructure.Services
 
             await _addressRepository.AddAsync(address);
 
+            string cacheKey = $"client_addresses_{client.Id}";
+
+            await _redisCacheService.RemoveKeyAsync(cacheKey, tag);
             var responseDto = _mapper.Map<AddressResponseDto>(address);
             return _responseHandler.Created(responseDto);
         }
@@ -71,8 +80,27 @@ namespace SmartCare.InfraStructure.Services
             if (client == null)
                 return await ClientNotFound<IEnumerable<AddressResponseDto>>();
 
+            string cacheKey = $"client_addresses_{client.Id}";
+
+            try
+            {
+                var cachedAddresses = await _redisCacheService.GetDataAsync<IEnumerable<AddressResponseDto>>(cacheKey, tag);
+                if (cachedAddresses != null)
+                {
+                    return _responseHandler.Success(cachedAddresses);
+                }
+            }
+            catch (Exception)
+            {
+            }
+
             var addresses = await _addressRepository.GetClientAddressesAsync(client.Id);
             var responseDto = _mapper.Map<IEnumerable<AddressResponseDto>>(addresses);
+
+            if (responseDto != null)
+            {
+                await _redisCacheService.SetDataAsync(cacheKey, responseDto, tag, TimeSpan.FromHours(1));
+            }
 
             return _responseHandler.Success(responseDto);
         }
@@ -102,9 +130,12 @@ namespace SmartCare.InfraStructure.Services
                 }
             }
 
+            string cacheKey = $"client_addresses_{client.Id}";
+
+            await _redisCacheService.RemoveKeyAsync(cacheKey , tag);
+
             return _responseHandler.Success(true);
         }
-
 
         public async Task<Response<AddressResponseDto>> UpdateClientAddressAsync(string clientId, UpdateAddressRequestDto dto)
         {
@@ -128,6 +159,11 @@ namespace SmartCare.InfraStructure.Services
 
             await _addressRepository.UpdateAsync(address);
 
+            string cacheKey = $"client_addresses_{client.Id}";
+
+            // Remove cache for store
+            await _redisCacheService.RemoveKeyAsync(cacheKey, tag);
+
             var responseDto = _mapper.Map<AddressResponseDto>(address);
             return _responseHandler.Success(responseDto);
         }
@@ -144,6 +180,12 @@ namespace SmartCare.InfraStructure.Services
 
             await HandlePrimaryAddressChangeAsync(client.Id, address);
             await _addressRepository.UpdateAsync(address);
+
+
+            string cacheKey = $"client_addresses_{client.Id}";
+
+            // Remove cache for store
+            await _redisCacheService.RemoveKeyAsync(cacheKey, tag);
 
             var responseDto = _mapper.Map<AddressResponseDto>(address);
             return _responseHandler.Success(responseDto);

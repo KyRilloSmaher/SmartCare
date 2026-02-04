@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Azure.Core.HttpHeader;
 
 namespace SmartCare.InfraStructure.Services
 {
@@ -20,68 +21,105 @@ namespace SmartCare.InfraStructure.Services
         private readonly IRateRepository _rateRepository;
         private readonly IProductRepository _productRepository;
         private readonly IClientRepository _clientRepository;
+        private readonly IRedisCacheService _redisCacheService;
         private readonly IMapper _mapper;
         private readonly IResponseHandler _responseHandler;
-
+        string Rate_tag = CacheConstants.Rates;
+        string Products_tag = CacheConstants.Products;
         #endregion
 
 
         #region Constructors
-        public RateService(IRateRepository rateRepository, IMapper mapper, IResponseHandler responseHandler, IClientRepository clientRepository, IProductRepository productRepository)
+        public RateService(
+            IRateRepository rateRepository,
+            IProductRepository productRepository,
+            IClientRepository clientRepository,
+            IRedisCacheService redisCacheService,
+            IMapper mapper,
+            IResponseHandler responseHandler)
         {
             _rateRepository = rateRepository;
+            _productRepository = productRepository;
+            _clientRepository = clientRepository;
+            _redisCacheService = redisCacheService;
             _mapper = mapper;
             _responseHandler = responseHandler;
-            _clientRepository = clientRepository;
-            _productRepository = productRepository;
         }
-        #endregion 
+
+        #endregion
 
         #region Methods
         public async Task<Response<RateResponseDto>> GetRateByIdAsync(Guid Id)
         {
             if (Id == Guid.Empty)
+                return _responseHandler.Failed<RateResponseDto>(SystemMessages.INVALID_INPUT);
+
+            string cacheKey = $"rate_{Id}";
+
+            try
             {
-                return  _responseHandler.Failed<RateResponseDto>(SystemMessages.INVALID_INPUT);
+                var cachedRate = await _redisCacheService.GetDataAsync<RateResponseDto>(cacheKey, Rate_tag);
+                if (cachedRate != null) return _responseHandler.Success(cachedRate);
             }
+            catch (Exception) { }
+
             var rate = await _rateRepository.GetByIdAsync(Id);
             if (rate == null)
-            {
                 return _responseHandler.Failed<RateResponseDto>(SystemMessages.NOT_FOUND);
-            }
+
             var rateDto = _mapper.Map<RateResponseDto>(rate);
+
+            await _redisCacheService.SetDataAsync(cacheKey, rateDto, Rate_tag, Time.Default);
             return _responseHandler.Success(rateDto);
         }
 
         public async Task<Response<IEnumerable<RateResponseDto>>> GetAllRatesForUserAsync(string userId)
         {
             if (string.IsNullOrEmpty(userId))
-            {
                 return _responseHandler.Failed<IEnumerable<RateResponseDto>>(SystemMessages.INVALID_INPUT);
+
+            string cacheKey = $"rates_user_{userId}";
+
+            try
+            {
+                var cachedRates = await _redisCacheService.GetDataAsync<IEnumerable<RateResponseDto>>(cacheKey, Rate_tag);
+                if (cachedRates != null) return _responseHandler.Success(cachedRates);
             }
+            catch (Exception) { }
+
             var client = await _clientRepository.GetByIdAsync(userId);
             if (client == null)
-            {
                 return _responseHandler.Failed<IEnumerable<RateResponseDto>>(SystemMessages.USER_NOT_FOUND);
-            }
+
             var rates = await _rateRepository.GetRatesByUserIdAsync(userId);
             var rateDtos = _mapper.Map<IEnumerable<RateResponseDto>>(rates);
+
+            await _redisCacheService.SetDataAsync(cacheKey, rateDtos, Rate_tag, Time.Default);
             return _responseHandler.Success(rateDtos);
         }
 
         public async Task<Response<IEnumerable<RateResponseDto>>> GetAllRatesForProductAsync(Guid Id)
         {
             if (Id == Guid.Empty)
-            {
                 return _responseHandler.Failed<IEnumerable<RateResponseDto>>(SystemMessages.INVALID_INPUT);
+
+            string cacheKey = $"rates_product_{Id}";
+
+            try
+            {
+                var cachedRates = await _redisCacheService.GetDataAsync<IEnumerable<RateResponseDto>>(cacheKey, Rate_tag);
+                if (cachedRates != null) return _responseHandler.Success(cachedRates);
             }
+            catch (Exception) { }
+
             var product = await _productRepository.GetByIdAsync(Id);
             if (product == null)
-            {
                 return _responseHandler.Failed<IEnumerable<RateResponseDto>>(SystemMessages.PRODUCT_NOT_FOUND);
-            }
+
             var rates = await _rateRepository.GetRatesByProductIdAsync(Id);
             var rateDtos = _mapper.Map<IEnumerable<RateResponseDto>>(rates);
+
+            await _redisCacheService.SetDataAsync(cacheKey, rateDtos, Rate_tag, Time.Default);
             return _responseHandler.Success(rateDtos);
 
         }
@@ -109,6 +147,21 @@ namespace SmartCare.InfraStructure.Services
             await _clientRepository.UpdateAsync(user);
             await _rateRepository.UpdateAverageRateForProductAsync(Dto.ProductId);
             var rateDto = _mapper.Map<RateResponseDto>(savedRate);
+
+            string product_detailsKey = $"product_admin_{Dto.ProductId}";
+            string product_NameEnKey = $"product_name_{product.NameEn.ToLower().Replace(" ", "_")}";
+            string rates_ByIdKey = $"rate_{Dto.ProductId}";
+            string rates_ForUserKey = $"rates_user_{userId}";
+            string rates_ForProductKey = $"rates_product_{Dto.ProductId}";
+
+            await _redisCacheService.RemoveKeyAsync(product_detailsKey , Products_tag);
+            await _redisCacheService.RemoveKeyAsync(product_NameEnKey, Products_tag);
+            await _redisCacheService.RemoveKeyAsync(rates_ByIdKey, Rate_tag );
+            await _redisCacheService.RemoveKeyAsync(rates_ForUserKey, Rate_tag);
+            await _redisCacheService.RemoveKeyAsync(rates_ForProductKey, Rate_tag);
+
+
+
             return _responseHandler.Success(rateDto);
         }
 
