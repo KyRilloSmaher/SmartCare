@@ -113,6 +113,12 @@ builder.Services.AddScoped<IUrlHelper>(x =>
     x.GetRequiredService<IUrlHelperFactory>().GetUrlHelper(x.GetRequiredService<IActionContextAccessor>().ActionContext));
 builder.Services.AddScoped<HtmlTemplateService>();
 
+#region MediatR Registration
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssembly(typeof(SmartCare.Application.CQRs.Favourite.Commands.CreateFavouriteAsyncCommand).Assembly);
+});
+#endregion
 
 #endregion
 

@@ -10,7 +10,7 @@ using SmartCare.Application.IServices;
 namespace SmartCare.API.Controllers
 {
     [ApiController]
-   [Authorize]
+    [Authorize]
     public class CategoryController : ControllerBase
     {
         private readonly ICategoryService _categoryService;

@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using SmartCare.API.Helpers;
 using SmartCare.Application.DTOs.Product.Requests;
+using SmartCare.Application.DTOs.Product.Responses;
+using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Application.IServices;
 
 using SmartCare.Domain.Projection_Models;
@@ -23,6 +25,7 @@ namespace SmartCare.API.Controllers
         /// Get Product By Id For User
         /// </summary>
         [HttpGet(ApplicationRouting.Product.GetDetailsForUser)]
+        [ProducesResponseType(typeof(Response<ProductResponseDtoForClient>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetProductByIdForUserAsync(Guid id)
         {
             var result = await _ProductService.GetDetailsOfProductForUser(id);
@@ -34,6 +37,7 @@ namespace SmartCare.API.Controllers
         /// Get Product By Id For Admin
         /// </summary>
         [HttpGet(ApplicationRouting.Product.GetDetailsForAdmin)]
+        [ProducesResponseType(typeof(Response<ProductResponseDtoForAdmin>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetProductByIdForAdminAsync(Guid id)
         {
             var result = await _ProductService.GetDetailsOfProductForAdmin(id);
@@ -47,6 +51,7 @@ namespace SmartCare.API.Controllers
         /// <param name="pageNumber"></param>
         /// <param name="pageSize"></param>
         [HttpGet(ApplicationRouting.Product.GetAll)]
+        [ProducesResponseType(typeof(Response<PaginatedResult<ProductResponseDtoForClient>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllProductpaginationAsync([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             var result = await _ProductService.GetAllProducts(pageNumber, pageSize);
@@ -61,6 +66,7 @@ namespace SmartCare.API.Controllers
         /// <param name="pageSize"></param>
         /// <returns></returns>
         [HttpGet(ApplicationRouting.Product.GetByFilter)]
+        [ProducesResponseType(typeof(Response<PaginatedResult<ProductResponseDtoForClient>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> FilterProducts([FromQuery] FilterProductsDTo filterproduct, [FromQuery] int pageNumber =1, [FromQuery] int pageSize =10)
         {
             var result = await _ProductService.FilterProducts(filterproduct, pageNumber, pageSize);
@@ -73,6 +79,7 @@ namespace SmartCare.API.Controllers
         /// <param name="NameEn"></param>
         /// <returns></returns>
         [HttpGet(ApplicationRouting.Product.SearchByName)]
+        [ProducesResponseType(typeof(Response<ProductResponseDtoForClient>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetByName([FromQuery] string NameEn)
         {
             var result = await _ProductService.GetDetailsOfProductByName(NameEn);
@@ -86,6 +93,7 @@ namespace SmartCare.API.Controllers
         /// <param name="pageNumber"></param>
         /// <param name="pageSize"></param>
         [HttpGet(ApplicationRouting.Product.GetByCompanyId)]
+        [ProducesResponseType(typeof(Response<PaginatedResult<ProductResponseDtoForClient>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetBycampanyId(Guid CompanyId, int pageNumber, int pageSize)
         {
             var result = await _ProductService.GetProductsByCompanyId(CompanyId, pageNumber, pageSize);
@@ -100,6 +108,7 @@ namespace SmartCare.API.Controllers
         /// <param name="pageNumber"></param>
         /// <param name="pageSize"></param>
         [HttpGet(ApplicationRouting.Product.SearchByCompanyName)]
+        [ProducesResponseType(typeof(Response<PaginatedResult<ProductResponseDtoForClient>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> SearchByCompanyName(string CompanyName, int pageNumber, int pageSize)
         {
             var result = await _ProductService.SearchProductsByCompanyName(CompanyName, pageNumber, pageSize);
@@ -113,6 +122,7 @@ namespace SmartCare.API.Controllers
         /// <param name="pageNumber"></param>
         /// <param name="pageSize"></param>
         [HttpGet(ApplicationRouting.Product.GetByCategoryId)]
+        [ProducesResponseType(typeof(Response<PaginatedResult<ProductResponseDtoForClient>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetBycategoryId(Guid CategoryId, int pageNumber, int pageSize)
         {
             var result = await _ProductService.GetProductsByCategoryId(CategoryId, pageNumber, pageSize);
@@ -127,6 +137,7 @@ namespace SmartCare.API.Controllers
         /// <param name="pageNumber"></param>
         /// <param name="pageSize"></param>
         [HttpGet(ApplicationRouting.Product.SearchByCategoryName)]
+        [ProducesResponseType(typeof(Response<PaginatedResult<ProductResponseDtoForClient>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> SearchByCategoryName(string CategoryName, int pageNumber, int pageSize)
         {
             var result = await _ProductService.SearchProductsByCategoryName(CategoryName, pageNumber, pageSize);
@@ -141,6 +152,7 @@ namespace SmartCare.API.Controllers
         /// <param name="pageNumber"></param>
         /// <param name="pageSize"></param>
         [HttpGet(ApplicationRouting.Product.SearchBypartialDescription)]
+        [ProducesResponseType(typeof(Response<PaginatedResult<ProductResponseDtoForClient>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> SearchBypartialDescription([FromQuery] string Description, [FromQuery] int pageNumber, [FromQuery] int pageSize)
         {
             var result = await _ProductService.SearchProductsByDescription(Description, pageNumber, pageSize);
@@ -154,6 +166,7 @@ namespace SmartCare.API.Controllers
         /// <param name="pageNumber"></param>
         /// <param name="pageSize"></param>
         [HttpGet(ApplicationRouting.Product.GetBestSeller)]
+        [ProducesResponseType(typeof(Response<PaginatedResult<ProductResponseDtoForClient>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetBestseller(int pageNumber, int pageSize)
         {
             var result = await _ProductService.GetMostSellingProducts(pageNumber, pageSize);
@@ -168,6 +181,7 @@ namespace SmartCare.API.Controllers
         /// <param name="pageNumber"></param>
         /// <param name="pageSize"></param>
         [HttpGet(ApplicationRouting.Product.GetMorePopular)]
+        [ProducesResponseType(typeof(Response<PaginatedResult<ProductResponseDtoForClient>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetMorePopular(int pageNumber, int pageSize)
         {
             var result = await _ProductService.GetMorePopular(pageNumber, pageSize);
@@ -179,8 +193,9 @@ namespace SmartCare.API.Controllers
         /// Create Product
         /// </summary>
         /// <param name="ProductDto"></param>
-        //[Authorize(Roles = "DASHBOARD_ADMIN")]
+        [Authorize(Roles = "DASHBOARD_ADMIN")]
         [HttpPost(ApplicationRouting.Product.Create)]
+        [ProducesResponseType(typeof(Response<ProductResponseDtoForAdmin>), StatusCodes.Status200OK)]
         public async Task<IActionResult> CreateProductAsync([FromForm] CreateProductRequestDto ProductDto)
         {
             var result = await _ProductService.CreateProductAsync(ProductDto);
@@ -193,8 +208,9 @@ namespace SmartCare.API.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <param name="ProductDto"></param>
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPut(ApplicationRouting.Product.Update)]
+        [ProducesResponseType(typeof(Response<ProductResponseDtoForAdmin>), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateProductAsync(Guid id, [FromBody] UpdateProductRequestDto ProductDto)
         {
             var result = await _ProductService.UpdateProductAsync(id, ProductDto);
@@ -206,11 +222,12 @@ namespace SmartCare.API.Controllers
         /// Delete Product
         /// </summary>
         /// <param name="ProductId"></param>
-       // [Authorize(Roles = "DASHBOARD_ADMIN")]
+        [Authorize(Roles = "DASHBOARD_ADMIN")]
         [HttpDelete(ApplicationRouting.Product.Delete)]
-        public async Task<IActionResult> DeleteProductAsync(Guid Id)
+        [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> DeleteProductAsync(Guid id)
         {
-            var result = await _ProductService.DeleteProductAsync(Id);
+            var result = await _ProductService.DeleteProductAsync(id);
             return ControllersHelperMethods.FinalResponse(result);
         }
 
