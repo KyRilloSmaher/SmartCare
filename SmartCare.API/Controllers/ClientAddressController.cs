@@ -1,13 +1,16 @@
 ﻿
-    using Microsoft.AspNetCore.Authorization;
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.AspNetCore.Mvc;
-    using SmartCare.API.Helpers;
-    using SmartCare.Application.DTOs.Address.Requests;
-    using SmartCare.Application.DTOs.Address.Responses;
-    using SmartCare.Application.Handlers.ResponseHandler;
-    using SmartCare.Application.IServices;
-    using System.Security.Claims;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using SmartCare.API.Helpers;
+using SmartCare.Application.CQRs.Address.Commands;
+using SmartCare.Application.CQRs.Address.Queries;
+using SmartCare.Application.DTOs.Address.Requests;
+using SmartCare.Application.DTOs.Address.Responses;
+using SmartCare.Application.Handlers.ResponseHandler;
+using SmartCare.Application.IServices;
+using System.Security.Claims;
 
     namespace SmartCare.API.Controllers
     {
@@ -15,12 +18,19 @@
         [Authorize]
         public class ClientAddressController : ControllerBase
         {
-            private readonly IAddressService _addressService;
+           // private readonly IAddressService _addressService;
 
-            public ClientAddressController(IAddressService addressService)
-            {
-                _addressService = addressService;
-            }
+             private readonly IMediator _mediator;
+
+        public ClientAddressController(IMediator mediator)
+        {
+            _mediator = mediator;
+        }
+
+        //public ClientAddressController(IAddressService addressService)
+        //    {
+        //        _addressService = addressService;
+        //    }
         /// <summary>
         /// Get all addresses for logged-in client
         /// </summary>
@@ -29,7 +39,8 @@
         public async Task<IActionResult> GetClientAddressesAsync()
         {
             var clientId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var result = await _addressService.GetClientAddressesAsync(clientId);
+            //var result = await _addressService.GetClientAddressesAsync(clientId);
+            var result = await _mediator.Send(new GetClientAddressesAsyncQuery(clientId));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -41,7 +52,8 @@
         public async Task<IActionResult> AddNewClientAddressAsync(CreateAddressRequestDto dto)
          {
                 var clientId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var result = await _addressService.AddNewClientAddressAsync(clientId, dto);
+                //var result = await _addressService.AddNewClientAddressAsync(clientId, dto);
+                var result = await _mediator.Send(new AddNewClientAddressAsyncCommand(clientId , dto));
                 return ControllersHelperMethods.FinalResponse(result);
          }
 
@@ -53,7 +65,8 @@
         public async Task<IActionResult> UpdateClientAddressAsync(UpdateAddressRequestDto dto)
         {
             var clientId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var result = await _addressService.UpdateClientAddressAsync(clientId, dto);
+           // var result = await _addressService.UpdateClientAddressAsync(clientId, dto);
+            var result = await _mediator.Send(new UpdateClientAddressAsyncCommand(clientId , dto));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -65,7 +78,8 @@
         public async Task<IActionResult> SetAddressAsPrimaryAddressAsync([FromRoute] Guid addressId)
         {
             var clientId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var result = await _addressService.SetAddressAsPrimaryAddressAsync(clientId, addressId);
+            //var result = await _addressService.SetAddressAsPrimaryAddressAsync(clientId, addressId);
+            var result = await _mediator.Send(new SetAddressAsPrimaryAddressAsyncCommand(clientId , addressId));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -78,7 +92,8 @@
             public async Task<IActionResult> DeleteClientAddressAsync([FromRoute]Guid addressId)
             {
                 var clientId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var result = await _addressService.DeleteClientAddressAsync(clientId, addressId);
+                //var result = await _addressService.DeleteClientAddressAsync(clientId, addressId);
+                var result = await _mediator.Send(new DeleteClientAddressAsyncCommand(clientId, addressId));
                 return ControllersHelperMethods.FinalResponse(result);
             }
 
