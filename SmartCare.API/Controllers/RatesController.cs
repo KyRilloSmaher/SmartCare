@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SmartCare.API.Helpers;
+using SmartCare.Application.CQRs.Rate.Commands;
+using SmartCare.Application.CQRs.Rate.Queries;
 using SmartCare.Application.DTOs.Companies.Responses;
 using SmartCare.Application.DTOs.Rates.Requests;
 using SmartCare.Application.DTOs.Rates.Responses;
@@ -15,11 +18,18 @@ namespace SmartCare.API.Controllers
     [Authorize]
     public class RatesController : ControllerBase
     {
-        private readonly IRateService _ratesService;
-        public RatesController(IRateService ratesService)
+        //private readonly IRateService _ratesService;
+        private readonly IMediator _mediator;
+
+        public RatesController(IMediator mediator)
         {
-            _ratesService = ratesService;
+            _mediator = mediator;
         }
+
+        //public RatesController(IRateService ratesService)
+        //{
+        //    _ratesService = ratesService;
+        //}
         /// <summary>
         /// Get Rate By Id
         /// </summary>
@@ -27,7 +37,8 @@ namespace SmartCare.API.Controllers
         [HttpGet(ApplicationRouting.Rate.GetById)]
         public async Task<IActionResult> GetRateByIdAsync(Guid id)
         {
-            var result = await _ratesService.GetRateByIdAsync(id);
+            //var result = await _ratesService.GetRateByIdAsync(id);
+            var result = await _mediator.Send(new GetRateByIdAsyncQuery(id));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -39,7 +50,8 @@ namespace SmartCare.API.Controllers
         public async Task<IActionResult> GetRatesbyUserAsync()
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            var result = await _ratesService.GetAllRatesForUserAsync(userId);
+            //var result = await _ratesService.GetAllRatesForUserAsync(userId);
+            var result = await _mediator.Send(new GetAllRatesForUserAsyncQuery(userId));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -50,7 +62,8 @@ namespace SmartCare.API.Controllers
         [HttpGet(ApplicationRouting.Rate.GetAllForProduct)]
         public async Task<IActionResult> GetProductRatesAsync(Guid id)
         {
-            var result = await _ratesService.GetAllRatesForProductAsync(id);
+            //var result = await _ratesService.GetAllRatesForProductAsync(id);
+            var result = await _mediator.Send(new GetAllRatesForProductAsyncQuery(id));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -63,7 +76,8 @@ namespace SmartCare.API.Controllers
         public async Task<IActionResult> CreateRateAsync(CreateRateRequestDto dto)
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            var result = await _ratesService.CreateRateAsync(userId, dto);
+            //var result = await _ratesService.CreateRateAsync(userId, dto);
+            var result = await _mediator.Send(new CreateRateAsyncCommand(userId, dto));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -75,7 +89,8 @@ namespace SmartCare.API.Controllers
         public async Task<IActionResult> UpdateRateAsync(UpdateRateRequestDto dto)
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            var result = await _ratesService.UpdateRateAsync(userId ,dto);
+            //var result = await _ratesService.UpdateRateAsync(userId ,dto);
+            var result = await _mediator.Send(new UpdateRateAsyncCommand(userId, dto));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -87,7 +102,8 @@ namespace SmartCare.API.Controllers
         public async Task<IActionResult> DeleteRateAsync(Guid id)
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            var result = await _ratesService.DeleteRateAsync(userId,id);
+            //var result = await _ratesService.DeleteRateAsync(userId,id);
+            var result = await _mediator.Send(new DeleteRateAsyncCommand(userId, id));
             return ControllersHelperMethods.FinalResponse(result);
         }
     }
