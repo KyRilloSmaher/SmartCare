@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartCare.API.Helpers;
+using SmartCare.Application.CQRs.Payment.Commands;
 using SmartCare.Application.DTOs.Payment;
 using SmartCare.Application.IServices;
 using Stripe;
@@ -11,19 +13,18 @@ namespace SmartCare.API.Controllers
     [Route("api/payments")]
     public sealed class PaymentsController : ControllerBase
     {
-        private readonly IPaymentService _paymentService;
+        //private readonly IPaymentService _paymentService;
+        private readonly IMediator _mediator;
         private readonly IConfiguration _configuration;
         private readonly ILogger<PaymentsController> _logger;
 
-        public PaymentsController(
-            IPaymentService paymentService,
-            IConfiguration configuration,
-            ILogger<PaymentsController> logger)
+        public PaymentsController(IMediator mediator, IConfiguration configuration, ILogger<PaymentsController> logger)
         {
-            _paymentService = paymentService;
+            _mediator = mediator;
             _configuration = configuration;
             _logger = logger;
         }
+
 
         // ------------------------------------------------------
         // ONLINE PAYMENT (PAYMENT INTENT)
@@ -37,7 +38,8 @@ namespace SmartCare.API.Controllers
         [Authorize]
         public async Task<IActionResult> CreatePaymentIntent(Guid orderId)
         {
-            var result = await _paymentService.CreateOrUpdatePaymentAsync(orderId);
+            //var result = await _paymentService.CreateOrUpdatePaymentAsync(orderId);
+            var result = await _mediator.Send(new CreateOrUpdatePaymentAsyncCommand(orderId));
             return ControllersHelperMethods.FinalResponse(result);
         }
         /// <summary>
@@ -48,7 +50,8 @@ namespace SmartCare.API.Controllers
         [Authorize]
         public async Task<IActionResult> MarkAsCashPaymentAsync(Guid orderId)
         {
-            var result = await _paymentService.MarkOrderPaymentAsCash(orderId);
+            //var result = await _paymentService.MarkOrderPaymentAsCash(orderId);
+            var result = await _mediator.Send(new MarkOrderPaymentAsCashCommand(orderId));
             return ControllersHelperMethods.FinalResponse(result);
         }
         // ------------------------------------------------------
@@ -71,7 +74,8 @@ namespace SmartCare.API.Controllers
                     throwOnApiVersionMismatch: false
                 );
 
-                await _paymentService.HandleWebhookEventAsync(stripeEvent);
+                //await _paymentService.HandleWebhookEventAsync(stripeEvent);
+                await _mediator.Send(new HandleWebhookEventAsyncCommand(stripeEvent));
                 return Ok();
             }
             catch (StripeException ex)
@@ -95,7 +99,8 @@ namespace SmartCare.API.Controllers
         [Authorize(Roles = "Admin,Store")]
         public async Task<IActionResult> PayOfflineAsync([FromBody] string pickupCode)
         {
-            var result = await _paymentService.PayOfflineAsync(pickupCode);
+            //var result = await _paymentService.PayOfflineAsync(pickupCode);
+            var result = await _mediator.Send(new PayOfflineAsyncCommand(pickupCode));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
