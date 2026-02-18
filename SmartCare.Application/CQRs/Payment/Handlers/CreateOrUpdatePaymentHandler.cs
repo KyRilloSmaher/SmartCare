@@ -56,7 +56,7 @@ namespace SmartCare.Application.CQRs.Payment.Handlers
 
                 order.PaymentIntentId = intent.Id;
 
-                await _paymentRepository.Add(new paymentEntity
+                await _paymentRepository.AddAsync(new paymentEntity
                 {
                     OrderId = order.Id,
                     Amount = order.TotalPrice,
