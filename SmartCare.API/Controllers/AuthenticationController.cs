@@ -1,12 +1,18 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using SmartCare.Application.DTOs.Auth.Requests;
-using SmartCare.Application.IServices;
-using SmartCare.Application.DTOs.Auth.Responses;
-using SmartCare.API.Helpers;
-using SmartCare.Application.Handlers.ResponseHandler;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
+using Microsoft.AspNetCore.Mvc;
+using SmartCare.API.Helpers;
 using SmartCare.API.Services;
+using SmartCare.Application.CQRs.Authentication.Commands.Auth;
+using SmartCare.Application.CQRs.Authentication.Commands.Email;
+using SmartCare.Application.CQRs.Authentication.Commands.Password;
+using SmartCare.Application.CQRs.Authentication.Commands.Token;
+using SmartCare.Application.CQRs.Authentication.Queries;
+using SmartCare.Application.DTOs.Auth.Requests;
+using SmartCare.Application.DTOs.Auth.Responses;
+using SmartCare.Application.Handlers.ResponseHandler;
+using SmartCare.Application.IServices;
+using System.Security.Claims;
 
 
 
@@ -15,14 +21,21 @@ namespace SmartCare.API.Controllers
     [ApiController]
     public class AuthenticationController : ControllerBase
     {
-        private readonly IAuthenticationService _authenticationService;
+        //private readonly IAuthenticationService _authenticationService;
+        private readonly IMediator _mediator;
         private readonly HtmlTemplateService _templateService;
 
-        public AuthenticationController(IAuthenticationService authenticationService, HtmlTemplateService templateService)
+        public AuthenticationController(IMediator mediator, HtmlTemplateService templateService)
         {
-            _authenticationService = authenticationService;
+            _mediator = mediator;
             _templateService = templateService;
         }
+
+        //public AuthenticationController(IAuthenticationService authenticationService, HtmlTemplateService templateService)
+        //{
+        //    _authenticationService = authenticationService;
+        //    _templateService = templateService;
+        //}
 
         #region Auth Endpoints
 
@@ -33,7 +46,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> SignUpAsync([FromForm] SignUpRequest dto)
         {
-            var result = await _authenticationService.SignUpAsync(dto);
+            //var result = await _authenticationService.SignUpAsync(dto);
+            var result = await _mediator.Send(new SignUpAsyncCommand(dto));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -46,7 +60,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<TokenResponseDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> LoginAsync([FromBody] LoginRequestDto dto)
         {
-            var result = await _authenticationService.LoginAsync(dto);
+            //var result = await _authenticationService.LoginAsync(dto);
+            var result = await _mediator.Send(new  LoginAsyncCommand(dto));
             return ControllersHelperMethods.FinalResponse(result);
         }
         /// <summary>
@@ -59,7 +74,8 @@ namespace SmartCare.API.Controllers
         {
             // Get current user ID from JWT
             var userId = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            var result = await _authenticationService.LogoutAsync(userId);
+            //var result = await _authenticationService.LogoutAsync(userId);
+            var result = await _mediator.Send(new LogoutAsyncCommand(userId));
             return ControllersHelperMethods.FinalResponse(result);
 
         }
@@ -71,7 +87,8 @@ namespace SmartCare.API.Controllers
         [Authorize]
         public async Task<IActionResult> RefreshTokenAsync([FromBody] TokenRequestDto dto)
         {
-            var result = await _authenticationService.GetRefreshTokenAsync(dto);
+            //var result = await _authenticationService.GetRefreshTokenAsync(dto);
+            var result = await _mediator.Send(new GetRefreshTokenAsyncCommand(dto));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -84,7 +101,8 @@ namespace SmartCare.API.Controllers
         public async Task<IActionResult> ChangePasswordAsync([FromBody] ChangePasswordRequestDto dto)
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            var result = await _authenticationService.ChangePasswordAsync(userId, dto);
+            //var result = await _authenticationService.ChangePasswordAsync(userId, dto);
+            var result = await _mediator.Send(new ChangePasswordAsyncCommand(userId, dto));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -95,7 +113,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> SendResetPasswordCodeAsync([FromBody] ForgetPasswordRequestDto dto)
         {
-            var result = await _authenticationService.SendResetPasswordCodeAsync(dto);
+            //var result = await _authenticationService.SendResetPasswordCodeAsync(dto);
+            var result = await _mediator.Send(new SendResetPasswordCodeAsyncCommand(dto));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -106,7 +125,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> ReSendResetPasswordCodeAsync([FromBody] ForgetPasswordRequestDto dto)
         {
-            var result = await _authenticationService.ReSendResetPasswordCodeAsync(dto);
+            //var result = await _authenticationService.ReSendResetPasswordCodeAsync(dto);
+            var result = await _mediator.Send(new ReSendResetPasswordCodeAsyncCommand(dto));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -117,7 +137,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> ConfirmResetPasswordCodeAsync([FromBody] ConfirmResetPasswordCodeRequestDto dto)
         {
-            var result = await _authenticationService.ConfirmResetPasswordAsync(dto);
+            //var result = await _authenticationService.ConfirmResetPasswordAsync(dto);
+            var result = await _mediator.Send(new ConfirmResetPasswordQuery(dto));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -128,7 +149,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> ResetPasswordAsync([FromBody] SetNewPasswordRequestDto dto)
         {
-            var result = await _authenticationService.ResetPasswordRequestAsync(dto);
+            //var result = await _authenticationService.ResetPasswordRequestAsync(dto);
+            var result = await _mediator.Send(new ResetPasswordRequestAsyncCommand(dto));
             return ControllersHelperMethods.FinalResponse(result);
         }
         /// <summary>
@@ -147,7 +169,8 @@ namespace SmartCare.API.Controllers
                 return Content(html, "text/html");
             }
 
-            var result = await _authenticationService.ConfirmEmailAsync(dto);
+            //var result = await _authenticationService.ConfirmEmailAsync(dto);
+            var result = await _mediator.Send(new ConfirmEmailAsyncCommand(dto));
             if (result.Succeeded)
             {
                 var html = _templateService.GetHtmlTemplate("EmailConfirmed", new Dictionary<string, string>
@@ -175,8 +198,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> ReSendConfirmationEmailAsync([FromQuery] ReSendConfirmationEmailRequest dto)
         {
-            var result = await _authenticationService.ReSendConfirmEmailAsync(dto);
-
+            //var result = await _authenticationService.ReSendConfirmEmailAsync(dto);
+            var result = await _mediator.Send(new ReSendConfirmEmailAsyncCommand(dto));
             if (result.Succeeded)
             {
                 var html = _templateService.GetHtmlTemplate("VerificationEmailSent", new Dictionary<string, string>
