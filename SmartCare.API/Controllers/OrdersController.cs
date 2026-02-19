@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartCare.API.Helpers;
+using SmartCare.Application.CQRs.Order.Commands;
+using SmartCare.Application.CQRs.Order.Queries;
 using SmartCare.Application.DTOs.Orders.Requests;
 using SmartCare.Application.DTOs.Orders.Responses;
 using SmartCare.Application.Handlers.ResponseHandler;
@@ -14,12 +17,18 @@ namespace SmartCare.API.Controllers
     [Authorize]
     public class OrderController : ControllerBase
     {
-        private readonly IOrderService _orderService;
+        //private readonly IOrderService _orderService;
+        private readonly IMediator _mediator;
 
-        public OrderController(IOrderService orderService)
+        public OrderController(IMediator mediator)
         {
-            _orderService = orderService;
+            _mediator = mediator;
         }
+
+        //public OrderController(IOrderService orderService)
+        //{
+        //    _orderService = orderService;
+        //}
 
         /// <summary>
         /// Get Order with details by Id
@@ -28,7 +37,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<OrderResponseDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetOrderWithDetailsByIdAsync(Guid id)
         {
-            var result = await _orderService.GetOrderWithDetailsByIdAsync(id);
+            //var result = await _orderService.GetOrderWithDetailsByIdAsync(id);
+            var result = await _mediator.Send(new GetOrderWithDetailsByIdAsyncQuery(id));
             return ControllersHelperMethods.FinalResponse(result);
         }
         /// <summary>
@@ -39,7 +49,8 @@ namespace SmartCare.API.Controllers
         public async Task<IActionResult> GetOrdersForUserAsync()
         {   
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            var result = await _orderService.GetOrdersByCustomerIdAsync(userId);
+            //var result = await _orderService.GetOrdersByCustomerIdAsync(userId);
+            var result = await _mediator.Send(new GetOrdersByCustomerIdAsyncQuery(userId));
             return ControllersHelperMethods.FinalResponse(result);
         }
         /// <summary>
@@ -50,7 +61,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<IEnumerable<OrderResponseDto>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetOrdersByCustomerIdAsync(string clientId)
         {
-            var result = await _orderService.GetOrdersByCustomerIdAsync(clientId);
+            //var result = await _orderService.GetOrdersByCustomerIdAsync(clientId);
+            var result = await _mediator.Send(new GetOrdersByCustomerIdAsyncQuery(clientId));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -61,7 +73,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<IEnumerable<OrderResponseDto>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetOrdersByCustomerIdAsync([FromQuery]string clientId , [FromQuery]OrderStatus status)
         {
-            var result = await _orderService.GetOrdersByCustomerAndStatusAsync(clientId , status);
+            //var result = await _orderService.GetOrdersByCustomerAndStatusAsync(clientId , status);
+            var result = await _mediator.Send(new GetOrdersByCustomerAndStatusAsyncQuery(clientId, status));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -74,7 +87,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<IEnumerable<OrderResponseDto>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetOrdersByStatusAsync(OrderStatus status, [FromQuery] Guid? storeId = null)
         {
-            var result = await _orderService.GetOrdersByStatus(status, storeId);
+            //var result = await _orderService.GetOrdersByStatus(status, storeId);
+            var result = await _mediator.Send(new GetOrdersByStatusQuery(status, storeId));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -86,7 +100,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<IEnumerable<OrderResponseDto>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetOrdersByDateRangeAsync(DateTime startDate, DateTime endDate, [FromQuery] Guid? storeId = null)
         {
-            var result = await _orderService.GetOrdersByDateRangeAsync(startDate, endDate, storeId);
+            //var result = await _orderService.GetOrdersByDateRangeAsync(startDate, endDate, storeId);
+            var result = await _mediator.Send(new GetOrdersByDateRangeAsyncQuery(startDate, endDate, storeId));
             return ControllersHelperMethods.FinalResponse(result);
         }
         /// <summary>
@@ -97,7 +112,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<int>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetTotalOrdersCountAsync([FromQuery] Guid ? storeId)
         {
-            var result = await _orderService.GetTotalOrdersCountAsync(storeId);
+            //var result = await _orderService.GetTotalOrdersCountAsync(storeId);
+            var result = await _mediator.Send(new GetTotalOrdersCountAsyncQuery(storeId));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -109,7 +125,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<decimal>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetTotalRevenueAsync([FromQuery] Guid? storeId)
         {
-            var result = await _orderService.GetTotalRevenueAsync(storeId);
+            //var result = await _orderService.GetTotalRevenueAsync(storeId);
+            var result = await _mediator.Send(new GetTotalRevenueAsyncQuery(storeId));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -121,7 +138,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<IEnumerable<OrderResponseDto>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetOrdersWithDetailsAsync()
         {
-            var result = await _orderService.GetOrdersWithDetailsAsync();
+            //var result = await _orderService.GetOrdersWithDetailsAsync();
+            var result = await _mediator.Send(new GetOrdersWithDetailsAsyncQuery());
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -133,7 +151,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<IEnumerable<OrderResponseDto>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetTopNOrdersByValueAsync(int n, [FromQuery] Guid? storeId = null)
         {
-            var result = await _orderService.GetTopNOrdersByValueAsync(n, storeId);
+            //var result = await _orderService.GetTopNOrdersByValueAsync(n, storeId);
+            var result = await _mediator.Send(new GetTopNOrdersByValueAsyncQuery(n, storeId));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -145,7 +164,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<IEnumerable<OrderResponseDto>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetRecentOrdersAsync(int days, [FromQuery] Guid? storeId = null)
         {
-            var result = await _orderService.GetRecentOrdersAsync(days, storeId);
+            //var result = await _orderService.GetRecentOrdersAsync(days, storeId);
+            var result = await _mediator.Send(new GetRecentOrdersAsyncQuery(days, storeId));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -157,7 +177,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<Dictionary<OrderStatus, int>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetOrderCountByStatusAsync([FromQuery] Guid? storeId = null)
         {
-            var result = await _orderService.GetOrderCountByStatusAsync(storeId);
+            //var result = await _orderService.GetOrderCountByStatusAsync(storeId);
+            var result = await _mediator.Send(new GetOrderCountByStatusAsyncQuery(storeId));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -169,7 +190,8 @@ namespace SmartCare.API.Controllers
         public async Task<IActionResult> CreateOnlineOrderAsync([FromBody] CreateOnlineOrderRequestDto dto)
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;                                                               
-            var result = await _orderService.CreateOnlineOrderFromCartAsync(userId,dto);
+            //var result = await _orderService.CreateOnlineOrderFromCartAsync(userId,dto);
+            var result = await _mediator.Send(new CreateOnlineOrderFromCartAsyncCommand(userId, dto));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -181,7 +203,8 @@ namespace SmartCare.API.Controllers
         public async Task<IActionResult> CreatePickUpOrderAsync([FromBody] CreatePickUpOrderRequestDto dto)
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            var result = await _orderService.CreatePickupOrderFromCartAsync(userId,dto);
+            //var result = await _orderService.CreatePickupOrderFromCartAsync(userId,dto);
+            var result = await _mediator.Send(new CreatePickupOrderFromCartAsyncCommand(userId, dto));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -193,7 +216,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<OrderResponseDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateOrderStatusAsync(Guid id, OrderStatus newStatus)
         {
-            var result = await _orderService.UpdateOrderStatusAsync(id, newStatus);
+            //var result = await _orderService.UpdateOrderStatusAsync(id, newStatus);
+            var result = await _mediator.Send(new UpdateOrderStatusAsyncCommand(id, newStatus));
             return ControllersHelperMethods.FinalResponse(result);
         }
         /// <summary>
@@ -204,7 +228,8 @@ namespace SmartCare.API.Controllers
         public async Task<IActionResult> UpdateOrderAsync(UpdateOrderRequestDto dto)
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            var result = await _orderService.UpdateOrderAsync(userId, dto);
+            //var result = await _orderService.UpdateOrderAsync(userId, dto);
+            var result = await _mediator.Send(new UpdateOrderAsyncCommand(userId, dto));
             return ControllersHelperMethods.FinalResponse(result);
         }
         /// <summary>
@@ -215,7 +240,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> DeleteOrderAsync(Guid id)
         {
-            var result = await _orderService.DeleteOrderAsync(id);
+            //var result = await _orderService.DeleteOrderAsync(id);
+            var result = await _mediator.Send(new DeleteOrderAsyncCommand(id));
             return ControllersHelperMethods.FinalResponse(result);
         }
     }
