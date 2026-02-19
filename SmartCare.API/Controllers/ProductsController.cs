@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartCare.API.Helpers;
+using SmartCare.Application.CQRs.Product.Commands;
+using SmartCare.Application.CQRs.Product.Queries;
 using SmartCare.Application.DTOs.Product.Requests;
 using SmartCare.Application.DTOs.Product.Responses;
 using SmartCare.Application.Handlers.ResponseHandler;
@@ -14,11 +17,17 @@ namespace SmartCare.API.Controllers
     [Authorize]
     public class ProductsController : ControllerBase
     {
-        private readonly IProductService _ProductService;
+        //private readonly IProductService _ProductService;
+        private readonly IMediator _mediator;
 
-        public ProductsController(IProductService productService)
+        //public ProductsController(IProductService productService)
+        //{
+        //    _ProductService = productService;
+        //}
+
+        public ProductsController(IMediator mediator)
         {
-            _ProductService = productService;
+            _mediator = mediator;
         }
 
         /// <summary>
@@ -28,7 +37,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<ProductResponseDtoForClient>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetProductByIdForUserAsync(Guid id)
         {
-            var result = await _ProductService.GetDetailsOfProductForUser(id);
+            //var result = await _ProductService.GetDetailsOfProductForUser(id);
+            var result = await _mediator.Send(new GetDetailsOfProductForUserQuery(id));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -40,7 +50,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<ProductResponseDtoForAdmin>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetProductByIdForAdminAsync(Guid id)
         {
-            var result = await _ProductService.GetDetailsOfProductForAdmin(id);
+            //var result = await _ProductService.GetDetailsOfProductForAdmin(id);
+            var result = await _mediator.Send(new GetDetailsOfProductForAdminQuery(id));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -54,7 +65,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<PaginatedResult<ProductResponseDtoForClient>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllProductpaginationAsync([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var result = await _ProductService.GetAllProducts(pageNumber, pageSize);
+            //var result = await _ProductService.GetAllProducts(pageNumber, pageSize);
+            var result = await _mediator.Send(new GetAllProductsQuery(pageNumber, pageSize));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -69,7 +81,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<PaginatedResult<ProductResponseDtoForClient>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> FilterProducts([FromQuery] FilterProductsDTo filterproduct, [FromQuery] int pageNumber =1, [FromQuery] int pageSize =10)
         {
-            var result = await _ProductService.FilterProducts(filterproduct, pageNumber, pageSize);
+            //var result = await _ProductService.FilterProducts(filterproduct, pageNumber, pageSize);
+            var result = await _mediator.Send(new FilterProductsQuery(filterproduct, pageNumber, pageSize));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -82,7 +95,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<ProductResponseDtoForClient>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetByName([FromQuery] string NameEn)
         {
-            var result = await _ProductService.GetDetailsOfProductByName(NameEn);
+            //var result = await _ProductService.GetDetailsOfProductByName(NameEn);
+            var result = await _mediator.Send(new GetDetailsOfProductByNameQuery(NameEn));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -96,7 +110,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<PaginatedResult<ProductResponseDtoForClient>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetBycampanyId(Guid CompanyId, int pageNumber, int pageSize)
         {
-            var result = await _ProductService.GetProductsByCompanyId(CompanyId, pageNumber, pageSize);
+            //var result = await _ProductService.GetProductsByCompanyId(CompanyId, pageNumber, pageSize);
+            var result = await _mediator.Send(new GetProductsByCompanyIdQuery(CompanyId, pageNumber, pageSize));
             return ControllersHelperMethods.FinalResponse(result);
 
         }
@@ -111,7 +126,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<PaginatedResult<ProductResponseDtoForClient>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> SearchByCompanyName(string CompanyName, int pageNumber, int pageSize)
         {
-            var result = await _ProductService.SearchProductsByCompanyName(CompanyName, pageNumber, pageSize);
+            //var result = await _ProductService.SearchProductsByCompanyName(CompanyName, pageNumber, pageSize);
+            var result = await _mediator.Send(new SearchProductsByCompanyNameQuery(CompanyName, pageNumber, pageSize));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -125,7 +141,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<PaginatedResult<ProductResponseDtoForClient>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetBycategoryId(Guid CategoryId, int pageNumber, int pageSize)
         {
-            var result = await _ProductService.GetProductsByCategoryId(CategoryId, pageNumber, pageSize);
+            //var result = await _ProductService.GetProductsByCategoryId(CategoryId, pageNumber, pageSize);
+            var result = await _mediator.Send(new GetProductsByCategoryIdQuery(CategoryId, pageNumber, pageSize));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -140,7 +157,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<PaginatedResult<ProductResponseDtoForClient>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> SearchByCategoryName(string CategoryName, int pageNumber, int pageSize)
         {
-            var result = await _ProductService.SearchProductsByCategoryName(CategoryName, pageNumber, pageSize);
+            //var result = await _ProductService.SearchProductsByCategoryName(CategoryName, pageNumber, pageSize);
+            var result = await _mediator.Send(new SearchProductsByCategoryNameQuery(CategoryName, pageNumber, pageSize));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -155,7 +173,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<PaginatedResult<ProductResponseDtoForClient>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> SearchBypartialDescription([FromQuery] string Description, [FromQuery] int pageNumber, [FromQuery] int pageSize)
         {
-            var result = await _ProductService.SearchProductsByDescription(Description, pageNumber, pageSize);
+            //var result = await _ProductService.SearchProductsByDescription(Description, pageNumber, pageSize);
+            var result = await _mediator.Send(new SearchProductsByDescriptionQuery(Description, pageNumber, pageSize));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -169,7 +188,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<PaginatedResult<ProductResponseDtoForClient>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetBestseller(int pageNumber, int pageSize)
         {
-            var result = await _ProductService.GetMostSellingProducts(pageNumber, pageSize);
+            //var result = await _ProductService.GetMostSellingProducts(pageNumber, pageSize);
+            var result = await _mediator.Send(new GetMostSellingProductsQuery(pageNumber, pageSize));
             return ControllersHelperMethods.FinalResponse(result);
 
         }
@@ -184,7 +204,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<PaginatedResult<ProductResponseDtoForClient>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetMorePopular(int pageNumber, int pageSize)
         {
-            var result = await _ProductService.GetMorePopular(pageNumber, pageSize);
+            //var result = await _ProductService.GetMorePopular(pageNumber, pageSize);
+            var result = await _mediator.Send(new GetMorePopularQuery(pageNumber, pageSize));
             return ControllersHelperMethods.FinalResponse(result);
 
         }
@@ -198,7 +219,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<ProductResponseDtoForAdmin>), StatusCodes.Status200OK)]
         public async Task<IActionResult> CreateProductAsync([FromForm] CreateProductRequestDto ProductDto)
         {
-            var result = await _ProductService.CreateProductAsync(ProductDto);
+            //var result = await _ProductService.CreateProductAsync(ProductDto);
+            var result = await _mediator.Send(new CreateProductAsyncCommand(ProductDto));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -213,7 +235,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<ProductResponseDtoForAdmin>), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateProductAsync(Guid id, [FromBody] UpdateProductRequestDto ProductDto)
         {
-            var result = await _ProductService.UpdateProductAsync(id, ProductDto);
+            //var result = await _ProductService.UpdateProductAsync(id, ProductDto);
+            var result = await _mediator.Send(new UpdateProductAsyncCommand(id, ProductDto));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -227,7 +250,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> DeleteProductAsync(Guid id)
         {
-            var result = await _ProductService.DeleteProductAsync(id);
+            //var result = await _ProductService.DeleteProductAsync(id);
+            var result = await _mediator.Send(new DeleteProductAsyncCommand(id));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
