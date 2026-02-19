@@ -11,11 +11,11 @@ namespace SmartCare.Application.CQRs.Cart.Extensions
     public static class CartExtensions
     {
 
-        public static async Task<Domain.Entities.Cart?> EnsureCartExistsAsync(
+        public static async Task<SmartCare.Domain.Entities.Cart?> EnsureCartExistsAsync(
                     this ICartRepository repository, Guid cartId, bool track = false)
                     => await repository.GetByIdAsync(cartId, track);
 
-        public static async Task<Product?> EnsureProductExistsAsync(
+        public static async Task<SmartCare.Domain.Entities.Product?> EnsureProductExistsAsync(
             this IProductRepository repository, Guid productId)
             => await repository.GetByIdAsync(productId);
 
