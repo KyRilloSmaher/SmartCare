@@ -14,6 +14,7 @@ using SmartCare.API.Hubs;
 using SmartCare.API.InMemoryEventsHandlers;
 using SmartCare.API.Middlewares;
 using SmartCare.API.Services;
+using SmartCare.Application.CQRs.Payment.Extensions;
 using SmartCare.Application.DTOs.Auth.Requests;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Application.InMemoryEventsHandlers;
@@ -185,7 +186,7 @@ builder.Services.AddSingleton<IEventBus, InMemoryEventBus>();
 builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
 builder.Services.AddScoped<IEventPublisherService, EventPublisherService>();
 builder.Services.AddScoped<INotificationSender, SignalRNotificationSender>();
-
+builder.Services.AddScoped<PaymentExtensions>();
 // Add  events handlers
 builder.Services.AddScoped<PaymentStatusChangedHandler>();
 builder.Services.AddScoped<ProductStockStatusChangedHandler>();

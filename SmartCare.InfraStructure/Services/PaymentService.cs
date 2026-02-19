@@ -506,7 +506,7 @@ namespace SmartCare.InfraStructure.Services
                     CreatedAt = DateTime.UtcNow,
                     Method = Domain.Enums.PaymentMethod.Cash
                 };
-                await _paymentRepository.AddAsync(payment);
+                await _paymentRepository.Add(payment);
                 order.PaymentIntentId = payment.Id.ToString();
             }
 
@@ -639,6 +639,7 @@ namespace SmartCare.InfraStructure.Services
                                             TimeSpan.FromSeconds(5));
 ;
         }
+        
         #endregion
     }
 }
