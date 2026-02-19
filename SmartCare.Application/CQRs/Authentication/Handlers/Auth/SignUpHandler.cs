@@ -34,8 +34,22 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Auth
         private readonly JwtSettings _jwtSettings;
         private readonly IMapper _mapper;
         private readonly IUrlHelper _urlHelper;
+
         #endregion
 
+        public SignUpHandler(IResponseHandler responseHandler, IClientRepository clientRepository, ITokenService tokenService, IEmailService emailService, IHttpContextAccessor httpContextAccessor, IImageUploaderService imageUploaderService, LinkGenerator linkGenerator, JwtSettings jwtSettings, IMapper mapper, IUrlHelper urlHelper)
+        {
+            _responseHandler = responseHandler;
+            _clientRepository = clientRepository;
+            _tokenService = tokenService;
+            _emailService = emailService;
+            _httpContextAccessor = httpContextAccessor;
+            _imageUploaderService = imageUploaderService;
+            _linkGenerator = linkGenerator;
+            _jwtSettings = jwtSettings;
+            _mapper = mapper;
+            _urlHelper = urlHelper;
+        }
 
 
         public async Task<Response<bool>> Handle(SignUpAsyncCommand request, CancellationToken cancellationToken)
