@@ -1,11 +1,14 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartCare.API.Helpers;
+using SmartCare.Application.CQRs.Store.Commands;
+using SmartCare.Application.CQRs.Store.Queries;
 using SmartCare.Application.DTOs.Stores.Requests;
 using SmartCare.Application.DTOs.Stores.Responses;
 using SmartCare.Application.Handlers.ResponseHandler;
-using SmartCare.Application.IServices;
 using SmartCare.Application.Handlers.ResponsesHandler;
+using SmartCare.Application.IServices;
 
 namespace SmartCare.API.Controllers
 {
@@ -13,12 +16,18 @@ namespace SmartCare.API.Controllers
     [Authorize]
     public class StoreController : ControllerBase
     {
-        private readonly IStoreService _storeService;
+        //private readonly IStoreService _storeService;
+        private readonly IMediator _mediator;
 
-        public StoreController(IStoreService storeService)
+        public StoreController(IMediator mediator)
         {
-            _storeService = storeService;
+            _mediator = mediator;
         }
+
+        //public StoreController(IStoreService storeService)
+        //{
+        //    _storeService = storeService;
+        //}
 
         /// <summary>
         /// Get Store By Id
@@ -27,7 +36,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<StoreResponseDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetStoreByIdAsync(Guid id)
         {
-            var result = await _storeService.GetStoreByIdAsync(id);
+            //var result = await _storeService.GetStoreByIdAsync(id);
+            var result = await _mediator.Send(new GetStoreByIdAsyncQuery(id));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -38,7 +48,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<StoreResponseDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetNearestStoreAsync([FromQuery] AddressValuesDto dto)
         {
-            var store = await _storeService.GetNearestStoreAsync(dto);
+            //var store = await _storeService.GetNearestStoreAsync(dto);
+            var store = await _mediator.Send(new GetNearestStoreAsyncQuery(dto));
             return ControllersHelperMethods.FinalResponse(store);
         }
 
@@ -49,7 +60,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<IEnumerable<StoreResponseDto>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> SearchStoresByNameAsync([FromQuery] string name)
         {
-            var result = await _storeService.SearchStoresByNameAsync(name);
+            //var result = await _storeService.SearchStoresByNameAsync(name);
+            var result = await _mediator.Send(new SearchStoresByNameAsyncQuery(name));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -60,7 +72,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<IEnumerable<StoreResponseDto>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllStoresAsync()
         {
-            var result = await _storeService.GetAllStoresAsync();
+            //var result = await _storeService.GetAllStoresAsync();
+            var result = await _mediator.Send(new GetAllStoresAsyncQuery());
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -72,7 +85,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<IEnumerable<StoreResponseForAdminDto>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllStoresForAdminAsync()
         {
-            var result = await _storeService.GetAllStoresForAdminAsync();
+            //var result = await _storeService.GetAllStoresForAdminAsync();
+            var result = await _mediator.Send(new GetAllStoresForAdminAsyncQuery());
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -84,7 +98,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<StoreResponseForAdminDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> CreateStoreAsync([FromBody] CreateStoreRequestDto dto)
         {
-            var result = await _storeService.CreateStoreAsync(dto);
+            //var result = await _storeService.CreateStoreAsync(dto);
+            var result = await _mediator.Send(new CreateStoreAsyncCommand(dto));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -96,7 +111,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<StoreResponseForAdminDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateStoreAsync(Guid id, [FromBody] UpdateStoreRequestDto dto)
         {
-            var result = await _storeService.UpdateStoreAsync(id, dto);
+            //var result = await _storeService.UpdateStoreAsync(id, dto);
+            var result = await _mediator.Send(new UpdateStoreAsyncCommand(id, dto));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -108,7 +124,8 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> DeleteStoreAsync(Guid id)
         {
-            var result = await _storeService.DeleteStoreAsync(id);
+            //var result = await _storeService.DeleteStoreAsync(id);
+            var result = await _mediator.Send(new DeleteStoreAsyncCommand(id));
             return ControllersHelperMethods.FinalResponse(result);
         }
     }

@@ -173,7 +173,7 @@ namespace SmartCare.InfraStructure.Services
                 return _responseHandler.NotFound<StoreResponseDto>(SystemMessages.NOT_FOUND);
             var nearestStoreDto = _mapper.Map<StoreResponseDto>(nearestStore);
 
-            return  _responseHandler.Success(nearestStoreDto); ;
+            return  _responseHandler.Success(nearestStoreDto);
         }
         #endregion
     }
