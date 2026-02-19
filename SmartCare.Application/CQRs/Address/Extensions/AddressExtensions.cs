@@ -12,7 +12,7 @@ namespace SmartCare.Application.CQRs.Address.Extensions
 {
     public static class AddressExtensions
     {
-        public static async Task<Client?> GetValidClientAsync(this IClientRepository clientRepository, string clientId)
+        public static async Task<SmartCare.Domain.Entities.Client?> GetValidClientAsync(this IClientRepository clientRepository, string clientId)
         {
             return await clientRepository.GetByIdAsync(clientId);
         }
