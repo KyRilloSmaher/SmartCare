@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using paymentEntity = SmartCare.Domain.Entities.Payment;
 
 namespace SmartCare.Application.CQRs.Order.Handlers
 {
@@ -81,7 +82,7 @@ namespace SmartCare.Application.CQRs.Order.Handlers
             }
 
             // Paid / Failed → create new payment version
-            var replacement = new Payment
+            var replacement = new paymentEntity
             {
                 OrderId = order.Id,
                 Amount = order.TotalPrice,
