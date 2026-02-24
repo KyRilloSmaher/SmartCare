@@ -15,7 +15,7 @@ namespace SmartCare.Domain.Entities
         public Gender Gender { get; set; }
         public string ProfileImageUrl { get; set; }
         public DateOnly BirthDate { get; set; }
-        public string LicenseNumber {  get; set; }
+        public string? LicenseNumber {  get; set; }
         public bool IsActive { get; set; }
         public string? OTP { get; set; }
         public string? RefreshToken { get; set; }
