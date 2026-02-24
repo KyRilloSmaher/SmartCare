@@ -28,6 +28,7 @@ namespace SmartCare.Domain.Entities
         public  ICollection<FromStoreOrder> Orders { get; set; }
         public  ICollection<Inventory> Inventories { get; set; }
 
+        public ICollection<Pharmacist> pharmacists { get; set; }
     }
 }
 
