@@ -15,9 +15,6 @@ namespace SmartCare.Domain.Entities
         public string? OTP { get; set; }
         public string? RefreshToken { get; set; }
         public DateTime? RefreshTokenExpiryTime { get; set; }
-        public string? EmailConfirmationLink { get; set; } = default!;
-        public DateTime VerificationURLExpiresAt { get; set; }
-       
         public bool IsDeleted { get; set; } = false;
 
         public Client? Client { get; set; }

@@ -60,7 +60,8 @@ namespace SmartCare.Infrastructure.Data
         /// </summary>
         public int TrackedEntitiesCount => _context.ChangeTracker.Entries().Count();
 
-        public IEmailVerificationRepository EmailVerifications => throw new NotImplementedException();
+
+        Domain.IRepositories.IEmailVerificationRepository IUnitOfWork.EmailVerifications => throw new NotImplementedException();
 
         #endregion
 

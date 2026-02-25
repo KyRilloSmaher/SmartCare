@@ -19,6 +19,7 @@ namespace SmartCare.InfraStructure.DbContexts
         {
         }
         public DbSet<Address> Addresses { get; set; }
+        public DbSet<EmailVerification> EmailVerifications { get; set; }
         public DbSet<Cart> Carts { get; set; }
         public DbSet<CartItem> CartItems { get; set; }
         public DbSet<Category> Categories { get; set; }
