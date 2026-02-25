@@ -14,6 +14,7 @@ namespace SmartCare.Domain.Constants
         public const string Stories = "Stories_tag";
         public const string Addresses = "Adresses_tag";
         public const string Client = "Client_tag";
+        public const string Pharmacist = "pharmacist_tag";
         public const string Favourite = "Favourites_tag";
         public const string Rates = "Rates_tag";
     }
