@@ -22,15 +22,13 @@ namespace SmartCare.InfraStructure.Configurations
                 .HasMaxLength(50);
 
             builder.Property(p => p.LicenseNumber)
+                .IsRequired()
                 .HasMaxLength(100);
 
             builder.Property(p => p.IsActive)
                 .HasDefaultValue(true);
 
             builder.Property(p => p.Gender)
-                .HasConversion<string>();
-
-            builder.Property(p => p.AccountType)
                 .HasConversion<string>();
 
             builder.Property(c => c.ProfileImageUrl)
