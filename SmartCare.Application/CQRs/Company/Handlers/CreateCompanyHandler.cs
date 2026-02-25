@@ -4,49 +4,44 @@ using SmartCare.Application.CQRs.Company.Commands;
 using SmartCare.Application.DTOs.Companies.Responses;
 using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.Handlers.ResponseHandler;
-using SmartCare.Domain.Entities;
 using SmartCare.Application.IServices;
 using SmartCare.Domain.Constants;
 using SmartCare.Domain.Enums;
 using SmartCare.Domain.IRepositories;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Company.Handlers
 {
     public class CreateCompanyHandler : IRequestHandler<CreateCompanyAsyncCommand, Response<CompanyResponseForAdminDto>>
     {
-        #region Feilds
+        #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly ICompanyRepository _CompanyRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IRedisCacheService _redisCacheService;
         private readonly IImageUploaderService _imageUploaderService;
         private readonly IMapper _mapper;
-        string tag = CacheConstants.Companies;
-
+        private readonly string tag = CacheConstants.Companies;
         #endregion
+
         public CreateCompanyHandler(
             IResponseHandler responseHandler,
-            ICompanyRepository companyRepository,
+            IUnitOfWork unitOfWork,
             IRedisCacheService redisCacheService,
             IImageUploaderService imageUploaderService,
             IMapper mapper)
         {
             _responseHandler = responseHandler;
-            _CompanyRepository = companyRepository;
+            _unitOfWork = unitOfWork;
             _redisCacheService = redisCacheService;
             _imageUploaderService = imageUploaderService;
             _mapper = mapper;
         }
 
-
         public async Task<Response<CompanyResponseForAdminDto>> Handle(CreateCompanyAsyncCommand request, CancellationToken cancellationToken)
         {
             var companyDto = request.companyDto;
-
             string? uploadedImageUrl = null;
 
             try
@@ -62,24 +57,25 @@ namespace SmartCare.Application.CQRs.Company.Handlers
                     uploadedImageUrl = uploadResult.Url.ToString();
                 }
 
-                await _CompanyRepository.BeginTransactionAsync();
-
                 var company = _mapper.Map<SmartCare.Domain.Entities.Company>(companyDto);
                 company.LogoUrl = uploadedImageUrl;
 
                 // Add to repository
-                var createdEntity = await _CompanyRepository.AddAsync(company);
+                var createdEntity = await _unitOfWork.Companies.AddAsync(company);
 
                 if (createdEntity is null)
                 {
-                    await _CompanyRepository.RollBackAsync();
+                    // Clean up uploaded image if creation fails
+                    if (!string.IsNullOrEmpty(uploadedImageUrl))
+                        await _imageUploaderService.DeleteImageByUrlAsync(uploadedImageUrl);
+
                     return _responseHandler.Failed<CompanyResponseForAdminDto>(SystemMessages.FAILED);
                 }
 
-                // Commit changes
-                await _CompanyRepository.SaveChangesAsync();
-                await _CompanyRepository.CommitTransactionAsync();
+                // Save changes through UnitOfWork
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+                // Clear cache
                 await _redisCacheService.DeleteKeysByTag(tag);
 
                 var createdCompanyDto = _mapper.Map<CompanyResponseForAdminDto>(createdEntity);
@@ -87,8 +83,6 @@ namespace SmartCare.Application.CQRs.Company.Handlers
             }
             catch (Exception ex)
             {
-                await _CompanyRepository.RollBackAsync();
-
                 // Delete uploaded image if something went wrong
                 if (!string.IsNullOrEmpty(uploadedImageUrl))
                     await _imageUploaderService.DeleteImageByUrlAsync(uploadedImageUrl);

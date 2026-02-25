@@ -15,9 +15,9 @@ namespace SmartCare.InfraStructure.Services
     public class TokenService : ITokenService
     {
         private readonly JwtSettings _jwtSettings;
-        private readonly UserManager<Client> _userManager;
+        private readonly UserManager<ApplictionUser> _userManager;
 
-        public TokenService(JwtSettings jwt, UserManager<Client> userManager)
+        public TokenService(JwtSettings jwt, UserManager<ApplictionUser> userManager)
         {
             _jwtSettings = jwt;
             _userManager = userManager;
@@ -56,7 +56,7 @@ namespace SmartCare.InfraStructure.Services
         }
 
         // Build claims for the JWT
-        public async Task<IEnumerable<Claim>> GetClaimsAsync(Client user)
+        public async Task<IEnumerable<Claim>> GetClaimsAsync(ApplictionUser user)
         {
             var userRoles = await _userManager.GetRolesAsync(user);
             var securityStamp = await _userManager.GetSecurityStampAsync(user);

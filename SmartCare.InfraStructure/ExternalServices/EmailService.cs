@@ -1,12 +1,14 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using MailKit.Net.Smtp;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using MimeKit;
 using MimeKit;
 using SmartCare.Application.ExternalServiceInterfaces;
-using SmartCare.Domain.Helpers;
-using MailKit.Net.Smtp;
-using MimeKit;
 using SmartCare.Domain.Constants;
+using SmartCare.Domain.Entities;
+using SmartCare.Domain.Helpers;
 using SmartCare.Domain.IRepositories;
-using Microsoft.Extensions.Options;
 
 namespace SmartCare.InfraStructure.ExternalServices
 {
@@ -14,12 +16,12 @@ namespace SmartCare.InfraStructure.ExternalServices
     {
         private readonly EmailSettings _emailSettings;
         private readonly ILogger<EmailService> _logger;
-        private readonly IClientRepository _userRepository;
+        private readonly UserManager<ApplictionUser> _userRepository;
 
         public EmailService(
             IOptions<EmailSettings> emailSettings,
             ILogger<EmailService> logger,
-            IClientRepository userRepository)
+           UserManager<ApplictionUser> userRepository)
         {
             _emailSettings = emailSettings.Value ?? throw new ArgumentNullException(nameof(emailSettings));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -61,7 +63,7 @@ namespace SmartCare.InfraStructure.ExternalServices
 
         public async Task<bool> SendConfirmationEmailAsync(string email, string callbackUrl)
         {
-            var user = await _userRepository.GetByEmailAsync(email);
+            var user = await _userRepository.FindByEmailAsync(email);
             if (user == null)
             {
                 _logger.LogWarning($"Attempted to send confirmation email to non-existent user: {email}");
@@ -79,7 +81,7 @@ namespace SmartCare.InfraStructure.ExternalServices
 
         public async Task<bool> SendPasswordResetEmailAsync(string email, string subject, string code)
         {
-            var user = await _userRepository.GetByEmailAsync(email);
+            var user = await _userRepository.FindByEmailAsync(email);
             if (user == null)
             {
                 _logger.LogWarning($"Attempted to send password reset email to non-existent user: {email}");

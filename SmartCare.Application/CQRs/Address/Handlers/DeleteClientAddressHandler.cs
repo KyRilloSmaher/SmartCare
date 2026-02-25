@@ -18,20 +18,18 @@ namespace SmartCare.Application.CQRs.Address.Handlers
     {
         #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly IClientRepository _clientRepository;
-        private readonly IAddressRepository _addressRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IRedisCacheService _redisCacheService;
         private readonly IMapper _mapper;
         string tag = CacheConstants.Addresses;
 
         #endregion
-        public DeleteClientAddressHandler(IResponseHandler responseHandler, IClientRepository clientRepository, IAddressRepository addressRepository, IRedisCacheService redisCacheService, IMapper mapper)
+        public DeleteClientAddressHandler(IResponseHandler responseHandler, IRedisCacheService redisCacheService, IMapper mapper, IUnitOfWork unitOfWork)
         {
             _responseHandler = responseHandler;
-            _clientRepository = clientRepository;
-            _addressRepository = addressRepository;
             _redisCacheService = redisCacheService;
             _mapper = mapper;
+            _unitOfWork = unitOfWork;
         }
 
 
@@ -39,16 +37,16 @@ namespace SmartCare.Application.CQRs.Address.Handlers
         {
             var clientId = request.clientId;
             var addressId = request.addressId;
-            var client = await _clientRepository.GetValidClientAsync(clientId);
+            var client = await _unitOfWork.Clients.GetValidClientAsync(clientId);
             if (client == null)
                 return await _responseHandler.ClientNotFoundAsync<bool>();
 
-            var address = await _addressRepository.GetByIdAsync(addressId, true);
+            var address = await _unitOfWork.Addresses.GetByIdAsync(addressId, true);
             if (address == null || address.ClientId != client.Id)
                 return _responseHandler.NotFound<bool>(SystemMessages.ADDRESS_NOT_FOUND);
 
-            await _addressRepository.DeleteAsync(address);
-            var remainingAddresses = await _addressRepository.GetClientAddressesAsync(client.Id);
+            await _unitOfWork.Addresses.DeleteAsync(address);
+            var remainingAddresses = await _unitOfWork.Addresses.GetClientAddressesAsync(client.Id);
 
             // If only one address left, ensure it becomes primary
             if (remainingAddresses.Count() == 1)
@@ -58,10 +56,11 @@ namespace SmartCare.Application.CQRs.Address.Handlers
                 if (!lastAddress.IsPrimary)
                 {
                     lastAddress.IsPrimary = true;
-                    await _addressRepository.UpdateAsync(lastAddress);
+                    
                 }
             }
 
+            await _unitOfWork.SaveChangesAsync();
             string cacheKey = $"client_addresses_{client.Id}";
 
             await _redisCacheService.RemoveKeyAsync(cacheKey, tag);

@@ -1,19 +1,12 @@
 ﻿using AutoMapper;
 using MediatR;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Identity;
 using SmartCare.Application.CQRs.Authentication.Commands.Auth;
-using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Domain.Constants;
-using SmartCare.Domain.Helpers;
-using SmartCare.Domain.Interfaces.IServices;
+using SmartCare.Domain.Entities;
 using SmartCare.Domain.IRepositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Authentication.Handlers.Auth
@@ -22,28 +15,55 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Auth
     {
         #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly IClientRepository _clientRepository;
-
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
         #endregion
 
-        public LogoutHandler(IResponseHandler responseHandler, IClientRepository clientRepository)
+        public LogoutHandler(
+            IResponseHandler responseHandler,
+            IUnitOfWork unitOfWork,
+            IMapper mapper)
         {
             _responseHandler = responseHandler;
-            _clientRepository = clientRepository;
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
+
         public async Task<Response<bool>> Handle(LogoutAsyncCommand request, CancellationToken cancellationToken)
         {
             var userId = request.userId;
-            var user = await _clientRepository.GetByIdAsync(userId, true);
+
+            // Fetch user via Identity from UnitOfWork
+            var user = await _unitOfWork.UserManager.FindByIdAsync(userId);
             if (user == null)
                 return _responseHandler.Failed<bool>(SystemMessages.USER_NOT_FOUND);
 
-            user.RefreshToken = null;
-            user.RefreshTokenExpiryTime = null;
-            await _clientRepository.UpdateSecurityStampAsync(user);
-            await _clientRepository.UpdateAsync(user);
+            try
+            {
+                // Clear refresh token
+                user.RefreshToken = null;
+                user.RefreshTokenExpiryTime = null;
 
-            return _responseHandler.Success(true, SystemMessages.LOGOUT_SUCCESS);
+                // Update security stamp to invalidate existing tokens
+                await _unitOfWork.UserManager.UpdateSecurityStampAsync(user);
+
+                // Update user
+                var updateResult = await _unitOfWork.UserManager.UpdateAsync(user);
+                if (!updateResult.Succeeded)
+                {
+                    return _responseHandler.Failed<bool>(
+                        string.Join(", ", updateResult.Errors.Select(e => e.Description))
+                    );
+                }
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+                return _responseHandler.Success(true, SystemMessages.LOGOUT_SUCCESS);
+            }
+            catch (Exception ex)
+            {
+
+                return _responseHandler.Failed<bool>(SystemMessages.FAILED);
+            }
         }
     }
 }

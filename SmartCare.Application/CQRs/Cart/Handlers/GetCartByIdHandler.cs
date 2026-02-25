@@ -23,19 +23,19 @@ namespace SmartCare.Application.CQRs.Cart.Handlers
     {
         #region Fields
 
-        private readonly IResponseHandler _responseHandler;
-        private readonly ICartRepository _cartRepository;
+        private readonly IResponseHandler _responseHandler; 
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<GetCartByIdHandler> _logger;
 
 
         #endregion
-        public GetCartByIdHandler(IResponseHandler responseHandler, ICartRepository cartRepository, IMapper mapper, ILogger<GetCartByIdHandler> logger)
+        public GetCartByIdHandler(IResponseHandler responseHandler, IMapper mapper, ILogger<GetCartByIdHandler> logger, IUnitOfWork unitOfWork)
         {
             _responseHandler = responseHandler;
-            _cartRepository = cartRepository;
             _mapper = mapper;
             _logger = logger;
+            _unitOfWork = unitOfWork;
         }
 
 
@@ -45,7 +45,7 @@ namespace SmartCare.Application.CQRs.Cart.Handlers
             if (cartId == Guid.Empty)
                 return _responseHandler.BadRequest<CartResponseDto?>(SystemMessages.BAD_REQUEST);
 
-            var cart = await _cartRepository.GetByIdAsync(cartId);
+            var cart = await _unitOfWork.Carts.GetByIdAsync(cartId);
             if (cart == null)
                 return _responseHandler.NotFound<CartResponseDto?>(SystemMessages.NOT_FOUND);
 

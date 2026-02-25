@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using MediatR;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SmartCare.Application.commens;
 using SmartCare.Application.CQRs.Order.Commands;
@@ -17,7 +16,7 @@ using Stripe.Climate;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Order.Handlers
@@ -26,10 +25,7 @@ namespace SmartCare.Application.CQRs.Order.Handlers
     {
         #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly IClientRepository _clientRepository;
-        private readonly IOrderRepository _orderRepository;
-        private readonly IReservationRepository _reservationRepository;
-        private readonly IInventoryRepository _inventoryRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IBackgroundJobService _backgroundJobService;
         private readonly IMapper _mapper;
         private readonly ISqlLockManager _sqlLockManager;
@@ -37,16 +33,19 @@ namespace SmartCare.Application.CQRs.Order.Handlers
         private readonly IMediator _mediator;
         private readonly int expirationDays;
         private readonly int expirationHours;
-
         #endregion
 
-        public RebuildOrderFromCartAsyncHandler(IResponseHandler responseHandler, IClientRepository clientRepository, IOrderRepository orderRepository, IReservationRepository reservationRepository, IInventoryRepository inventoryRepository, IBackgroundJobService backgroundJobService, IMapper mapper, ISqlLockManager sqlLockManager, ILogger<OrderService> logger, IMediator mediator)
+        public RebuildOrderFromCartAsyncHandler(
+            IResponseHandler responseHandler,
+            IUnitOfWork unitOfWork,
+            IBackgroundJobService backgroundJobService,
+            IMapper mapper,
+            ISqlLockManager sqlLockManager,
+            ILogger<OrderService> logger,
+            IMediator mediator)
         {
             _responseHandler = responseHandler;
-            _clientRepository = clientRepository;
-            _orderRepository = orderRepository;
-            _reservationRepository = reservationRepository;
-            _inventoryRepository = inventoryRepository;
+            _unitOfWork = unitOfWork;
             _backgroundJobService = backgroundJobService;
             _mapper = mapper;
             _sqlLockManager = sqlLockManager;
@@ -54,17 +53,18 @@ namespace SmartCare.Application.CQRs.Order.Handlers
             _mediator = mediator;
         }
 
-
         public async Task<Response<OrderResponseDto>> Handle(RebuildOrderFromCartAsyncCommand request, CancellationToken cancellationToken)
         {
             var order = request.order;
             var cartItems = request.cartItems;
-            var newOrderType = request.newOrderType;    
+            var newOrderType = request.newOrderType;
             var locks = new List<IAsyncDisposable>();
             var storeId = request.storeId;
             var shippingAddressId = request.shippingAddressId;
             var cart = request.cart;
-            var client = await _clientRepository.GetByIdAsync(order.ClientId);
+
+            var client = await _unitOfWork.Clients.GetByIdAsync(order.ClientId);
+
             try
             {
                 // -----------------------------
@@ -73,15 +73,18 @@ namespace SmartCare.Application.CQRs.Order.Handlers
                 var outOfStock = new List<OutOfStockItemDto>();
                 foreach (var ci in cartItems)
                 {
-                    var inventory = await _inventoryRepository.GetByIdAsync(ci.InventoryId);
+                    var inventory = await _unitOfWork.Inventories.GetByIdAsync(ci.InventoryId);
                     ci.InventoryId = newOrderType == OrderType.InStore ?
                         (
-                         await _inventoryRepository.GetStockOfProductInStore(ci.ProductId, inventory.StoreId!, ci.Quantity))?.Id ?? Guid.Empty :
-                         await _inventoryRepository.GetBestInventoryIdAsync(ci.ProductId, ci.Quantity); if (ci.InventoryId == Guid.Empty
-                        )
+                         await _unitOfWork.Inventories.GetStockOfProductInStoreAsync(ci.ProductId, inventory.StoreId!, ci.Quantity))?.Id ?? Guid.Empty :
+                         _unitOfWork.Inventories.GetAvailableInventoryAsync(ci.ProductId, ci.Quantity).Result.Id;
+
+                    if (ci.InventoryId == Guid.Empty)
                         outOfStock.Add(OrderExtensions.BuildOutOfStock(ci, 0));
                 }
-                if (outOfStock.Any()) return BuildStockErrorResponse<OrderResponseDto>(outOfStock);
+
+                if (outOfStock.Any())
+                    return BuildStockErrorResponse<OrderResponseDto>(outOfStock);
 
                 // -----------------------------
                 // 2. Acquire locks
@@ -92,8 +95,6 @@ namespace SmartCare.Application.CQRs.Order.Handlers
                         .AcquireLockAsync($"InventoryRow-{invId}", "Exclusive", 10_000));
                 }
 
-                await _orderRepository.BeginTransactionAsync();
-
                 // -----------------------------
                 // 3. Cancel old reservations
                 // -----------------------------
@@ -101,7 +102,7 @@ namespace SmartCare.Application.CQRs.Order.Handlers
                 {
                     if (item.ReservationId.HasValue)
                     {
-                        await _reservationRepository.CancelReservationAsync(
+                        await _unitOfWork.Reservations.CancelReservationAsync(
                             item.ReservationId.Value,
                             item.InvetoryId,
                             ReservationStatus.OrderUpdated);
@@ -118,7 +119,7 @@ namespace SmartCare.Application.CQRs.Order.Handlers
                 // -----------------------------
                 if (order.OrderType != newOrderType)
                 {
-                    await _orderRepository.SwitchOrderTypeAsync(
+                    await _unitOfWork.Orders.SwitchOrderTypeAsync(
                         order,
                         newOrderType,
                         shippingAddressId,
@@ -129,35 +130,43 @@ namespace SmartCare.Application.CQRs.Order.Handlers
                 // 6. Update base order
                 // -----------------------------
                 order.TotalPrice = cart.TotalPrice;
-                // await _orderRepository.UpdateAsync(order);
 
                 // -----------------------------
                 // 7. Create new order items
                 // -----------------------------
                 var orderItems = OrderExtensions.BuildOrderItems(order.Id, cartItems);
-                await _orderRepository.AddOrderItemsAsync(orderItems);
+                await _unitOfWork.Orders.AddOrderItemsAsync(orderItems);
 
                 // -----------------------------
                 // 8. Create reservations
                 // -----------------------------
-
                 var reservationErrors = new List<OutOfStockItemDto>();
                 foreach (var item in orderItems)
                 {
-                    var inventory = await _inventoryRepository.GetByIdAsync(item.InvetoryId);
+                    var inventory = await _unitOfWork.Inventories.GetByIdAsync(item.InvetoryId);
                     if (inventory.StockQuantity < item.Quantity)
                     {
                         var cartItem = cartItems.First(c => c.ProductId == item.ProductId);
                         reservationErrors.Add(OrderExtensions.BuildOutOfStock(cartItem, inventory.StockQuantity));
                         continue;
                     }
+
                     var status = newOrderType == OrderType.InStore ?
                                      ReservationStatus.ReservedUntilPickup :
                                      ReservationStatus.ReservedUntilPayment;
-                    var reservation = await _reservationRepository.CreateReservationAsync(productId: item.ProductId, inventoryId: item.InvetoryId, quantity: item.Quantity, status: status, OrderItemId: item.Id);
+
+                    var reservation = await _unitOfWork.Reservations.CreateReservationAsync(
+                        productId: item.ProductId,
+                        inventoryId: item.InvetoryId,
+                        quantity: item.Quantity,
+                        status: status,
+                        OrderItemId: item.Id);
+
                     item.ReservationId = reservation.Id;
                 }
-                if (reservationErrors.Any()) return BuildStockErrorResponse<OrderResponseDto>(reservationErrors);
+
+                if (reservationErrors.Any())
+                    return BuildStockErrorResponse<OrderResponseDto>(reservationErrors);
 
                 // -----------------------------
                 // 9. Payment update
@@ -173,7 +182,7 @@ namespace SmartCare.Application.CQRs.Order.Handlers
                 //        .GetInt32(0, 1_000_000)
                 //        .ToString("D7");
 
-                //    await _orderRepository.UpdatePickupCodeHashAsync(
+                //    await _unitOfWork.Orders.UpdatePickupCodeHashAsync(
                 //        order.Id,
                 //        ComputeSha256(pickupCode));
 
@@ -181,9 +190,9 @@ namespace SmartCare.Application.CQRs.Order.Handlers
                 //}
 
                 // -----------------------------
-                // 11. Commit
+                // 11. Save all changes atomically through UnitOfWork
                 // -----------------------------
-                await _orderRepository.CommitTransactionAsync();
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
 
                 ScheduleOrderExpiration(order);
 
@@ -193,7 +202,6 @@ namespace SmartCare.Application.CQRs.Order.Handlers
             }
             catch (Exception ex)
             {
-                await _orderRepository.RollBackAsync();
                 _logger.LogError(ex, "Order rebuild failed OrderId={OrderId}", order.Id);
                 return _responseHandler.Failed<OrderResponseDto>(SystemMessages.SERVER_ERROR);
             }

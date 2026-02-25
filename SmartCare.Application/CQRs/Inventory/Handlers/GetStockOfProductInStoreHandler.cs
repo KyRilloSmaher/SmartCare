@@ -6,9 +6,7 @@ using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Domain.Constants;
 using SmartCare.Domain.IRepositories;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Inventory.Handlers
@@ -17,19 +15,17 @@ namespace SmartCare.Application.CQRs.Inventory.Handlers
     {
         #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly IInventoryRepository _inventoryRepository;
-        private readonly IProductRepository _productRepository;
-        private readonly IStoreRepository _storeRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-
-
         #endregion
-        public GetStockOfProductInStoreHandler(IResponseHandler responseHandler, IInventoryRepository inventoryRepository, IProductRepository productRepository, IStoreRepository storeRepository, IMapper mapper)
+
+        public GetStockOfProductInStoreHandler(
+            IResponseHandler responseHandler,
+            IUnitOfWork unitOfWork,
+            IMapper mapper)
         {
             _responseHandler = responseHandler;
-            _inventoryRepository = inventoryRepository;
-            _productRepository = productRepository;
-            _storeRepository = storeRepository;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
 
@@ -37,16 +33,20 @@ namespace SmartCare.Application.CQRs.Inventory.Handlers
         {
             var productId = request.productId;
             var storeId = request.storeId;
-            var product = await _productRepository.GetByIdAsync(productId);
+
+            if (productId == Guid.Empty || storeId == Guid.Empty)
+                return _responseHandler.BadRequest<InventoryUserResponseDto>(SystemMessages.INVALID_INPUT);
+
+            var product = await _unitOfWork.Products.GetByIdAsync(productId);
             if (product == null)
             {
                 return _responseHandler.Failed<InventoryUserResponseDto>(SystemMessages.PRODUCT_NOT_FOUND);
             }
-            if (productId == Guid.Empty && storeId == Guid.Empty)
-                return _responseHandler.BadRequest<InventoryUserResponseDto>(SystemMessages.INVALID_INPUT);
-            var inventory = await _inventoryRepository.GetStockOfProductInStore(productId, storeId);
+
+            var inventory = await _unitOfWork.Inventories.GetStockOfProductInStoreAsync(productId, storeId);
             if (inventory == null)
                 return _responseHandler.Failed<InventoryUserResponseDto>(SystemMessages.NOT_FOUND);
+
             var inventoryDto = _mapper.Map<InventoryUserResponseDto>(inventory);
             return _responseHandler.Success(inventoryDto);
         }

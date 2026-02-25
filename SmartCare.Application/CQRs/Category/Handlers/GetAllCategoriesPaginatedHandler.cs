@@ -9,44 +9,41 @@ using SmartCare.Application.IServices;
 using SmartCare.Domain.Constants;
 using SmartCare.Domain.IRepositories;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Category.Handlers
 {
     public class GetAllCategoriesPaginatedHandler : IRequestHandler<GetAllCategoriesPaginatedAsyncQuery, Response<PaginatedResult<CategoryResponseDto>>>
     {
-        #region Feilds
+        #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly ICategoryRepository _categoryRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IRedisCacheService _redisCacheService;
         private readonly IImageUploaderService _imageUploaderService;
         private readonly IMapper _mapper;
-        string tag = CacheConstants.Categories;
-
-
+        private readonly string tag = CacheConstants.Categories;
         #endregion
+
         public GetAllCategoriesPaginatedHandler(
             IResponseHandler responseHandler,
-            ICategoryRepository categoryRepository,
+            IUnitOfWork unitOfWork,
             IRedisCacheService redisCacheService,
             IImageUploaderService imageUploaderService,
             IMapper mapper)
         {
             _responseHandler = responseHandler;
-            _categoryRepository = categoryRepository;
+            _unitOfWork = unitOfWork;
             _redisCacheService = redisCacheService;
             _imageUploaderService = imageUploaderService;
             _mapper = mapper;
         }
 
-
         public async Task<Response<PaginatedResult<CategoryResponseDto>>> Handle(GetAllCategoriesPaginatedAsyncQuery request, CancellationToken cancellationToken)
         {
             var pageNumber = request.pageNumber;
             var pageSize = request.pageSize;
+
             if (pageNumber <= 0 || pageSize <= 0)
                 return _responseHandler.BadRequest<PaginatedResult<CategoryResponseDto>>(SystemMessages.INVALID_PAGINATION_PARAMETERS);
 
@@ -55,11 +52,12 @@ namespace SmartCare.Application.CQRs.Category.Handlers
             try
             {
                 var cached = await _redisCacheService.GetDataAsync<PaginatedResult<CategoryResponseDto>>(cacheKey, tag);
-                if (cached != null) return _responseHandler.Success(cached);
+                if (cached != null)
+                    return _responseHandler.Success(cached);
             }
             catch (Exception) { }
 
-            var query = _categoryRepository.GetAllCategoriesQuerable();
+            var query = _unitOfWork.Categories.GetCategoriesQueryable();
             var projectedQuery = _mapper.ProjectTo<CategoryResponseDto>(query);
             var paginatedResult = await projectedQuery.ToPaginatedListAsync(pageNumber, pageSize);
 

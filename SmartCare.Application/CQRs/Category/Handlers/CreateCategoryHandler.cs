@@ -9,41 +9,41 @@ using SmartCare.Domain.Constants;
 using SmartCare.Domain.Enums;
 using SmartCare.Domain.IRepositories;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Category.Handlers
 {
     public class CreateCategoryHandler : IRequestHandler<CreateCategoryAsyncCommand, Response<CategoryResponseForAdminDto>>
     {
-        #region Feilds
+        #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly ICategoryRepository _categoryRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IRedisCacheService _redisCacheService;
         private readonly IImageUploaderService _imageUploaderService;
         private readonly IMapper _mapper;
-        string tag = CacheConstants.Categories;
-
+        private readonly string tag = CacheConstants.Categories;
         #endregion
+
         public CreateCategoryHandler(
             IResponseHandler responseHandler,
-            ICategoryRepository categoryRepository,
+            IUnitOfWork unitOfWork,
             IRedisCacheService redisCacheService,
             IImageUploaderService imageUploaderService,
             IMapper mapper)
         {
             _responseHandler = responseHandler;
-            _categoryRepository = categoryRepository;
+            _unitOfWork = unitOfWork;
             _redisCacheService = redisCacheService;
             _imageUploaderService = imageUploaderService;
             _mapper = mapper;
         }
+
         public async Task<Response<CategoryResponseForAdminDto>> Handle(CreateCategoryAsyncCommand request, CancellationToken cancellationToken)
         {
             string? uploadedImageUrl = null;
             var Logo = request.CategoryDto.Logo;
+
             try
             {
                 if (Logo is not null)
@@ -56,28 +56,31 @@ namespace SmartCare.Application.CQRs.Category.Handlers
                     uploadedImageUrl = uploadResult.Url.ToString();
                 }
 
-                await _categoryRepository.BeginTransactionAsync();
-
                 var category = _mapper.Map<SmartCare.Domain.Entities.Category>(request.CategoryDto);
                 category.LogoUrl = uploadedImageUrl;
 
-                var createResult = await _categoryRepository.AddAsync(category);
+                var createResult = await _unitOfWork.Categories.AddAsync(category);
                 if (createResult is null)
                 {
-                    await _categoryRepository.RollBackAsync();
+                    // Clean up uploaded image if category creation fails
+                    if (!string.IsNullOrEmpty(uploadedImageUrl))
+                        await _imageUploaderService.DeleteImageByUrlAsync(uploadedImageUrl);
+
                     return _responseHandler.Failed<CategoryResponseForAdminDto>(SystemMessages.FAILED);
                 }
 
-                await _categoryRepository.CommitTransactionAsync();
+                // Save changes through UnitOfWork
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+                // Clear cache
                 await _redisCacheService.DeleteKeysByTag(tag);
+
                 var createdCategoryDto = _mapper.Map<CategoryResponseForAdminDto>(createResult);
                 return _responseHandler.Success(createdCategoryDto, SystemMessages.SUCCESS);
             }
             catch (Exception ex)
             {
-                await _categoryRepository.RollBackAsync();
-
+                // Clean up uploaded image if any error occurs
                 if (!string.IsNullOrEmpty(uploadedImageUrl))
                     await _imageUploaderService.DeleteImageByUrlAsync(uploadedImageUrl);
 

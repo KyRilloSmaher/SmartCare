@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace SmartCare.InfraStructure.DbContexts
 {
 
-    public class ApplicationDBContext : IdentityDbContext<Client>
+    public class ApplicationDBContext : IdentityDbContext<ApplictionUser>
     {
         public ApplicationDBContext()
         {
@@ -19,10 +19,13 @@ namespace SmartCare.InfraStructure.DbContexts
         {
         }
         public DbSet<Address> Addresses { get; set; }
+        public DbSet<EmailVerification> EmailVerifications { get; set; }
         public DbSet<Cart> Carts { get; set; }
         public DbSet<CartItem> CartItems { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Client> Clients { get; set; }
+        public DbSet<Admin> Admins { get; set; }
+        public DbSet<Pharmacist> Pharmacists { get; set; }
         public DbSet<Company> Companies { get; set; }
         public DbSet<Favorite> Favorites { get; set; }
         public DbSet<Inventory> Inventories { get; set; }
@@ -36,7 +39,6 @@ namespace SmartCare.InfraStructure.DbContexts
         public DbSet<Rate> Rates { get; set; }
         public DbSet<Reservation> Reservations { get; set; }
         public DbSet<Store> Stores { get; set; }
-        public DbSet<Pharmacist> pharmacists { get; set; }
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

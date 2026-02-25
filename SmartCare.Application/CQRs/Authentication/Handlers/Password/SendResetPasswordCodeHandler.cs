@@ -1,20 +1,14 @@
-﻿using AutoMapper;
-using MediatR;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
+﻿using MediatR;
+using Microsoft.Extensions.Logging;
 using SmartCare.Application.CQRs.Authentication.Commands.Password;
 using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Domain.Constants;
-using SmartCare.Domain.Helpers;
-using SmartCare.Domain.Interfaces.IServices;
 using SmartCare.Domain.IRepositories;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using BCrypt.Net;
 
 namespace SmartCare.Application.CQRs.Authentication.Handlers.Password
 {
@@ -22,46 +16,72 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Password
     {
         #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly IClientRepository _clientRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IEmailService _emailService;
-
+        private readonly ILogger<SendResetPasswordCodeHandler> _logger;
         #endregion
 
-        #region Constructor
-        public SendResetPasswordCodeHandler(IResponseHandler responseHandler, IClientRepository clientRepository, IEmailService emailService)
+        public SendResetPasswordCodeHandler(
+            IResponseHandler responseHandler,
+            IUnitOfWork unitOfWork,
+            IEmailService emailService,
+            ILogger<SendResetPasswordCodeHandler> logger)
         {
             _responseHandler = responseHandler;
-            _clientRepository = clientRepository;
+            _unitOfWork = unitOfWork;
             _emailService = emailService;
+            _logger = logger;
         }
 
-        #endregion
         public async Task<Response<bool>> Handle(SendResetPasswordCodeAsyncCommand request, CancellationToken cancellationToken)
         {
             var dto = request.dto;
+
             try
             {
-                await _clientRepository.BeginTransactionAsync();
+                _logger.LogInformation("Sending password reset code to: {Email}", dto.Email);
 
-                var user = await _clientRepository.GetByEmailAsync(dto.Email, true);
+                // Get user via UnitOfWork
+                var user = await _unitOfWork.UserManager.FindByEmailAsync(dto.Email);
                 if (user == null)
+                {
+                    _logger.LogWarning("User not found for email: {Email}", dto.Email);
                     return _responseHandler.Failed<bool>(SystemMessages.USER_NOT_FOUND);
-                var OTP = new Random().Next(0, 1_000_000).ToString("D6");
-                user.OTP = BCrypt.Net.BCrypt.HashPassword(OTP);
-                await _clientRepository.UpdateAsync(user);
+                }
+                    // Generate OTP
+                    var otp = new Random().Next(0, 1_000_000).ToString("D6");
+                    var otpHash = BCrypt.Net.BCrypt.HashPassword(otp);
 
-                await _emailService.SendPasswordResetEmailAsync(
-                    user.Email,
-                    SystemMessages.SUBJECT_PASSWORD_RESET,
-                    OTP);
+                    // Store OTP in user entity (temporary field)
+                    user.OTP = otpHash;
+                    user.OTPExpiryTime = DateTime.UtcNow.AddMinutes(15); // Add this field
+                    user.OTPAttempts = 0; // Add this field
 
-                await _clientRepository.CommitTransactionAsync();
+                    // Persist OTP
+                    var updateResult = await _unitOfWork.UserManager.UpdateAsync(user);
+                    if (!updateResult.Succeeded)
+                    {
+                        var errors = string.Join(", ", updateResult.Errors.Select(e => e.Description));
+                        _logger.LogError("Failed to update user with OTP: {Errors}", errors);
+                        throw new Exception(errors);
+                    }
 
-                return _responseHandler.Success(true, SystemMessages.RESET_PASSWORD_CODE_SENT);
+                    await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+                    // Send OTP email
+                    await _emailService.SendPasswordResetEmailAsync(
+                        user.Email,
+                        SystemMessages.SUBJECT_PASSWORD_RESET,
+                        otp
+                    );
+
+                    _logger.LogInformation("Password reset code sent to: {Email}", dto.Email);
+
+                    return _responseHandler.Success(true, SystemMessages.RESET_PASSWORD_CODE_SENT);
             }
-            catch
+            catch (Exception ex)
             {
-                await _clientRepository.RollbackTransactionAsync();
+                _logger.LogError(ex, "Error sending password reset code to {Email}", dto.Email);
                 return _responseHandler.Failed<bool>(SystemMessages.GENERATING_CODE_FAILED);
             }
         }

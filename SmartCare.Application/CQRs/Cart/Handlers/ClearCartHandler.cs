@@ -24,7 +24,7 @@ namespace SmartCare.Application.CQRs.Cart.Handlers
         #region Fields
 
         private readonly IResponseHandler _responseHandler;
-        private readonly ICartRepository _cartRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<ClearCartHandler> _logger;
 
 
@@ -32,27 +32,30 @@ namespace SmartCare.Application.CQRs.Cart.Handlers
         #endregion
         public ClearCartHandler(
             IResponseHandler responseHandler,
-            ICartRepository cartRepository,
-            ILogger<ClearCartHandler> logger)
+           
+            ILogger<ClearCartHandler> logger,
+            IUnitOfWork unitOfWork)
         {
             _responseHandler = responseHandler;
-            _cartRepository = cartRepository;
+           
             _logger = logger;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<Response<bool>> Handle(ClearCartAsyncCommand request, CancellationToken cancellationToken)
         {
-            var cart = await _cartRepository.EnsureCartExistsAsync(request.cartId);
+            var cart = await _unitOfWork.Carts.EnsureCartExistsAsync(request.cartId);
             if (cart == null)
                 return _responseHandler.NotFound<bool>(SystemMessages.NOT_FOUND);
 
-            var cartItems = await _cartRepository.GetCartItemsAsync(cart.Id);
+            var cartItems = await _unitOfWork.Carts.GetCartItemsAsync(cart.Id);
             if (!cartItems.Any())
                 return _responseHandler.Success(true, SystemMessages.CART_CLEARED);
 
             foreach (var item in cartItems)
-                await _cartRepository.RemoveCartItemAsync(item);
-            await _cartRepository.CalculateCartTotalAsync(cart.Id);
+                await _unitOfWork.Carts.RemoveCartItemAsync(item);
+            await _unitOfWork.Carts.CalculateCartTotalAsync(cart.Id);
+            await _unitOfWork.SaveChangesAsync();
             return _responseHandler.Success(true, SystemMessages.CART_CLEARED);
         }
     }

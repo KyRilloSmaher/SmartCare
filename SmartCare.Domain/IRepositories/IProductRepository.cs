@@ -18,7 +18,7 @@ namespace SmartCare.Domain.IRepositories
         #endregion
 
 
-        IQueryable<Product> GetAllProductsQuerable();
+        IQueryable<Product> GetAllProductsQuerable(bool includeDeleted = false);
 
 
         #region Search

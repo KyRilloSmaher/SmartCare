@@ -9,37 +9,35 @@ using SmartCare.Domain.Constants;
 using SmartCare.Domain.IRepositories;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Company.Handlers
 {
     public class GetAllCompaniesForAdminHandler : IRequestHandler<GetAllCompaniesForAdminAsyncQuery, Response<IEnumerable<CompanyResponseForAdminDto>>>
     {
-        #region Feilds
+        #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly ICompanyRepository _CompanyRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IRedisCacheService _redisCacheService;
         private readonly IImageUploaderService _imageUploaderService;
         private readonly IMapper _mapper;
-        string tag = CacheConstants.Companies;
-
+        private readonly string tag = CacheConstants.Companies;
         #endregion
+
         public GetAllCompaniesForAdminHandler(
             IResponseHandler responseHandler,
-            ICompanyRepository companyRepository,
+            IUnitOfWork unitOfWork,
             IRedisCacheService redisCacheService,
             IImageUploaderService imageUploaderService,
             IMapper mapper)
         {
             _responseHandler = responseHandler;
-            _CompanyRepository = companyRepository;
+            _unitOfWork = unitOfWork;
             _redisCacheService = redisCacheService;
             _imageUploaderService = imageUploaderService;
             _mapper = mapper;
         }
-
 
         public async Task<Response<IEnumerable<CompanyResponseForAdminDto>>> Handle(GetAllCompaniesForAdminAsyncQuery request, CancellationToken cancellationToken)
         {
@@ -48,11 +46,12 @@ namespace SmartCare.Application.CQRs.Company.Handlers
             try
             {
                 var cached = await _redisCacheService.GetDataAsync<IEnumerable<CompanyResponseForAdminDto>>(cacheKey, tag);
-                if (cached != null) return _responseHandler.Success(cached);
+                if (cached != null)
+                    return _responseHandler.Success(cached);
             }
             catch (Exception) { }
 
-            var companies = await _CompanyRepository.GetAllCompaniesForAdminAsync();
+            var companies = await _unitOfWork.Companies.GetAllCompaniesForAdminAsync();
             var companiesDto = _mapper.Map<IEnumerable<CompanyResponseForAdminDto>>(companies);
 
             await _redisCacheService.SetDataAsync(cacheKey, companiesDto, tag, Time.Default);

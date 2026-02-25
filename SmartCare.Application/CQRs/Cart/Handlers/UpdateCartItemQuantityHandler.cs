@@ -25,37 +25,33 @@ namespace SmartCare.Application.CQRs.Cart.Handlers
         #region Fields
 
         private readonly IResponseHandler _responseHandler;
-        private readonly ICartRepository _cartRepository;
-        private readonly IProductRepository _productRepository;
-        private readonly IInventoryRepository _inventoryRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<UpdateCartItemQuantityHandler> _logger;
 
         #endregion
 
-        public UpdateCartItemQuantityHandler(IResponseHandler responseHandler, ICartRepository cartRepository, IProductRepository productRepository, IInventoryRepository inventoryRepository, IMapper mapper, ILogger<UpdateCartItemQuantityHandler> logger)
+        public UpdateCartItemQuantityHandler(IResponseHandler responseHandler, IMapper mapper, ILogger<UpdateCartItemQuantityHandler> logger, IUnitOfWork unitOfWork)
         {
             _responseHandler = responseHandler;
-            _cartRepository = cartRepository;
-            _productRepository = productRepository;
-            _inventoryRepository = inventoryRepository;
             _mapper = mapper;
             _logger = logger;
+            _unitOfWork = unitOfWork;
         }
 
 
         public async Task<Response<CartItemResponseDto?>> Handle(UpdateCartItemQuantityAsyncCommand request, CancellationToken cancellationToken)
         {
             var dto = request.dto;
-            var cart = await _cartRepository.EnsureCartExistsAsync(dto.CartId);
+            var cart = await _unitOfWork.Carts.EnsureCartExistsAsync(dto.CartId);
             if (cart is null)
                 return _responseHandler.NotFound<CartItemResponseDto?>(SystemMessages.CART_NOT_FOUND);
 
-            var cartItem = await _cartRepository.GetCartItemAsync(dto.CartItemId);
+            var cartItem = await _unitOfWork.Carts.GetCartItemAsync(dto.CartItemId);
             if (cartItem is null)
                 return _responseHandler.NotFound<CartItemResponseDto?>(SystemMessages.CART_ITEM_NOT_EXIST);
 
-            var product = await _productRepository.EnsureProductExistsAsync(cartItem.ProductId);
+            var product = await _unitOfWork.Products.EnsureProductExistsAsync(cartItem.ProductId);
             if (product is null)
                 return _responseHandler.NotFound<CartItemResponseDto?>(SystemMessages.PRODUCT_NOT_FOUND);
 
@@ -64,21 +60,19 @@ namespace SmartCare.Application.CQRs.Cart.Handlers
             if (quantityDifference > 0)
             {
                 var availableStock =
-                    await _inventoryRepository.GetTotalStockForProductAsync(product.ProductId);
+                    await _unitOfWork.Inventories.GetTotalStockForProductAsync(product.ProductId);
 
                 if (availableStock < quantityDifference)
                     return _responseHandler.BadRequest<CartItemResponseDto?>(SystemMessages.INSUFFICIENT_STOCK);
-                var inventoryId = await _inventoryRepository.GetBestInventoryIdAsync(product.ProductId, dto.NewQuantity);
-                if (inventoryId == Guid.Empty)
+                var inventory = await _unitOfWork.Inventories.GetAvailableInventoryAsync(product.ProductId, dto.NewQuantity);
+                if (inventory is null)
                     return _responseHandler.BadRequest<CartItemResponseDto?>(SystemMessages.INSUFFICIENT_STOCK);
             }
 
             cartItem.Quantity = dto.NewQuantity;
             cartItem.SubTotal = cartItem.UnitPrice * dto.NewQuantity;
-
-            await _cartRepository.UpdateItemCartAsync(cartItem);
-            await _cartRepository.CalculateCartTotalAsync(cart.Id);
-
+            await _unitOfWork.Carts.CalculateCartTotalAsync(cart.Id);
+            await _unitOfWork.SaveChangesAsync();
             var responseDto = _mapper.Map<CartItemResponseDto?>(cartItem);
             return _responseHandler.Success(responseDto, SystemMessages.CART_UPDATED);
         }

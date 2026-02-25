@@ -1,19 +1,11 @@
-﻿using AutoMapper;
-using MediatR;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
+﻿using MediatR;
+using Microsoft.Extensions.Logging;
 using SmartCare.Application.CQRs.Authentication.Commands.Password;
-using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Domain.Constants;
-using SmartCare.Domain.Helpers;
-using SmartCare.Domain.Interfaces.IServices;
 using SmartCare.Domain.IRepositories;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Authentication.Handlers.Password
@@ -22,41 +14,79 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Password
     {
         #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly IClientRepository _clientRepository;
-
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly ILogger<ResetPasswordRequestHandler> _logger;
         #endregion
 
-        #region Constructor
-        public ResetPasswordRequestHandler(IResponseHandler responseHandler, IClientRepository clientRepository)
+        public ResetPasswordRequestHandler(
+            IResponseHandler responseHandler,
+            IUnitOfWork unitOfWork,
+            ILogger<ResetPasswordRequestHandler> logger)
         {
             _responseHandler = responseHandler;
-            _clientRepository = clientRepository;
+            _unitOfWork = unitOfWork;
+            _logger = logger;
         }
-
-        #endregion
-
-
 
         public async Task<Response<bool>> Handle(ResetPasswordRequestAsyncCommand request, CancellationToken cancellationToken)
         {
             var dto = request.dto;
+
             try
             {
-                await _clientRepository.BeginTransactionAsync();
+                _logger.LogInformation("Resetting password for: {Email}", dto.Email);
 
-                var user = await _clientRepository.GetByEmailAsync(dto.Email, true);
+                var user = await _unitOfWork.UserManager.FindByEmailAsync(dto.Email);
                 if (user == null)
+                {
+                    _logger.LogWarning("User not found for email: {Email}", dto.Email);
                     return _responseHandler.Failed<bool>(SystemMessages.USER_NOT_FOUND);
+                }
 
-                await _clientRepository.RemovePasswordAsync(user);
-                await _clientRepository.AddPasswordAsync(user, dto.NewPassword);
+                // Check if reset was confirmed
+                if (!user.ResetPasswordConfirmed)
+                {
+                    _logger.LogWarning("Reset password not confirmed for: {Email}", dto.Email);
+                    return _responseHandler.Failed<bool>(SystemMessages.RESET_NOT_CONFIRMED);
+                }
+                    // Remove old password
+                    var removePassResult = await _unitOfWork.UserManager.RemovePasswordAsync(user);
+                    if (!removePassResult.Succeeded)
+                    {
+                        var errors = string.Join(", ", removePassResult.Errors.Select(e => e.Description));
+                        _logger.LogError("Failed to remove password: {Errors}", errors);
+                        throw new Exception(errors);
+                    }
 
-                await _clientRepository.CommitTransactionAsync();
-                return _responseHandler.Success(true, SystemMessages.PASSWORD_RESET_SUCCESS);
+                    // Add new password
+                    var addPassResult = await _unitOfWork.UserManager.AddPasswordAsync(user, dto.NewPassword);
+                    if (!addPassResult.Succeeded)
+                    {
+                        var errors = string.Join(", ", addPassResult.Errors.Select(e => e.Description));
+                        _logger.LogError("Failed to add new password: {Errors}", errors);
+                        throw new Exception(errors);
+                    }
+
+                    // Update security stamp to invalidate existing sessions/tokens
+                    await _unitOfWork.UserManager.UpdateSecurityStampAsync(user);
+
+                    // Clear reset confirmation flag
+                    user.ResetPasswordConfirmed = false;
+
+                    // Update user
+                    await _unitOfWork.UserManager.UpdateAsync(user);
+
+
+                    await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+                    _logger.LogInformation("Password reset successfully for: {Email}", dto.Email);
+
+                    return _responseHandler.Success(true, SystemMessages.PASSWORD_RESET_SUCCESS);
+              
             }
-            catch
+            catch (Exception ex)
             {
-                await _clientRepository.RollbackTransactionAsync();
+                _logger.LogError(ex, "Error resetting password for {Email}", dto.Email);
                 return _responseHandler.Failed<bool>(SystemMessages.FAILED);
             }
         }

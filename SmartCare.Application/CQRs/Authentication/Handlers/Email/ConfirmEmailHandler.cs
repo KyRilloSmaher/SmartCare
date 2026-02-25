@@ -1,19 +1,14 @@
 ﻿using AutoMapper;
 using MediatR;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using SmartCare.Application.CQRs.Authentication.Commands.Email;
-using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Domain.Constants;
-using SmartCare.Domain.Helpers;
-using SmartCare.Domain.Interfaces.IServices;
+using SmartCare.Domain.Entities;
 using SmartCare.Domain.IRepositories;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Authentication.Handlers.Email
@@ -22,35 +17,83 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Email
     {
         #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly IClientRepository _clientRepository;
-
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
+        private readonly ILogger<ConfirmEmailHandler> _logger;
         #endregion
 
-        #region Constructor
-        public ConfirmEmailHandler(IResponseHandler responseHandler, IClientRepository clientRepository)
+        public ConfirmEmailHandler(
+            IResponseHandler responseHandler,
+            IUnitOfWork unitOfWork,
+            IMapper mapper,
+            ILogger<ConfirmEmailHandler> logger)
         {
             _responseHandler = responseHandler;
-            _clientRepository = clientRepository;
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+            _logger = logger;
         }
-
-        #endregion
-
 
         public async Task<Response<bool>> Handle(ConfirmEmailAsyncCommand request, CancellationToken cancellationToken)
         {
             var dto = request.dto;
-            var user = await _clientRepository.GetByEmailAsync(dto.Email);
-            if (user == null)
-                return _responseHandler.Failed<bool>(SystemMessages.USER_NOT_FOUND);
-            if (user.EmailConfirmed)
-                return _responseHandler.Failed<bool>(SystemMessages.EMAIL_ALREADY_VERIFIED);
-            if (user.VerificationURLExpiresAt < DateTime.UtcNow)
-                return _responseHandler.Failed<bool>(SystemMessages.EMAIL_VERIFICATION_LINK_EXPIRED);
 
-            var success = await _clientRepository.ConfirmEmailAsync(dto.Email, dto.Token);
-            var message = success ? SystemMessages.VERIFICATION_SUCCESS : SystemMessages.VERIFICATION_FAILED;
+            try
+            {
+                _logger.LogInformation("Starting email confirmation for {Email}", dto.Email);
 
-            return success ? _responseHandler.Success(success, message) : _responseHandler.Failed<bool>(message);
+                // Fetch user via Identity
+                var user = await _unitOfWork.UserManager.FindByEmailAsync(dto.Email);
+                if (user == null)
+                {
+                    _logger.LogWarning("User not found for email confirmation: {Email}", dto.Email);
+                    return _responseHandler.Failed<bool>(SystemMessages.USER_NOT_FOUND);
+                }
+
+                // Check if email is already confirmed
+                if (user.EmailConfirmed)
+                {
+                    _logger.LogInformation("Email already confirmed for user: {UserId}", user.Id);
+                    return _responseHandler.Failed<bool>(SystemMessages.EMAIL_ALREADY_VERIFIED);
+                }
+
+                // Get valid verification from EmailVerifications table
+                var verification = await _unitOfWork.EmailVerifications.GetValidVerificationAsync(dto.Email, dto.Token);
+
+                if (verification == null)
+                {
+                    _logger.LogWarning("Invalid or expired verification token for email: {Email}", dto.Email);
+                    return _responseHandler.Failed<bool>(SystemMessages.INVALID_TOKEN);
+                }
+
+                    // Confirm email using Identity
+                    var result = await _unitOfWork.UserManager.ConfirmEmailAsync(user, dto.Token);
+
+                    if (!result.Succeeded)
+                    {
+                        var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                        _logger.LogError("Email confirmation failed for user {UserId}. Errors: {Errors}",
+                            user.Id, errors);
+
+                        throw new Exception(errors);
+                    }
+                    // Update user
+                    user.EmailConfirmed = true;
+                    await _unitOfWork.UserManager.UpdateAsync(user);
+                    // Create A Cart For Client
+                    await _unitOfWork.Carts.CreateCartAsync(user.Id);
+                    // Save all changes atomically
+                    await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+                    _logger.LogInformation("Email confirmed successfully for user: {UserId}", user.Id);
+
+                    return _responseHandler.Success(true, SystemMessages.VERIFICATION_SUCCESS);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error confirming email for {Email}: {Message}", dto.Email, ex.Message);
+                return _responseHandler.Failed<bool>(SystemMessages.VERIFICATION_FAILED);
+            }
         }
     }
 }

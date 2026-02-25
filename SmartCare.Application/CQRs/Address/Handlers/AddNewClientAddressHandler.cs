@@ -19,8 +19,7 @@ namespace SmartCare.Application.CQRs.Address.Handlers
     {
         #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly IClientRepository _clientRepository;
-        private readonly IAddressRepository _addressRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IRedisCacheService _redisCacheService;
         private readonly IMapper _mapper;
         string tag = CacheConstants.Addresses;
@@ -29,23 +28,21 @@ namespace SmartCare.Application.CQRs.Address.Handlers
 
         public AddNewClientAddressHandler(
             IResponseHandler responseHandler,
-            IClientRepository clientRepository,
-            IAddressRepository addressRepository,
             IRedisCacheService redisCacheService,
-            IMapper mapper)
+            IMapper mapper,
+            IUnitOfWork unitOfWork)
         {
             _responseHandler = responseHandler;
-            _clientRepository = clientRepository;
-            _addressRepository = addressRepository;
             _redisCacheService = redisCacheService;
             _mapper = mapper;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<Response<AddressResponseDto>> Handle(AddNewClientAddressAsyncCommand request, CancellationToken cancellationToken)
         {
             var dto = request.dto;
             var clientId = request.clientId;
-            var client = await _clientRepository.GetValidClientAsync(clientId);
+            var client = await _unitOfWork.Clients.GetValidClientAsync(clientId);
             if (client == null)
                 return await _responseHandler.ClientNotFoundAsync<AddressResponseDto>();
 
@@ -54,11 +51,11 @@ namespace SmartCare.Application.CQRs.Address.Handlers
 
             if (dto.IsPrimary)
             {
-                await _addressRepository.HandlePrimaryAddressChangeAsync(client.Id, address);
+                await _unitOfWork.Addresses.HandlePrimaryAddressChangeAsync(client.Id, address);
             }
 
-            await _addressRepository.AddAsync(address);
-
+            await _unitOfWork.Addresses.AddAsync(address);
+            await _unitOfWork.SaveChangesAsync();
             string cacheKey = $"client_addresses_{client.Id}";
 
             await _redisCacheService.RemoveKeyAsync(cacheKey, tag);

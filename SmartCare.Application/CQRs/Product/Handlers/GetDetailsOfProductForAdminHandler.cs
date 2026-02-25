@@ -8,9 +8,7 @@ using SmartCare.Application.IServices;
 using SmartCare.Domain.Constants;
 using SmartCare.Domain.IRepositories;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Product.Handlers
@@ -19,19 +17,22 @@ namespace SmartCare.Application.CQRs.Product.Handlers
     {
         #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly IProductRepository _productRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IImageUploaderService _imageUploaderService;
         private readonly IRedisCacheService _redisCacheService;
         private readonly IMapper _mapper;
-        string tag = CacheConstants.Products;
-
-
+        private readonly string tag = CacheConstants.Products;
         #endregion
 
-        public GetDetailsOfProductForAdminHandler(IResponseHandler responseHandler, IProductRepository productRepository, IImageUploaderService imageUploaderService, IRedisCacheService redisCacheService, IMapper mapper)
+        public GetDetailsOfProductForAdminHandler(
+            IResponseHandler responseHandler,
+            IUnitOfWork unitOfWork,
+            IImageUploaderService imageUploaderService,
+            IRedisCacheService redisCacheService,
+            IMapper mapper)
         {
             _responseHandler = responseHandler;
-            _productRepository = productRepository;
+            _unitOfWork = unitOfWork;
             _imageUploaderService = imageUploaderService;
             _redisCacheService = redisCacheService;
             _mapper = mapper;
@@ -40,6 +41,7 @@ namespace SmartCare.Application.CQRs.Product.Handlers
         public async Task<Response<ProductResponseDtoForAdmin>> Handle(GetDetailsOfProductForAdminQuery request, CancellationToken cancellationToken)
         {
             var productId = request.productId;
+
             if (productId == Guid.Empty)
                 return _responseHandler.BadRequest<ProductResponseDtoForAdmin>(SystemMessages.INVALID_INPUT);
 
@@ -48,11 +50,12 @@ namespace SmartCare.Application.CQRs.Product.Handlers
             try
             {
                 var cachedProduct = await _redisCacheService.GetDataAsync<ProductResponseDtoForAdmin>(cacheKey, tag);
-                if (cachedProduct != null) return _responseHandler.Success(cachedProduct);
+                if (cachedProduct != null)
+                    return _responseHandler.Success(cachedProduct);
             }
             catch (Exception) { /* Continue to DB */ }
 
-            var product = await _productRepository.GetByIdAsync(productId);
+            var product = await _unitOfWork.Products.GetByIdAsync(productId);
             if (product == null)
                 return _responseHandler.Failed<ProductResponseDtoForAdmin>(SystemMessages.NOT_FOUND);
 

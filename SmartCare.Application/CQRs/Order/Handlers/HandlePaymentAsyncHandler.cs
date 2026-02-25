@@ -1,20 +1,12 @@
 ﻿using AutoMapper;
 using MediatR;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using SmartCare.Application.commens;
 using SmartCare.Application.CQRs.Order.Commands;
 using SmartCare.Application.ExternalServiceInterfaces;
-using SmartCare.Application.Handlers.ResponseHandler;
-using SmartCare.Application.IServices;
-using SmartCare.Domain.Entities;
 using SmartCare.Domain.Enums;
 using SmartCare.Domain.IRepositories;
-using Stripe.Climate;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using paymentEntity = SmartCare.Domain.Entities.Payment;
 
@@ -23,14 +15,15 @@ namespace SmartCare.Application.CQRs.Order.Handlers
     public class HandlePaymentAsyncHandler : IRequestHandler<HandlePaymentAsyncCommand, Unit>
     {
         #region Fields
-        private readonly IPaymentRepository _paymentRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IPaymentGetway _paymentGateway;
-
         #endregion
 
-        public HandlePaymentAsyncHandler(IPaymentRepository paymentRepository, IPaymentGetway paymentGateway)
+        public HandlePaymentAsyncHandler(
+            IUnitOfWork unitOfWork,
+            IPaymentGetway paymentGateway)
         {
-            _paymentRepository = paymentRepository;
+            _unitOfWork = unitOfWork;
             _paymentGateway = paymentGateway;
         }
 
@@ -52,7 +45,8 @@ namespace SmartCare.Application.CQRs.Order.Handlers
                 //        CreatedAt = DateTime.UtcNow
                 //    };
 
-                //    await _paymentRepository.AddAsync(newPayment);
+                //    await _unitOfWork.Payments.AddAsync(newPayment);
+                //    await _unitOfWork.SaveChangesAsync(cancellationToken);
 
                 //    order.PaymentIntentId = null;
                 //    order.PaymentVersion = newPayment.Version;
@@ -76,8 +70,7 @@ namespace SmartCare.Application.CQRs.Order.Handlers
                     order.PaymentIntentId = payment.PaymentIntentId;
                     order.PaymentVersion = payment.Version;
                 }
-
-                await _paymentRepository.UpdateAsync(payment);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
                 return Unit.Value;
             }
 
@@ -88,14 +81,15 @@ namespace SmartCare.Application.CQRs.Order.Handlers
                 Amount = order.TotalPrice,
                 Status = PaymentStatus.Pending,
                 Version = payment.Version + 1,
-                Method = PaymentMethod.Cash,
+                Method = Domain.Enums.PaymentMethod.Cash,
                 CreatedAt = DateTime.UtcNow
             };
 
-            await _paymentRepository.AddAsync(replacement);
+            await _unitOfWork.Payments.AddAsync(replacement);
 
             order.PaymentIntentId = null;
             order.PaymentVersion = replacement.Version;
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return Unit.Value;
         }

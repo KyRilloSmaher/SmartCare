@@ -7,32 +7,29 @@ using SmartCare.Application.IServices;
 using SmartCare.Domain.Constants;
 using SmartCare.Domain.IRepositories;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Rate.Handlers
 {
     public class GetRateByIdHandler : IRequestHandler<GetRateByIdAsyncQuery, Response<RateResponseDto>>
     {
-        #region Feilds
-        private readonly IRateRepository _rateRepository;
-        private readonly IProductRepository _productRepository;
-        private readonly IClientRepository _clientRepository;
+        #region Fields
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IRedisCacheService _redisCacheService;
         private readonly IMapper _mapper;
         private readonly IResponseHandler _responseHandler;
-        string Rate_tag = CacheConstants.Rates;
-        string Products_tag = CacheConstants.Products;
-
+        private readonly string Rate_tag = CacheConstants.Rates;
+        private readonly string Products_tag = CacheConstants.Products;
         #endregion
 
-        public GetRateByIdHandler(IRateRepository rateRepository, IProductRepository productRepository, IClientRepository clientRepository, IRedisCacheService redisCacheService, IMapper mapper, IResponseHandler responseHandler)
+        public GetRateByIdHandler(
+            IUnitOfWork unitOfWork,
+            IRedisCacheService redisCacheService,
+            IMapper mapper,
+            IResponseHandler responseHandler)
         {
-            _rateRepository = rateRepository;
-            _productRepository = productRepository;
-            _clientRepository = clientRepository;
+            _unitOfWork = unitOfWork;
             _redisCacheService = redisCacheService;
             _mapper = mapper;
             _responseHandler = responseHandler;
@@ -41,6 +38,7 @@ namespace SmartCare.Application.CQRs.Rate.Handlers
         public async Task<Response<RateResponseDto>> Handle(GetRateByIdAsyncQuery request, CancellationToken cancellationToken)
         {
             var Id = request.Id;
+
             if (Id == Guid.Empty)
                 return _responseHandler.Failed<RateResponseDto>(SystemMessages.INVALID_INPUT);
 
@@ -49,11 +47,12 @@ namespace SmartCare.Application.CQRs.Rate.Handlers
             try
             {
                 var cachedRate = await _redisCacheService.GetDataAsync<RateResponseDto>(cacheKey, Rate_tag);
-                if (cachedRate != null) return _responseHandler.Success(cachedRate);
+                if (cachedRate != null)
+                    return _responseHandler.Success(cachedRate);
             }
             catch (Exception) { }
 
-            var rate = await _rateRepository.GetByIdAsync(Id);
+            var rate = await _unitOfWork.Rates.GetByIdAsync(Id);
             if (rate == null)
                 return _responseHandler.Failed<RateResponseDto>(SystemMessages.NOT_FOUND);
 

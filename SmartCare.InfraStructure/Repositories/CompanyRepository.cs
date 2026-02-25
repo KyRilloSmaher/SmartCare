@@ -3,18 +3,13 @@ using Microsoft.EntityFrameworkCore;
 using SmartCare.Domain.Entities;
 using SmartCare.Domain.IRepositories;
 using SmartCare.InfraStructure.DbContexts;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartCare.InfraStructure.Repositories
 {
     public class CompanyRepository : GenericRepository<Company>, ICompanyRepository
     {
-        #region Feilds
-        public readonly ApplicationDBContext _context;
+        #region Fields
+        private readonly ApplicationDBContext _context;
         #endregion
 
         #region Constructor
@@ -22,7 +17,6 @@ namespace SmartCare.InfraStructure.Repositories
         {
             _context = context;
         }
-
         #endregion
 
         #region Methods
@@ -31,49 +25,54 @@ namespace SmartCare.InfraStructure.Repositories
         {
             return await _context.Companies
                 .Where(c => !c.IsDeleted)
+                .AsNoTracking()
                 .ToListAsync();
         }
 
-
-        public async Task<IEnumerable<Company>> GetAllCompaniesForAdminAsync()
+        public IQueryable<Company> GetAllCompaniesQuerable(bool includeDeleted = false)
         {
-            return await base.GetAllAsync();
+            var query = _context.Companies.AsQueryable();
+
+            if (!includeDeleted)
+                query = query.Where(c => !c.IsDeleted);
+
+            return query.AsNoTracking();
         }
-        public async override Task<bool> DeleteAsync(Company entity) {
+
+        public override Task DeleteAsync(Company entity)
+        {
             entity.IsDeleted = true;
-            _context.Companies.Update(entity);
-            await _context.SaveChangesAsync();
-            return true;
+            return UpdateAsync(entity);
         }
+
         public async Task<IEnumerable<Company>> SearchCompaniesByNameAsync(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
-            {
                 return await GetAllCompaniesAsync();
-            }
+
             var searchTerm = name.Trim().ToLower();
             var companiesList = await _context.Companies
-                .Where(c => !c.IsDeleted && c.Name.Contains(name))
-                .ToListAsync();
-            var matchedCompanies = companiesList
-                                        .Select(c => new
-                                        {
-                                            Category = c,
-                                            Score = Fuzz.Ratio(c.Name.ToLower(), searchTerm)
-                                        })
-                                         .Where(x => x.Score >= 70)
-                                         .Select(x => x.Category)
-                                         .ToList();
-            return matchedCompanies;
-        }
-        public IQueryable<Company> GetAllCompaniesQuerable()
-        {
-            return _context.Companies
                 .Where(c => !c.IsDeleted)
-                .AsNoTracking();
+                .AsNoTracking()
+                .ToListAsync();
+
+            return companiesList
+                .Select(c => new
+                {
+                    Company = c,
+                    Score = Fuzz.Ratio(c.Name.ToLower(), searchTerm)
+                })
+                .Where(x => x.Score >= 70)
+                .Select(x => x.Company)
+                .ToList();
         }
+        public async Task<IEnumerable<Company>> GetAllCompaniesForAdminAsync()
+        {
+            return await _context.Companies
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
         #endregion
-
-
     }
 }

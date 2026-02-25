@@ -56,78 +56,79 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Auth
 
         public async Task<Response<bool>> Handle(pharmacistSignUpAsyncCommand request, CancellationToken cancellationToken)
         {
-            string? uploadedImageUrl = null;
-            var dto = request.dto;
+            //string? uploadedImageUrl = null;
+            //var dto = request.dto;
 
-            var isEmailExists = await _pharmacistRepository.GetByEmailAsync(dto.Email);
-            if (isEmailExists != null)
-                return _responseHandler.Failed<bool>(SystemMessages.EMAIL_ALREADY_EXISTS);
+            //var isEmailExists = await _pharmacistRepository.GetByEmailAsync(dto.Email);
+            //if (isEmailExists != null)
+            //    return _responseHandler.Failed<bool>(SystemMessages.EMAIL_ALREADY_EXISTS);
 
-            var isUserNameExists = await _pharmacistRepository.SearchByNameAsync(dto.userName);
-            if (isUserNameExists != null)
-                return _responseHandler.Failed<bool>(SystemMessages.USERNAME_ALREADY_EXISTS);
+            //var isUserNameExists = await _pharmacistRepository.SearchByNameAsync(dto.userName);
+            //if (isUserNameExists != null)
+            //    return _responseHandler.Failed<bool>(SystemMessages.USERNAME_ALREADY_EXISTS);
 
-            var isBranchExists = await _storeRepository.GetStoreByIdAsync(dto.StoreId);
-            if (isBranchExists == null)
-                return _responseHandler.Failed<bool>(SystemMessages.STORE_NOT_FOUND);
+            //var isBranchExists = await _storeRepository.GetStoreByIdAsync(dto.StoreId);
+            //if (isBranchExists == null)
+            //    return _responseHandler.Failed<bool>(SystemMessages.STORE_NOT_FOUND);
 
-            var isPhoneNumberUnique = await _pharmacistRepository.IspharmacistPhoneNumberUniqueAsync(dto.PhoneNumber);
-            if (!isPhoneNumberUnique)
-                return _responseHandler.Failed<bool>(SystemMessages.PHONE_ALREADY_EXISTS);
+            //var isPhoneNumberUnique = await _pharmacistRepository.IspharmacistPhoneNumberUniqueAsync(dto.PhoneNumber);
+            //if (!isPhoneNumberUnique)
+            //    return _responseHandler.Failed<bool>(SystemMessages.PHONE_ALREADY_EXISTS);
 
-            try
-            {
-                if (dto.ProfileImage is not null)
-                {
-                    var uploadResult = await _imageUploaderService.UploadImageAsync(dto.ProfileImage, ImageFolder.UserProfiles);
-                    if (uploadResult.Error != null)
-                        return _responseHandler.Failed<bool>(SystemMessages.FILE_UPLOAD_FAILED);
+            //try
+            //{
+            //    if (dto.ProfileImage is not null)
+            //    {
+            //        var uploadResult = await _imageUploaderService.UploadImageAsync(dto.ProfileImage, ImageFolder.UserProfiles);
+            //        if (uploadResult.Error != null)
+            //            return _responseHandler.Failed<bool>(SystemMessages.FILE_UPLOAD_FAILED);
 
-                    uploadedImageUrl = uploadResult.Url.ToString();
-                }
+            //        uploadedImageUrl = uploadResult.Url.ToString();
+            //    }
 
-                await _pharmacistRepository.BeginTransactionAsync();
+            //    await _pharmacistRepository.BeginTransactionAsync();
 
-                var pharmacist = _mapper.Map<SmartCare.Domain.Entities.Pharmacist>(dto);
-                pharmacist.ProfileImageUrl = uploadedImageUrl;
+            //    var pharmacist = _mapper.Map<SmartCare.Domain.Entities.Pharmacist>(dto);
+            //    pharmacist.ProfileImageUrl = uploadedImageUrl;
 
-                var createResult = await _pharmacistRepository.CreatepharmacistAsync(pharmacist, dto.Password);
+            //    var createResult = await _pharmacistRepository.CreatepharmacistAsync(pharmacist, dto.Password);
 
-                if (!createResult.Succeeded)
-                {
-                    await _pharmacistRepository.RollbackTransactionAsync();
-                    if (!string.IsNullOrEmpty(uploadedImageUrl))
-                        await _imageUploaderService.DeleteImageByUrlAsync(uploadedImageUrl);
+            //    if (!createResult.Succeeded)
+            //    {
+            //        await _pharmacistRepository.RollbackTransactionAsync();
+            //        if (!string.IsNullOrEmpty(uploadedImageUrl))
+            //            await _imageUploaderService.DeleteImageByUrlAsync(uploadedImageUrl);
 
-                    return _responseHandler.Failed<bool>(string.Join(", ", createResult.Errors.Select(e => e.Description)));
-                }
+            //        return _responseHandler.Failed<bool>(string.Join(", ", createResult.Errors.Select(e => e.Description)));
+            //    }
 
-                await _pharmacistRepository.AddToRoleAsync(pharmacist, "Pharmacist");
+            //    await _pharmacistRepository.AddToRoleAsync(pharmacist, "Pharmacist");
 
-                var token = await _pharmacistRepository.GenerateEmailConfirmationTokenAsync(pharmacist);
-                var encodedToken = WebUtility.UrlEncode(token);
-                var httprequest = _httpContextAccessor.HttpContext!.Request;
-                var baseUrl = $"{httprequest.Scheme}://{httprequest.Host}";
-                var confirmEmailUrl = $"{baseUrl}/{ApplicationRouting.Authentication.ConfirmEmail}?email={pharmacist.Email}&token={encodedToken}";
+            //    var token = await _pharmacistRepository.GenerateEmailConfirmationTokenAsync(pharmacist);
+            //    var encodedToken = WebUtility.UrlEncode(token);
+            //    var httprequest = _httpContextAccessor.HttpContext!.Request;
+            //    var baseUrl = $"{httprequest.Scheme}://{httprequest.Host}";
+            //    var confirmEmailUrl = $"{baseUrl}/{ApplicationRouting.Authentication.ConfirmEmail}?email={pharmacist.Email}&token={encodedToken}";
 
-                pharmacist.EmailConfirmationLink = confirmEmailUrl;
-                pharmacist.VerificationURLExpiresAt = DateTime.UtcNow.AddHours(24);
+            //    pharmacist.EmailConfirmationLink = confirmEmailUrl;
+            //    pharmacist.VerificationURLExpiresAt = DateTime.UtcNow.AddHours(24);
 
-                await _emailService.SendConfirmationEmailAsync(pharmacist.Email, confirmEmailUrl);
+            //    await _emailService.SendConfirmationEmailAsync(pharmacist.Email, confirmEmailUrl);
 
-                await _pharmacistRepository.CommitTransactionAsync();
+            //    await _pharmacistRepository.CommitTransactionAsync();
 
-                return _responseHandler.Success(true, SystemMessages.SUCCESS);
-            }
-            catch (Exception ex)
-            {
-                await _pharmacistRepository.RollbackTransactionAsync();
+            //    return _responseHandler.Success(true, SystemMessages.SUCCESS);
+            //}
+            //catch (Exception ex)
+            //{
+            //    await _pharmacistRepository.RollbackTransactionAsync();
 
-                if (!string.IsNullOrEmpty(uploadedImageUrl))
-                    await _imageUploaderService.DeleteImageByUrlAsync(uploadedImageUrl);
+            //    if (!string.IsNullOrEmpty(uploadedImageUrl))
+            //        await _imageUploaderService.DeleteImageByUrlAsync(uploadedImageUrl);
 
-                return _responseHandler.Failed<bool>(SystemMessages.FAILED);
-            }
+              return _responseHandler.Failed<bool>(SystemMessages.FAILED);
+            //}
+
         }
     }
 }

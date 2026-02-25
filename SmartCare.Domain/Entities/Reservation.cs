@@ -46,6 +46,8 @@ namespace SmartCare.Domain.Entities
         /// Navigation property for order item (if applicable)
         /// </summary>
         public OrderItem? OrderItem { get; set; }
+        public Inventory? inventory { get; set; }
+        public Product? product { get; set; }
     }
 }
 

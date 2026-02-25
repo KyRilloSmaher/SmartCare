@@ -16,30 +16,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Payment.Handlers
 {
     public class HandlePaymentIntentSucceededHandler : IRequestHandler<HandlePaymentIntentSucceededAsyncCommand, Unit>
     {
-        private readonly IPaymentRepository _paymentRepository;
-        private readonly IOrderRepository _orderRepository;
-        private readonly IInventoryRepository _inventoryRepository;
-        private readonly IClientRepository _clientRepository;
-        private readonly IReservationRepository _reservationRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<HandlePaymentIntentSucceededHandler> _logger;
-        private readonly ICartRepository _cartRepository;
         private readonly PaymentExtensions _paymentExtensions;
 
-        public HandlePaymentIntentSucceededHandler(IPaymentRepository paymentRepository, IOrderRepository orderRepository, IInventoryRepository inventoryRepository, IClientRepository clientRepository, IReservationRepository reservationRepository, ILogger<HandlePaymentIntentSucceededHandler> logger, ICartRepository cartRepository, PaymentExtensions paymentExtensions)
+        public HandlePaymentIntentSucceededHandler(
+            IUnitOfWork unitOfWork,
+            ILogger<HandlePaymentIntentSucceededHandler> logger,
+            PaymentExtensions paymentExtensions)
         {
-            _paymentRepository = paymentRepository;
-            _orderRepository = orderRepository;
-            _inventoryRepository = inventoryRepository;
-            _clientRepository = clientRepository;
-            _reservationRepository = reservationRepository;
+            _unitOfWork = unitOfWork;
             _logger = logger;
-            _cartRepository = cartRepository;
             _paymentExtensions = paymentExtensions;
         }
 
@@ -49,7 +43,7 @@ namespace SmartCare.Application.CQRs.Payment.Handlers
             if (stripeEvent.Data.Object is not PaymentIntent intent)
                 return Unit.Value;
 
-            //  Read metadata
+            // Read metadata
             if (!intent.Metadata.TryGetValue("orderId", out var orderIdStr) ||
                 !intent.Metadata.TryGetValue("version", out var versionStr))
                 return Unit.Value;
@@ -59,12 +53,13 @@ namespace SmartCare.Application.CQRs.Payment.Handlers
                 return Unit.Value;
 
             // Load order
-            var order = await _orderRepository.GetOrderWithDetailsByIdAsync(orderId);
+            var order = await _unitOfWork.Orders.GetOrderWithDetailsByIdAsync(orderId);
             if (order == null) return Unit.Value;
 
             // HARD SECURITY CHECKS 
             if (order.PaymentIntentId != intent.Id) return Unit.Value;
             if (order.PaymentVersion != version) return Unit.Value;
+
             var paidAmount = intent.Amount / 100m;
             if (decimal.Round(order.TotalPrice, 2) != decimal.Round(paidAmount, 2))
                 return Unit.Value;
@@ -74,22 +69,21 @@ namespace SmartCare.Application.CQRs.Payment.Handlers
             // Mark order as paid
             order.Status = OrderStatus.Confirmed;
 
-            var payment = await _paymentRepository.GetByOrderIdAsync(orderId);
+            var payment = await _unitOfWork.Payments.GetByOrderIdAsync(orderId);
             if (payment == null) return Unit.Value;
 
             payment.Status = PaymentStatus.Completed;
-
 
             foreach (var item in order.Items ?? Enumerable.Empty<OrderItem>())
             {
                 try
                 {
-                    await _inventoryRepository.FinalizeStockDeductionAsync(
+                    await _unitOfWork.Inventories.FinalizeStockDeductionAsync(
                         item.InvetoryId,
                         item.Quantity,
                         order is FromStoreOrder
                     );
-                    await _reservationRepository.UpdateReservationStatusAsync(
+                    await _unitOfWork.Reservations.UpdateReservationStatusAsync(
                         (Guid)item.ReservationId,
                         ReservationStatus.Completed);
                 }
@@ -102,15 +96,20 @@ namespace SmartCare.Application.CQRs.Payment.Handlers
             }
 
             await _paymentExtensions.IncrementClientOrdersAsync(order.ClientId);
-            await _orderRepository.UpdateAsync(order);
-            await _paymentRepository.UpdateAsync(payment);
-            ////  Clear cart
-            var cart = await _cartRepository.GetActiveCartAsync(order.ClientId);
-            await _cartRepository.DeleteAsync(cart);
-            await _cartRepository.CreateCartAsync(order.ClientId);
+            // Clear cart
+            var cart = await _unitOfWork.Carts.GetActiveCartAsync(order.ClientId);
+            if (cart != null)
+            {
+                await _unitOfWork.Carts.DeleteAsync(cart);
+                await _unitOfWork.Carts.CreateCartAsync(order.ClientId);
+            }
+
+            // Save all changes atomically through UnitOfWork
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _paymentExtensions.PublishPaymentEvent(order, "success", "Payment completed successfully.");
-            var client = await _clientRepository.GetByIdAsync(order.ClientId);
+
+            var client = await _unitOfWork.UserManager.FindByIdAsync(order.ClientId);
             if (order.OrderType == OrderType.Online)
             {
                 await _paymentExtensions.SendOrderConfirmationEmailAsync(order, client);
@@ -121,11 +120,12 @@ namespace SmartCare.Application.CQRs.Payment.Handlers
                                     .GetInt32(0, 1_000_000)
                                     .ToString("D7");
 
-                await _orderRepository.UpdatePickupCodeHashAsync(
+                await _unitOfWork.Orders.UpdatePickupCodeHashAsync(
                     order.Id,
                     _paymentExtensions.ComputeSha256(pickupCode));
                 await _paymentExtensions.SendPickupEmailAsync(order, client, pickupCode, ((FromStoreOrder)order).StoreId);
             }
+
             return Unit.Value;
         }
     }

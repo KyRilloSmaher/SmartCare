@@ -8,16 +8,13 @@ using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Application.IServices;
 using SmartCare.Domain.IRepositories;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Payment.Handlers
 {
     public class HandleWebhookEventHandler : IRequestHandler<HandleWebhookEventAsyncCommand, Unit>
     {
-
         private readonly ILogger<HandleWebhookEventHandler> _logger;
         private readonly IMediator _mediator;
 
@@ -33,11 +30,11 @@ namespace SmartCare.Application.CQRs.Payment.Handlers
             switch (stripeEvent.Type)
             {
                 case "payment_intent.succeeded":
-                    await _mediator.Send(new HandlePaymentIntentSucceededAsyncCommand(stripeEvent));
+                    await _mediator.Send(new HandlePaymentIntentSucceededAsyncCommand(stripeEvent), cancellationToken);
                     break;
 
                 case "payment_intent.payment_failed":
-                    await _mediator.Send(new HandlePaymentIntentFailedAsyncCommand(stripeEvent));
+                    await _mediator.Send(new HandlePaymentIntentFailedAsyncCommand(stripeEvent), cancellationToken);
                     break;
 
                 default:

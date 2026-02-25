@@ -7,8 +7,6 @@ using Microsoft.IdentityModel.Tokens;
 using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Application.IServices;
-using SmartCare.Application.Mappers;
-using SmartCare.InfraStructure.Services;
 using SmartCare.Domain.Entities;
 using SmartCare.Domain.Helpers;
 using SmartCare.Domain.IRepositories;
@@ -23,6 +21,9 @@ using Hangfire;
 using SmartCare.Application.Handlers.ResponsesHandler;
 using SmartCare.Infrastructure.Repositories;
 using SmartCare.Application.commens;
+using SmartCare.Application.Mappings;
+using SmartCare.Infrastructure.Data;
+using SmartCare.InfraStructure.Services;
 
 namespace SmartCare.InfraStructure.Extensions
 {
@@ -33,7 +34,7 @@ namespace SmartCare.InfraStructure.Extensions
             // ---------- Repositories ----------
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddScoped<IClientRepository, ClientRepository>();
-            services.AddScoped<IAddressRepository, AdressRepository>();
+            services.AddScoped<IAddressRepository, AddressRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<ICompanyRepository, CompanyRepository>();
             services.AddScoped<IStoreRepository, StoreRepository>();
@@ -45,10 +46,11 @@ namespace SmartCare.InfraStructure.Extensions
             services.AddScoped<ICartRepository, CartRepository>();
             services.AddScoped<IReservationRepository , ReservationRepository>();
             services.AddScoped<IInventoryRepository, InventoryRepository>();
-
+            services.AddScoped<IEmailVerificationRepository, EmailVerificationRepository>();
             services.AddScoped<IPaymentRepository, PaymentRepository>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
             // ---------- Identity ----------
-            services.AddIdentity<Client, IdentityRole>(options =>
+            services.AddIdentity<ApplictionUser, IdentityRole>(options =>
             {
                 options.Password.RequireDigit = true;
                 options.Password.RequireLowercase = true;
@@ -65,34 +67,26 @@ namespace SmartCare.InfraStructure.Extensions
             .AddEntityFrameworkStores<ApplicationDBContext>()
             .AddDefaultTokenProviders();
 
-            services.AddIdentityCore<Pharmacist>(options =>
-            {
-                options.Password.RequireDigit = false;
-                options.Password.RequiredLength = 6;
-                options.User.RequireUniqueEmail = true;
-            })
-             .AddEntityFrameworkStores<ApplicationDBContext>() 
-             .AddDefaultTokenProviders();
 
             // ---------- Application Services ----------
-            services.AddScoped<IAuthenticationService, AuthenticationService>();
-            services.AddScoped<IAddressService, AddressService>();
-            services.AddScoped<ICategoryService, CategoryService>();
-            services.AddScoped<ICompanyService, CompanyService>();
-            services.AddScoped<IClientService, ClientService>();
+            //services.AddScoped<IAuthenticationService, AuthenticationService>();
+            //services.AddScoped<IAddressService, AddressService>();
+            //services.AddScoped<ICategoryService, CategoryService>();
+            //services.AddScoped<ICompanyService, CompanyService>();
+            //services.AddScoped<IClientService, ClientService>();
             services.AddScoped<ITokenService, TokenService>();
-            services.AddScoped<IStoreService, StoreService>();
-            services.AddScoped<IRateService, RateService>();
-            services.AddScoped<IFavouriteService, FavouriteService>();
-            services.AddScoped<ICartService, CartService > ();
+            //services.AddScoped<IStoreService, StoreService>();
+            //services.AddScoped<IRateService, RateService>();
+            //services.AddScoped<IFavouriteService, FavouriteService>();
+            //services.AddScoped<ICartService, CartService > ();
             services.AddScoped<IBackgroundJobService, HangfireBackgroundJobService>();
             services.AddScoped<IResponseHandler, ResponseHandler>();
-            services.AddScoped<IProductService, ProductService>();
+           // services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IBackgroundJobService, HangfireBackgroundJobService>();
             services.AddScoped<IResponseHandler, ResponseHandler>();
-            services.AddScoped<IPaymentService, PaymentService>();
-            services.AddScoped<IOrderService, OrderService>();
-            services.AddScoped<IinventoryService, InventoryService>();
+            //services.AddScoped<IPaymentService, PaymentService>();
+            //services.AddScoped<IOrderService, OrderService>();
+            //services.AddScoped<IinventoryService, InventoryService>();
             services.AddScoped<ISqlLockManager, SqlLockManager>();
 
             // ---------- External Services ----------
@@ -115,7 +109,7 @@ namespace SmartCare.InfraStructure.Extensions
             services.AddHangfireServer();
 
             // ---------- AutoMapper ----------
-            services.AddAutoMapper(typeof(ClientMappingProfile));
+            services.AddAutoMapper(typeof(CartMappingProfile));
 
             // ---------- JWT Authentication ----------
             services.AddAuthentication(options =>

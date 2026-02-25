@@ -5,9 +5,7 @@ using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Domain.Constants;
 using SmartCare.Domain.IRepositories;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Inventory.Handlers
@@ -16,19 +14,17 @@ namespace SmartCare.Application.CQRs.Inventory.Handlers
     {
         #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly IInventoryRepository _inventoryRepository;
-        private readonly IProductRepository _productRepository;
-        private readonly IStoreRepository _storeRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-
-
         #endregion
-        public SetStockLevelHandler(IResponseHandler responseHandler, IInventoryRepository inventoryRepository, IProductRepository productRepository, IStoreRepository storeRepository, IMapper mapper)
+
+        public SetStockLevelHandler(
+            IResponseHandler responseHandler,
+            IUnitOfWork unitOfWork,
+            IMapper mapper)
         {
             _responseHandler = responseHandler;
-            _inventoryRepository = inventoryRepository;
-            _productRepository = productRepository;
-            _storeRepository = storeRepository;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
 
@@ -36,10 +32,15 @@ namespace SmartCare.Application.CQRs.Inventory.Handlers
         {
             var inventoryId = request.inventoryId;
             var newQuantity = request.newQuantity;
-            if (inventoryId == Guid.Empty && newQuantity <= 0)
+
+            if (inventoryId == Guid.Empty || newQuantity <= 0)
                 return _responseHandler.BadRequest<bool>(SystemMessages.INVALID_INPUT);
 
-            var result = await _inventoryRepository.SetStockLevelAsync(inventoryId, newQuantity);
+            var result = await _unitOfWork.Inventories.SetStockLevelAsync(inventoryId, newQuantity);
+
+            // Save changes through UnitOfWork
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
             return result ? _responseHandler.Success(true, SystemMessages.INVENTORY_UPDATED) : _responseHandler.Failed<bool>(SystemMessages.FAILED);
         }
     }

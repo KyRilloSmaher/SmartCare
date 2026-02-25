@@ -19,23 +19,18 @@ namespace SmartCare.Application.CQRs.Payment.Extensions
 {
     public class PaymentExtensions
     {
-        private readonly IOrderRepository _orderRepository;
-        private readonly IInventoryRepository _inventoryRepository;
-        private readonly IClientRepository _clientRepository;
-        private readonly IReservationRepository _reservationRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IBackgroundJobService _backgroundJobs;
         private readonly IEmailService _emailService;
-        private readonly IStoreRepository _storeRepository;
 
-        public PaymentExtensions(IOrderRepository orderRepository, IInventoryRepository inventoryRepository, IClientRepository clientRepository, IReservationRepository reservationRepository, IBackgroundJobService backgroundJobs, IEmailService emailService, IStoreRepository storeRepository)
+        public PaymentExtensions(
+            IUnitOfWork unitOfWork,
+            IBackgroundJobService backgroundJobs,
+            IEmailService emailService)
         {
-            _orderRepository = orderRepository;
-            _inventoryRepository = inventoryRepository;
-            _clientRepository = clientRepository;
-            _reservationRepository = reservationRepository;
+            _unitOfWork = unitOfWork;
             _backgroundJobs = backgroundJobs;
             _emailService = emailService;
-            _storeRepository = storeRepository;
         }
 
         public string ComputeSha256(string input)
@@ -44,44 +39,59 @@ namespace SmartCare.Application.CQRs.Payment.Extensions
             var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(input));
             return Convert.ToHexString(bytes); // uppercase hex
         }
+
         public async Task IncrementClientOrdersAsync(string clientId)
         {
-            var client = await _clientRepository.GetByIdAsync(clientId, true);
+            var client = await _unitOfWork.Clients.GetByIdAsync(clientId, true);
             if (client == null) return;
 
             client.OrdersCount++;
-            await _clientRepository.UpdateAsync(client);
+            
+            // Save changes through UnitOfWork
+            await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task ReleaseReservationsAsync(Guid orderId)
         {
-            var order = await _orderRepository.GetOrderWithDetailsByIdAsync(orderId);
+            var order = await _unitOfWork.Orders.GetOrderWithDetailsByIdAsync(orderId);
             if (order is null) return;
 
             foreach (var item in order.Items ?? Enumerable.Empty<OrderItem>())
             {
                 if (item.ReservationId == Guid.Empty) continue;
 
-                await _reservationRepository.CancelReservationAsync(
+                await _unitOfWork.Reservations.CancelReservationAsync(
                     (Guid)item.ReservationId,
                     item.InvetoryId,
                     ReservationStatus.PaymentTimeOut);
             }
+
+            // Save changes through UnitOfWork
+            await _unitOfWork.SaveChangesAsync();
         }
+
         public async Task FinishReservationsAsync(Guid orderId)
         {
-            var order = await _orderRepository.GetOrderWithDetailsByIdAsync(orderId);
+            var order = await _unitOfWork.Orders.GetOrderWithDetailsByIdAsync(orderId);
             if (order is null) return;
+
             foreach (var item in order.Items ?? Enumerable.Empty<OrderItem>())
             {
-                await _inventoryRepository.FinalizeStockDeductionAsync(
+                await _unitOfWork.Inventories.FinalizeStockDeductionAsync(
                         item.InvetoryId,
                         item.Quantity,
                         order is FromStoreOrder
                     );
+
                 if (item.ReservationId == Guid.Empty) continue;
-                await _reservationRepository.UpdateReservationStatusAsync((Guid)item.ReservationId, ReservationStatus.Completed);
+
+                await _unitOfWork.Reservations.UpdateReservationStatusAsync(
+                    (Guid)item.ReservationId,
+                    ReservationStatus.Completed);
             }
+
+            // Save changes through UnitOfWork
+            await _unitOfWork.SaveChangesAsync();
         }
 
         public void PublishPaymentEvent(SmartCare.Domain.Entities.Order order, string status, string message)
@@ -90,9 +100,9 @@ namespace SmartCare.Application.CQRs.Payment.Extensions
                 publisher.PublishPaymentStatusChanged(order.Id, order.ClientId, status, message));
         }
 
-        public async Task SendPickupEmailAsync(SmartCare.Domain.Entities.Order order, SmartCare.Domain.Entities.Client client, string pickupCode, Guid storeId)
+        public async Task SendPickupEmailAsync(SmartCare.Domain.Entities.Order order, SmartCare.Domain.Entities.ApplictionUser client, string pickupCode, Guid storeId)
         {
-            var store = await _storeRepository.GetByIdAsync(storeId);
+            var store = await _unitOfWork.Stores.GetByIdAsync(storeId);
 
             var emailBody = SystemMessages.PICKUP_ORDER_EMAIL_TEMPLATE
                 .Replace("{{UserName}}", client.UserName)
@@ -110,9 +120,9 @@ namespace SmartCare.Application.CQRs.Payment.Extensions
                     emailBody),
                 TimeSpan.FromSeconds(5));
         }
-        public async Task SendOrderConfirmationEmailAsync(SmartCare.Domain.Entities.Order order, SmartCare.Domain.Entities.Client client)
-        {
 
+        public async Task SendOrderConfirmationEmailAsync(SmartCare.Domain.Entities.Order order, SmartCare.Domain.Entities.ApplictionUser client)
+        {
             var emailBody = SystemMessages.ORDERCONFIRMATION_TEMPLATE
                        .Replace("{{UserName}}", client.UserName)
                        .Replace("{{OrderId}}", order.Id.ToString("N")[^6..])
@@ -120,8 +130,9 @@ namespace SmartCare.Application.CQRs.Payment.Extensions
                        .Replace("{{OrderTotal}}", order.TotalPrice.ToString())
                        .Replace("{{Year}}", DateTime.UtcNow.Year.ToString());
 
-            _backgroundJobs.Schedule(() => _emailService.SendEmailAsync(client.Email, "Your  Order Details", emailBody),
-                                            TimeSpan.FromSeconds(5));
+            _backgroundJobs.Schedule(
+                () => _emailService.SendEmailAsync(client.Email, "Your Order Details", emailBody),
+                TimeSpan.FromSeconds(5));
         }
     }
 }

@@ -1,48 +1,81 @@
 ﻿using SmartCare.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Linq.Expressions;
 
 namespace SmartCare.Domain.IRepositories
 {
     public interface IInventoryRepository : IGenericRepository<Inventory>
     {
-        Task<Guid> GetBestInventoryIdAsync(Guid productId ,int quantityRequired);
+        #region Query Methods
+
+        /// <summary>
+        /// Gets queryable for inventories with optional tracking
+        /// </summary>
+        IQueryable<Inventory> GetInventoriesQueryable(bool trackChanges = false);
+
+        /// <summary>
+        /// Gets the best available inventory for a product based on available stock
+        /// </summary>
+        Task<Inventory?> GetAvailableInventoryAsync(Guid productId, int quantityRequired);
+
+        /// <summary>
+        /// Gets all available inventories for a product
+        /// </summary>
         Task<IEnumerable<Inventory>> GetAvailableInventoriesForProductAsync(Guid productId);
+
+        /// <summary>
+        /// Gets total available stock for a product across all inventories
+        /// </summary>
         Task<int> GetTotalStockForProductAsync(Guid productId);
-        Task<Inventory> IncreaseProductStockAsync(Guid InventoryId , int quantityToAdd);
-        Task<Inventory> DecreaseProductStockAsync(Guid InventoryId , int quantityToSubtract);
-        Task<Inventory?> GetStockOfProductInStore(Guid productId, Guid storeId , int quantity = 1);
-        Task<IQueryable<Inventory>> GetAllInventoryInStoreAsync(Guid storeId);
-
 
         /// <summary>
-        /// Finalizes stock deduction for an inventory item after order confirmation
-        /// This permanently deducts stock that was previously reserved
+        /// Gets stock of a product in a specific store
         /// </summary>
-        /// <param name="inventoryId">The inventory ID to deduct from</param>
-        /// <param name="quantity">The quantity to deduct</param>
-        /// <param name="PickUp">In Case its A pickUp Order</param>
-        /// <returns>True if successful, false if insufficient stock or not found</returns>
-        Task<bool> FinalizeStockDeductionAsync(Guid inventoryId, int quantity, bool PickUp = false);
+        Task<Inventory?> GetStockOfProductInStoreAsync(Guid productId, Guid storeId, int quantity = 1);
 
         /// <summary>
-        /// Finalizes stock deduction for a specific product across any inventory
+        /// Gets all inventories in a store
         /// </summary>
-        /// <param name="productId">The product ID</param>
-        /// <param name="quantity">The quantity to deduct</param>
-        /// <returns>True if successful, false if insufficient stock</returns>
-        Task<bool> FinalizeStockDeductionForProductAsync(Guid productId, int quantity);
+        IQueryable<Inventory> GetAllInventoryInStoreAsync(Guid storeId);
 
-        Task<bool> ReserveStockAsync(Guid inventoryId, int quantity);
-        Task<bool> ReleaseReservedStockAsync(Guid inventoryId, int quantity);
-        Task<bool> TransferStockAsync(Guid fromInventoryId, Guid toInventoryId, int quantity);
+        /// <summary>
+        /// Gets low stock items across all stores
+        /// </summary>
         Task<List<Inventory>> GetLowStockItemsAsync(int threshold);
+
+        /// <summary>
+        /// Gets low stock items in a specific store
+        /// </summary>
         Task<List<Inventory>> GetLowStockItemsInStoreAsync(int threshold, Guid storeId);
 
+        #endregion
+
+        #region Business Logic Methods
+
+        /// <summary>
+        /// Reserves stock from an inventory
+        /// </summary>
+        Task<bool> ReserveStockAsync(Guid inventoryId, int quantity);
+
+        /// <summary>
+        /// Releases reserved stock back to inventory
+        /// </summary>
+        Task<bool> ReleaseReservedStockAsync(Guid inventoryId, int quantity);
+
+        /// <summary>
+        /// Finalizes stock deduction after order completion
+        /// </summary>
+        Task<bool> FinalizeStockDeductionAsync(Guid inventoryId, int quantity, bool pickUp = false);
+
+        /// <summary>
+        /// Transfers stock between inventories
+        /// </summary>
+        Task<bool> TransferStockAsync(Guid fromInventoryId, Guid toInventoryId, int quantity);
+
+        /// <summary>
+        /// Sets new stock level for an inventory
+        /// </summary>
         Task<bool> SetStockLevelAsync(Guid inventoryId, int newQuantity);
-        Task<Inventory> UpdateinventoryAsync(Guid Id, int StockQuantity, int ReservedQuantity);
+
+        #endregion
     }
 }

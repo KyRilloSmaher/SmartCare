@@ -19,28 +19,26 @@ namespace SmartCare.Application.CQRs.Address.Handlers
     {
         #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly IClientRepository _clientRepository;
-        private readonly IAddressRepository _addressRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IRedisCacheService _redisCacheService;
         private readonly IMapper _mapper;
         string tag = CacheConstants.Addresses;
 
 
         #endregion
-        public GetClientAddressesHandler(IResponseHandler responseHandler, IClientRepository clientRepository, IAddressRepository addressRepository, IRedisCacheService redisCacheService, IMapper mapper)
+        public GetClientAddressesHandler(IResponseHandler responseHandler, IRedisCacheService redisCacheService, IMapper mapper, IUnitOfWork unitOfWork)
         {
             _responseHandler = responseHandler;
-            _clientRepository = clientRepository;
-            _addressRepository = addressRepository;
             _redisCacheService = redisCacheService;
             _mapper = mapper;
+            _unitOfWork = unitOfWork;
         }
 
 
         public async Task<Response<IEnumerable<AddressResponseDto>>> Handle(GetClientAddressesAsyncQuery request, CancellationToken cancellationToken)
         {
             var clientId = request.clientId;
-            var client = await _clientRepository.GetValidClientAsync(clientId);
+            var client = await _unitOfWork.Clients.GetValidClientAsync(clientId);
             if (client == null)
                 return await _responseHandler.ClientNotFoundAsync<IEnumerable<AddressResponseDto>>();
 
@@ -58,7 +56,8 @@ namespace SmartCare.Application.CQRs.Address.Handlers
             {
             }
 
-            var addresses = await _addressRepository.GetClientAddressesAsync(client.Id);
+            var addresses = await _unitOfWork.Addresses.GetClientAddressesAsync(client.Id);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             var responseDto = _mapper.Map<IEnumerable<AddressResponseDto>>(addresses);
 
             if (responseDto != null)

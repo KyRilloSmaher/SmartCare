@@ -12,9 +12,7 @@ using SmartCare.Domain.Constants;
 using SmartCare.Domain.Enums;
 using SmartCare.Domain.IRepositories;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using paymentEntity = SmartCare.Domain.Entities.Payment;
 
@@ -22,16 +20,18 @@ namespace SmartCare.Application.CQRs.Payment.Handlers
 {
     public class PayOfflineHandler : IRequestHandler<PayOfflineAsyncCommand, Response<PaymentResult>>
     {
-        private readonly IPaymentRepository _paymentRepository;
-        private readonly IOrderRepository _orderRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IResponseHandler _responseHandler;
         private readonly IBackgroundJobService _backgroundJobs;
         private readonly PaymentExtensions _paymentExtensions;
 
-        public PayOfflineHandler(IPaymentRepository paymentRepository, IOrderRepository orderRepository, IResponseHandler responseHandler, IBackgroundJobService backgroundJobs, PaymentExtensions paymentExtensions)
+        public PayOfflineHandler(
+            IUnitOfWork unitOfWork,
+            IResponseHandler responseHandler,
+            IBackgroundJobService backgroundJobs,
+            PaymentExtensions paymentExtensions)
         {
-            _paymentRepository = paymentRepository;
-            _orderRepository = orderRepository;
+            _unitOfWork = unitOfWork;
             _responseHandler = responseHandler;
             _backgroundJobs = backgroundJobs;
             _paymentExtensions = paymentExtensions;
@@ -43,7 +43,7 @@ namespace SmartCare.Application.CQRs.Payment.Handlers
             var hashedCode = _paymentExtensions.ComputeSha256(orderCode);
 
             // 1. Get the order by pickup code
-            var order = await _orderRepository.GetOrderByPickUpCode(hashedCode);
+            var order = await _unitOfWork.Orders.GetOrderByPickUpCode(hashedCode);
             if (order is null)
                 return _responseHandler.BadRequest<PaymentResult>(SystemMessages.ORDER_NOT_FOUND);
 
@@ -52,7 +52,7 @@ namespace SmartCare.Application.CQRs.Payment.Handlers
                 return _responseHandler.BadRequest<PaymentResult>("Order is not payable.");
 
             // 3. Check if a payment already exists
-            var existingPayment = await _paymentRepository.GetByOrderIdAsync(order.Id);
+            var existingPayment = await _unitOfWork.Payments.GetByOrderIdAsync(order.Id);
 
             if (existingPayment != null)
             {
@@ -62,7 +62,6 @@ namespace SmartCare.Application.CQRs.Payment.Handlers
                 existingPayment.Method = Domain.Enums.PaymentMethod.Cash;
                 existingPayment.UpdatedAt = DateTime.UtcNow;
 
-                await _paymentRepository.UpdateAsync(existingPayment);
             }
             else
             {
@@ -76,15 +75,17 @@ namespace SmartCare.Application.CQRs.Payment.Handlers
                     CreatedAt = DateTime.UtcNow,
                     Method = Domain.Enums.PaymentMethod.Cash
                 };
-                await _paymentRepository.Add(payment);
+                await _unitOfWork.Payments.AddAsync(payment);
                 order.PaymentIntentId = payment.Id.ToString();
             }
 
             // 4. Update order
             order.Status = OrderStatus.Completed;
-            await _orderRepository.UpdateAsync(order);
 
-            // 5. Finalize inventory and reservations
+            // Save all changes atomically through UnitOfWork
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            // 5. Finalize inventory and reservations (background job)
             _backgroundJobs.Enqueue(() => _paymentExtensions.FinishReservationsAsync(order.Id));
 
             // 6. Increment client stats & publish event

@@ -6,9 +6,7 @@ using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Domain.Constants;
 using SmartCare.Domain.IRepositories;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Inventory.Handlers
@@ -17,20 +15,17 @@ namespace SmartCare.Application.CQRs.Inventory.Handlers
     {
         #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly IInventoryRepository _inventoryRepository;
-        private readonly IProductRepository _productRepository;
-        private readonly IStoreRepository _storeRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-
-
         #endregion
 
-        public DecreaseProductStockHandler(IResponseHandler responseHandler, IInventoryRepository inventoryRepository, IProductRepository productRepository, IStoreRepository storeRepository, IMapper mapper)
+        public DecreaseProductStockHandler(
+            IResponseHandler responseHandler,
+            IUnitOfWork unitOfWork,
+            IMapper mapper)
         {
             _responseHandler = responseHandler;
-            _inventoryRepository = inventoryRepository;
-            _productRepository = productRepository;
-            _storeRepository = storeRepository;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
 
@@ -38,17 +33,22 @@ namespace SmartCare.Application.CQRs.Inventory.Handlers
         {
             var InventoryId = request.InventoryId;
             var quantityToSubtract = request.quantityToSubtract;
-            var inventory = await _inventoryRepository.GetByIdAsync(InventoryId);
+
+            if (InventoryId == Guid.Empty || quantityToSubtract <= 0)
+                return _responseHandler.BadRequest<InventoryAdminResponseDto>(SystemMessages.INVALID_INPUT);
+
+            var inventory = await _unitOfWork.Inventories.GetByIdAsync(InventoryId);
             if (inventory == null)
             {
                 return _responseHandler.Failed<InventoryAdminResponseDto>(SystemMessages.INVENTORY_NOT_FOUND);
             }
-            if (InventoryId == Guid.Empty && quantityToSubtract <= 0)
-                return _responseHandler.BadRequest<InventoryAdminResponseDto>(SystemMessages.INVALID_INPUT);
-            var Inventory = await _inventoryRepository.DecreaseProductStockAsync(InventoryId, quantityToSubtract);
-            if (Inventory == null)
-                return _responseHandler.Failed<InventoryAdminResponseDto>(SystemMessages.NOT_FOUND);
-            var inventoryDto = _mapper.Map<InventoryAdminResponseDto>(Inventory);
+
+           inventory.StockQuantity -= quantityToSubtract;
+
+            // Save changes through UnitOfWork
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            var inventoryDto = _mapper.Map<InventoryAdminResponseDto>(inventory);
             return _responseHandler.Success(inventoryDto);
         }
     }

@@ -1,22 +1,16 @@
 ﻿using AutoMapper;
 using MediatR;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using SmartCare.Application.commens;
 using SmartCare.Application.CQRs.Order.Commands;
 using SmartCare.Application.CQRs.Order.Extension;
 using SmartCare.Application.DTOs.Orders.Responses;
-using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.Handlers.ResponseHandler;
-using SmartCare.Application.IServices;
 using SmartCare.Domain.Constants;
 using SmartCare.Domain.Enums;
 using SmartCare.Domain.IRepositories;
-using Stripe.Climate;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Order.Handlers
@@ -25,19 +19,17 @@ namespace SmartCare.Application.CQRs.Order.Handlers
     {
         #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly ICartRepository _cartRepository;
-        private readonly IClientRepository _clientRepository;
-        private readonly IOrderRepository _orderRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMediator _mediator;
-
         #endregion
 
-        public UpdateOrderAsyncHandler(IResponseHandler responseHandler, ICartRepository cartRepository, IClientRepository clientRepository, IOrderRepository orderRepository, IMediator mediator)
+        public UpdateOrderAsyncHandler(
+            IResponseHandler responseHandler,
+            IUnitOfWork unitOfWork,
+            IMediator mediator)
         {
             _responseHandler = responseHandler;
-            _cartRepository = cartRepository;
-            _clientRepository = clientRepository;
-            _orderRepository = orderRepository;
+            _unitOfWork = unitOfWork;
             _mediator = mediator;
         }
 
@@ -45,19 +37,20 @@ namespace SmartCare.Application.CQRs.Order.Handlers
         {
             var clientId = request.clientId;
             var dto = request.dto;
-            var client = await _clientRepository.GetByIdAsync(clientId);
+
+            var client = await _unitOfWork.Clients.GetByIdAsync(clientId);
             if (client == null)
                 return _responseHandler.BadRequest<OrderResponseDto>(SystemMessages.USER_NOT_FOUND);
 
-            var cart = await _cartRepository.GetByIdAsync(dto.CartId, true);
+            var cart = await _unitOfWork.Carts.GetByIdAsync(dto.CartId, true);
             if (cart == null || cart.ClientId != clientId)
                 return _responseHandler.BadRequest<OrderResponseDto>(SystemMessages.CART_NOT_FOUND);
 
-            var cartItems = await _cartRepository.GetCartItemsAsync(cart.Id);
+            var cartItems = await _unitOfWork.Carts.GetCartItemsAsync(cart.Id);
             if (!cartItems.Any())
                 return _responseHandler.BadRequest<OrderResponseDto>(SystemMessages.CART_EMPTY);
 
-            var order = await _orderRepository.GetOrderWithDetailsByIdAsync(dto.OrderId);
+            var order = await _unitOfWork.Orders.GetOrderWithDetailsByIdAsync(dto.OrderId);
             if (order == null || order.ClientId != clientId)
                 return _responseHandler.BadRequest<OrderResponseDto>(SystemMessages.ORDER_NOT_FOUND);
 
