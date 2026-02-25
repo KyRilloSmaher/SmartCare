@@ -10,6 +10,7 @@ using SmartCare.Application.CQRs.Authentication.Commands.Token;
 using SmartCare.Application.CQRs.Authentication.Queries;
 using SmartCare.Application.DTOs.Auth.Requests;
 using SmartCare.Application.DTOs.Auth.Responses;
+using SmartCare.Application.DTOs.Pharmacist.Request;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Application.IServices;
 using System.Security.Claims;
@@ -51,7 +52,17 @@ namespace SmartCare.API.Controllers
             return ControllersHelperMethods.FinalResponse(result);
         }
 
-
+        /// <summary>
+        /// Register a new Pharmacist.
+        /// </summary>
+        [HttpPost(ApplicationRouting.Authentication.pharmacistSignUp)]
+        [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> PharmacistSignUpAsync([FromForm] pharmacistSignUpRequestDto dto)
+        {
+            //var result = await _authenticationService.SignUpAsync(dto);
+            var result = await _mediator.Send(new pharmacistSignUpAsyncCommand(dto));
+            return ControllersHelperMethods.FinalResponse(result);
+        }
 
         /// <summary>
         /// Login and retrieve access + refresh tokens.

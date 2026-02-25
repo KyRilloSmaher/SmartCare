@@ -36,6 +36,7 @@ namespace SmartCare.InfraStructure.DbContexts
         public DbSet<Rate> Rates { get; set; }
         public DbSet<Reservation> Reservations { get; set; }
         public DbSet<Store> Stores { get; set; }
+        public DbSet<Pharmacist> pharmacists { get; set; }
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

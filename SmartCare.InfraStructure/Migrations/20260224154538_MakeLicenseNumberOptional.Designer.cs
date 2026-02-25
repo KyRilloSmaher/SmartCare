@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using SmartCare.InfraStructure.DbContexts;
@@ -12,9 +13,11 @@ using SmartCare.InfraStructure.DbContexts;
 namespace SmartCare.InfraStructure.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20260224154538_MakeLicenseNumberOptional")]
+    partial class MakeLicenseNumberOptional
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -647,6 +650,10 @@ namespace SmartCare.InfraStructure.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
+                    b.Property<string>("AccountType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateOnly>("BirthDate")
                         .HasColumnType("date");
 
@@ -682,7 +689,6 @@ namespace SmartCare.InfraStructure.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("LicenseNumber")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
@@ -741,7 +747,8 @@ namespace SmartCare.InfraStructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("LicenseNumber")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[LicenseNumber] IS NOT NULL");
 
                     b.HasIndex("OTP")
                         .IsUnique()

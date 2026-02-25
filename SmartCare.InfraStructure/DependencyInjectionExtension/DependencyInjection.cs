@@ -37,6 +37,7 @@ namespace SmartCare.InfraStructure.Extensions
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<ICompanyRepository, CompanyRepository>();
             services.AddScoped<IStoreRepository, StoreRepository>();
+            services.AddScoped<IPharmacistRepository, PharmacistRepository>();
             services.AddScoped<IRateRepository, RateRepository>();
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<IFavouriteRepository, FavouriteRepository>();
@@ -63,6 +64,15 @@ namespace SmartCare.InfraStructure.Extensions
             })
             .AddEntityFrameworkStores<ApplicationDBContext>()
             .AddDefaultTokenProviders();
+
+            services.AddIdentityCore<Pharmacist>(options =>
+            {
+                options.Password.RequireDigit = false;
+                options.Password.RequiredLength = 6;
+                options.User.RequireUniqueEmail = true;
+            })
+             .AddEntityFrameworkStores<ApplicationDBContext>() 
+             .AddDefaultTokenProviders();
 
             // ---------- Application Services ----------
             services.AddScoped<IAuthenticationService, AuthenticationService>();

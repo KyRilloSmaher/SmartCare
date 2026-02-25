@@ -39,8 +39,12 @@ namespace SmartCare.InfraStructure.Repositories
             return await base.GetAllAsync();
         }
 
+        public async Task<Store> GetStoreByIdAsync(Guid storeId)
+        {
+            return await _context.Stores.FindAsync(storeId);
+        }
 
-    public async Task<IEnumerable<Store>> SearchStoresAsync(string searchTerm)
+        public async Task<IEnumerable<Store>> SearchStoresAsync(string searchTerm)
     {
             if (string.IsNullOrWhiteSpace(searchTerm))
                 return Enumerable.Empty<Store>();
