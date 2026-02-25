@@ -1,18 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using SmartCare.Domain.Entities;
 using SmartCare.Domain.IRepositories;
 using SmartCare.InfraStructure.DbContexts;
 using SmartCare.InfraStructure.Repositories;
-using System.Data;
 
 namespace SmartCare.Infrastructure.Data
 {
-
-
-    /// <summary>
-    /// Implementation of Unit of Work pattern for SmartCare application.
-    /// Manages database context and coordinates repository operations with automatic transaction handling.
-    /// </summary>
     public class UnitOfWork : IUnitOfWork
     {
         #region Fields
@@ -40,28 +35,19 @@ namespace SmartCare.Infrastructure.Data
         public IReservationRepository Reservations { get; }
         public IInventoryRepository Inventories { get; }
         public IPaymentRepository Payments { get; }
+        public IEmailVerificationRepository EmailVerifications { get; }
+
+        // Identity Management
+        public UserManager<ApplictionUser> UserManager { get; }
+        public RoleManager<IdentityRole> RoleManager { get; }
 
         #endregion
 
         #region Properties
 
-        /// <summary>
-        /// Indicates whether there's an active transaction
-        /// </summary>
         public bool HasActiveTransaction => _currentTransaction != null;
-
-        /// <summary>
-        /// Gets the current transaction ID if available
-        /// </summary>
         public Guid? CurrentTransactionId => _currentTransaction?.TransactionId;
-
-        /// <summary>
-        /// Gets the number of tracked entities
-        /// </summary>
         public int TrackedEntitiesCount => _context.ChangeTracker.Entries().Count();
-
-
-        Domain.IRepositories.IEmailVerificationRepository IUnitOfWork.EmailVerifications => throw new NotImplementedException();
 
         #endregion
 
@@ -81,7 +67,10 @@ namespace SmartCare.Infrastructure.Data
             ICartRepository cartRepository,
             IReservationRepository reservationRepository,
             IInventoryRepository inventoryRepository,
-            IPaymentRepository paymentRepository)
+            IPaymentRepository paymentRepository,
+            IEmailVerificationRepository emailVerificationRepository,
+            UserManager<ApplictionUser> userManager,
+            RoleManager<IdentityRole> roleManager)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _repositories = new Dictionary<Type, object>();
@@ -100,15 +89,17 @@ namespace SmartCare.Infrastructure.Data
             Reservations = reservationRepository ?? throw new ArgumentNullException(nameof(reservationRepository));
             Inventories = inventoryRepository ?? throw new ArgumentNullException(nameof(inventoryRepository));
             Payments = paymentRepository ?? throw new ArgumentNullException(nameof(paymentRepository));
+            EmailVerifications = emailVerificationRepository ?? throw new ArgumentNullException(nameof(emailVerificationRepository));
+
+            // Initialize Identity managers
+            UserManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+            RoleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
         }
 
         #endregion
 
         #region Repository Management
 
-        /// <summary>
-        /// Gets a generic repository for the specified entity type
-        /// </summary>
         public IGenericRepository<T> Repository<T>() where T : class
         {
             var type = typeof(T);
@@ -125,11 +116,11 @@ namespace SmartCare.Infrastructure.Data
 
         #endregion
 
-        #region Auto-Transaction Save Changes
+        #region Save Changes with Automatic Transaction
 
         /// <summary>
-        /// Saves all changes with automatic transaction management
-        /// Automatically wraps all changes in a transaction and rolls back on failure
+        /// Saves all changes with automatic transaction management.
+        /// All operations within the same SaveChanges call are atomic.
         /// </summary>
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
@@ -139,17 +130,7 @@ namespace SmartCare.Infrastructure.Data
                 return await _context.SaveChangesAsync(cancellationToken);
             }
 
-            // Otherwise, use automatic transaction
-            return await SaveChangesWithTransactionAsync(cancellationToken);
-        }
-
-        /// <summary>
-        /// Saves all changes within an automatic transaction
-        /// Will rollback if any error occurs
-        /// </summary>
-        public async Task<int> SaveChangesWithTransactionAsync(CancellationToken cancellationToken = default)
-        {
-            // Start a new transaction
+            // Use automatic transaction for atomic operations
             await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
 
             try
@@ -157,7 +138,7 @@ namespace SmartCare.Infrastructure.Data
                 var result = await _context.SaveChangesAsync(cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
 
-                // Detach all entities after successful save to free memory
+                // Detach entities to free memory
                 DetachAllEntities();
 
                 return result;
@@ -165,7 +146,6 @@ namespace SmartCare.Infrastructure.Data
             catch
             {
                 // Transaction will be automatically rolled back when disposed
-                // Clear change tracker to prevent partial state
                 DetachAllEntities();
                 throw;
             }
@@ -173,11 +153,8 @@ namespace SmartCare.Infrastructure.Data
 
         #endregion
 
-        #region Manual Transaction Management
+        #region Manual Transaction Management (for complex scenarios)
 
-        /// <summary>
-        /// Begins a new manual transaction
-        /// </summary>
         public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
         {
             if (_currentTransaction != null)
@@ -190,9 +167,6 @@ namespace SmartCare.Infrastructure.Data
             _currentTransaction = await _context.Database.BeginTransactionAsync(cancellationToken);
         }
 
-        /// <summary>
-        /// Commits the current manual transaction
-        /// </summary>
         public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
         {
             if (_currentTransaction == null)
@@ -211,8 +185,6 @@ namespace SmartCare.Infrastructure.Data
             {
                 await _context.SaveChangesAsync(cancellationToken);
                 await _currentTransaction.CommitAsync(cancellationToken);
-
-                // Detach all entities after successful commit
                 DetachAllEntities();
             }
             catch
@@ -227,9 +199,6 @@ namespace SmartCare.Infrastructure.Data
             }
         }
 
-        /// <summary>
-        /// Rolls back the current manual transaction
-        /// </summary>
         public async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
         {
             if (_currentTransaction == null)
@@ -240,8 +209,6 @@ namespace SmartCare.Infrastructure.Data
             try
             {
                 await _currentTransaction.RollbackAsync(cancellationToken);
-
-                // Clear all tracked entities on rollback
                 DetachAllEntities();
             }
             finally
@@ -254,63 +221,8 @@ namespace SmartCare.Infrastructure.Data
 
         #endregion
 
-        #region Transaction Execution Helpers
-
-        /// <summary>
-        /// Executes an operation within a transaction
-        /// Automatically handles commit/rollback
-        /// </summary>
-        public async Task ExecuteInTransactionAsync(Func<Task> operation, CancellationToken cancellationToken = default)
-        {
-            await ExecuteInTransactionAsync<object?>(async () =>
-            {
-                await operation();
-                return null;
-            }, cancellationToken);
-        }
-
-        /// <summary>
-        /// Executes an operation within a transaction and returns a result
-        /// Automatically handles commit/rollback
-        /// </summary>
-        public async Task<T> ExecuteInTransactionAsync<T>(Func<Task<T>> operation, CancellationToken cancellationToken = default)
-        {
-            var shouldCloseTransaction = _currentTransaction == null;
-
-            if (shouldCloseTransaction)
-            {
-                await BeginTransactionAsync(cancellationToken);
-            }
-
-            try
-            {
-                var result = await operation();
-
-                if (shouldCloseTransaction)
-                {
-                    await CommitTransactionAsync(cancellationToken);
-                }
-
-                return result;
-            }
-            catch
-            {
-                if (shouldCloseTransaction && _currentTransaction != null)
-                {
-                    await RollbackTransactionAsync(cancellationToken);
-                }
-                throw;
-            }
-        }
-
-        #endregion
-
         #region Entity Tracking Management
 
-        /// <summary>
-        /// Detaches all entities from the context to free memory
-        /// Called automatically after successful SaveChanges
-        /// </summary>
         public void DetachAllEntities()
         {
             var entries = _context.ChangeTracker.Entries().ToList();
@@ -320,17 +232,11 @@ namespace SmartCare.Infrastructure.Data
             }
         }
 
-        /// <summary>
-        /// Detaches a specific entity from the context
-        /// </summary>
         public void DetachEntity<T>(T entity) where T : class
         {
             _context.Entry(entity).State = EntityState.Detached;
         }
 
-        /// <summary>
-        /// Attaches an entity to the context
-        /// </summary>
         public void AttachEntity<T>(T entity) where T : class
         {
             if (_context.Entry(entity).State == EntityState.Detached)
@@ -339,25 +245,16 @@ namespace SmartCare.Infrastructure.Data
             }
         }
 
-        /// <summary>
-        /// Sets the state of an entity
-        /// </summary>
         public void SetEntityState<T>(T entity, EntityState state) where T : class
         {
             _context.Entry(entity).State = state;
         }
 
-        /// <summary>
-        /// Gets the current state of an entity
-        /// </summary>
         public EntityState GetEntityState<T>(T entity) where T : class
         {
             return _context.Entry(entity).State;
         }
 
-        /// <summary>
-        /// Reloads an entity from the database
-        /// </summary>
         public async Task ReloadEntityAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class
         {
             await _context.Entry(entity).ReloadAsync(cancellationToken);
@@ -367,9 +264,6 @@ namespace SmartCare.Infrastructure.Data
 
         #region Connection Management
 
-        /// <summary>
-        /// Closes the database connection and releases all tracked entities
-        /// </summary>
         public async Task CloseConnectionAsync()
         {
             DetachAllEntities();
@@ -380,9 +274,6 @@ namespace SmartCare.Infrastructure.Data
 
         #region Disposal
 
-        /// <summary>
-        /// Disposes the unit of work and ensures all connections are closed
-        /// </summary>
         public void Dispose()
         {
             Dispose(true);
@@ -393,26 +284,17 @@ namespace SmartCare.Infrastructure.Data
         {
             if (!_disposed && disposing)
             {
-                // Rollback any active transaction
                 if (_currentTransaction != null)
                 {
                     _currentTransaction.Rollback();
                     _currentTransaction.Dispose();
                 }
 
-                // Detach all entities before closing connection
                 DetachAllEntities();
-
-                // Close and dispose context
                 _context?.Dispose();
                 _repositories.Clear();
             }
             _disposed = true;
-        }
-
-        void IUnitOfWork.ReloadEntityAsync<T>(T entity, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
         }
 
         #endregion

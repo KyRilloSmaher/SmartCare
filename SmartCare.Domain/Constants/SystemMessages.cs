@@ -65,6 +65,17 @@ namespace SmartCare.Domain.Constants
         public const string ADDRESS_IS_REQUIRED = "Address is Required ";
         public const string ADDRESS_ADDED = "Address added to client";
         public const string ADDRESS_NOT_FOUND = "Address not found";
+        public const string PASSWORD_CHANGED_SUCCESS = "Password changed successfully";
+        public const string PASSWORD_CHANGE_FAILED = "Failed to change password";
+        public const string RESET_CODE_EXPIRED = "Reset code has expired";
+        public const string NO_RESET_CODE = "No reset code found";
+        public const string MAX_ATTEMPTS_REACHED = "Maximum attempts reached. Please request a new code";
+        public const string RESET_NOT_CONFIRMED = "Please confirm your reset code first";
+        public const string PASSWORD_RESET_RATE_LIMIT = "Please wait {0} seconds before requesting another code";
+        public const string REFRESH_TOKEN_EXPIRED = "Refresh token Has been Expired";
+        public const string INVALID_REFRESH_TOKEN = "Invalid Refresh token ";
+        public const string TOKEN_REFRESHED_SUCCESS = " Refresh token refreshed ";
+
         // =====================
         // 💊 Product & Inventory
         // =====================

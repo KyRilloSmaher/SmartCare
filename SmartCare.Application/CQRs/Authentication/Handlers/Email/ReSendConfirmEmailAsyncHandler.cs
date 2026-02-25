@@ -1,12 +1,14 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using SmartCare.API.Helpers;
 using SmartCare.Application.CQRs.Authentication.Commands.Email;
 using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Domain.Constants;
 using SmartCare.Domain.Entities;
+using SmartCare.Domain.IRepositories;
 using System;
 using System.Net;
 using System.Threading;
@@ -18,22 +20,25 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Email
     {
         #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly UserManager<ApplictionUser> _userManager;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IEmailService _emailService;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ILogger<ReSendConfirmEmailAsyncHandler> _logger;
         #endregion
 
         #region Constructor
         public ReSendConfirmEmailAsyncHandler(
             IResponseHandler responseHandler,
-            UserManager<ApplictionUser> userManager,
+            IUnitOfWork unitOfWork,
             IEmailService emailService,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            ILogger<ReSendConfirmEmailAsyncHandler> logger)
         {
             _responseHandler = responseHandler;
-            _userManager = userManager;
+            _unitOfWork = unitOfWork;
             _emailService = emailService;
             _httpContextAccessor = httpContextAccessor;
+            _logger = logger;
         }
         #endregion
 
@@ -41,41 +46,62 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Email
         {
             var dto = request.dto;
 
-            // Get user via UserManager
-            var user = await _userManager.FindByEmailAsync(dto.Email);
-            if (user == null)
-                return _responseHandler.Failed<bool>(SystemMessages.USER_NOT_FOUND);
+            try
+            {
+                _logger.LogInformation("Resending confirmation email to: {Email}", dto.Email);
 
-            if (user.EmailConfirmed)
-                return _responseHandler.Failed<bool>(SystemMessages.EMAIL_ALREADY_VERIFIED);
+                // Get user
+                var user = await _unitOfWork.UserManager.FindByEmailAsync(dto.Email);
+                if (user == null)
+                {
+                    _logger.LogWarning("User not found for email: {Email}", dto.Email);
+                    return _responseHandler.Failed<bool>(SystemMessages.USER_NOT_FOUND);
+                }
 
-            // Generate email confirmation token
-            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            var encodedToken = WebUtility.UrlEncode(token);
+                // Check if email is already confirmed
+                if (user.EmailConfirmed)
+                {
+                    _logger.LogInformation("Email already confirmed for user: {UserId}", user.Id);
+                    return _responseHandler.Failed<bool>(SystemMessages.EMAIL_ALREADY_VERIFIED);
+                }
 
-            // Build confirmation URL
-            var requestScheme = _httpContextAccessor.HttpContext!.Request.Scheme;
-            var requestHost = _httpContextAccessor.HttpContext.Request.Host;
-            var baseUrl = $"{requestScheme}://{requestHost}";
-            var confirmEmailUrl = $"{baseUrl}/{ApplicationRouting.Authentication.ConfirmEmail}?email={user.Email}&token={encodedToken}";
+                    // Generate new email confirmation token
+                    var token = await _unitOfWork.UserManager.GenerateEmailConfirmationTokenAsync(user);
+                    var encodedToken = WebUtility.UrlEncode(token);
 
-            // Update user properties
-            user.EmailConfirmationLink = confirmEmailUrl;
-            user.VerificationURLExpiresAt = DateTime.UtcNow.AddHours(24);
+                    // Build confirmation URL
+                    var requestScheme = _httpContextAccessor.HttpContext!.Request.Scheme;
+                    var requestHost = _httpContextAccessor.HttpContext.Request.Host;
+                    var baseUrl = $"{requestScheme}://{requestHost}";
+                    var confirmEmailUrl = $"{baseUrl}/{ApplicationRouting.Authentication.ConfirmEmail}?email={user.Email}&token={encodedToken}";
 
-            // Save updated user
-            var updateResult = await _userManager.UpdateAsync(user);
-            if (!updateResult.Succeeded)
-                return _responseHandler.Failed<bool>(
-                    string.Join(", ", updateResult.Errors.Select(e => e.Description))
-                );
+                    // Store verification in EmailVerifications table (not in user entity)
+                    await _unitOfWork.EmailVerifications.AddVerificationAsync(
+                        email: user.Email,
+                        code: token,
+                        validFor: TimeSpan.FromHours(24)
+                    );
+                    await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            // Send confirmation email
-            bool emailSent = await _emailService.SendConfirmationEmailAsync(user.Email, confirmEmailUrl);
+                    // Send confirmation email
+                    var emailSent = await _emailService.SendConfirmationEmailAsync(user.Email, confirmEmailUrl);
 
-            return emailSent
-                ? _responseHandler.Success(true, SystemMessages.SUCCESS)
-                : _responseHandler.Failed<bool>(SystemMessages.FAILED);
+                    if (!emailSent)
+                    {
+                        _logger.LogError("Failed to send confirmation email to: {Email}", dto.Email);
+                        throw new Exception("Email sending failed");
+                    }
+
+                    _logger.LogInformation("Confirmation email resent successfully to: {Email}", dto.Email);
+
+                    return _responseHandler.Success(true, SystemMessages.EMAIL_SENT);
+             
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error resending confirmation email to {Email}: {Message}", dto.Email, ex.Message);
+                return _responseHandler.Failed<bool>(SystemMessages.FAILED);
+            }
         }
     }
 }

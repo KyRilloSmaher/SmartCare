@@ -144,11 +144,11 @@ namespace SmartCare.InfraStructure.Services
             var encodedToken = WebUtility.UrlEncode(token);
             var request = _httpContextAccessor.HttpContext!.Request;
             var baseUrl = $"{request.Scheme}://{request.Host}";
-            user.EmailConfirmationLink = $"{baseUrl}/{ApplicationRouting.Authentication.ConfirmEmail}?email={user.Email}&token={encodedToken}";
-            user.VerificationURLExpiresAt = DateTime.UtcNow.AddHours(24);
+            //user.EmailConfirmationLink = $"{baseUrl}/{ApplicationRouting.Authentication.ConfirmEmail}?email={user.Email}&token={encodedToken}";
+            //user.VerificationURLExpiresAt = DateTime.UtcNow.AddHours(24);
 
-            await _userManager.UpdateAsync(user);
-            await _emailService.SendConfirmationEmailAsync(user.Email, user.EmailConfirmationLink);
+            //await _userManager.UpdateAsync(user);
+            //await _emailService.SendConfirmationEmailAsync(user.Email, user.);
 
             return _responseHandler.Success(true, SystemMessages.SUCCESS);
         }
@@ -245,12 +245,12 @@ namespace SmartCare.InfraStructure.Services
             var encodedToken = WebUtility.UrlEncode(token);
             var request = _httpContextAccessor.HttpContext!.Request;
             var baseUrl = $"{request.Scheme}://{request.Host}";
-            user.EmailConfirmationLink = $"{baseUrl}/{ApplicationRouting.Authentication.ConfirmEmail}?email={user.Email}&token={encodedToken}";
-            user.VerificationURLExpiresAt = DateTime.UtcNow.AddHours(24);
-            await _userManager.UpdateAsync(user);
+            //user.EmailConfirmationLink = $"{baseUrl}/{ApplicationRouting.Authentication.ConfirmEmail}?email={user.Email}&token={encodedToken}";
+            //user.VerificationURLExpiresAt = DateTime.UtcNow.AddHours(24);
+            //await _userManager.UpdateAsync(user);
 
-            bool success = await _emailService.SendConfirmationEmailAsync(user.Email, user.EmailConfirmationLink);
-            return success ? _responseHandler.Success(true, SystemMessages.SUCCESS) : _responseHandler.Failed<bool>(SystemMessages.FAILED);
+            //bool success = await _emailService.SendConfirmationEmailAsync(user.Email, user.EmailConfirmationLink);
+            return true ? _responseHandler.Success(true, SystemMessages.SUCCESS) : _responseHandler.Failed<bool>(SystemMessages.FAILED);
         }
 
         public Task<Response<TokenResponseDto>> GetRefreshTokenAsync(TokenRequestDto dto)

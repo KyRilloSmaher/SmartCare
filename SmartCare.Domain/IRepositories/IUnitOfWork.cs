@@ -1,12 +1,9 @@
-﻿
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using SmartCare.Domain.Entities;
 
 namespace SmartCare.Domain.IRepositories
 {
-    /// <summary>
-    /// Unit of Work pattern implementation for coordinating database operations
-    /// and managing transactions across multiple repositories.
-    /// </summary>
     public interface IUnitOfWork : IDisposable
     {
         // Repository Properties
@@ -25,21 +22,34 @@ namespace SmartCare.Domain.IRepositories
         IPaymentRepository Payments { get; }
         IEmailVerificationRepository EmailVerifications { get; }
 
+        // Identity Management
+        UserManager<ApplictionUser> UserManager { get; }
+        RoleManager<IdentityRole> RoleManager { get; }
+
         // Generic Repository access
         IGenericRepository<T> Repository<T>() where T : class;
 
-        // Save Changes - Automatically handles transactions
+        /// <summary>
+        /// Saves all changes with automatic transaction management.
+        /// All operations within the same SaveChanges call are atomic.
+        /// </summary>
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 
-        // Manual Transaction Control (for complex scenarios)
+        /// <summary>
+        /// Explicitly begins a transaction for complex scenarios spanning multiple SaveChanges calls.
+        /// Use only when you need to span operations across multiple SaveChanges calls.
+        /// </summary>
         Task BeginTransactionAsync(CancellationToken cancellationToken = default);
-        Task CommitTransactionAsync(CancellationToken cancellationToken = default);
-        Task RollbackTransactionAsync(CancellationToken cancellationToken = default);
 
-        // Bulk Operations with Auto-Transaction
-        Task<int> SaveChangesWithTransactionAsync(CancellationToken cancellationToken = default);
-        Task ExecuteInTransactionAsync(Func<Task> operation, CancellationToken cancellationToken = default);
-        Task<T> ExecuteInTransactionAsync<T>(Func<Task<T>> operation, CancellationToken cancellationToken = default);
+        /// <summary>
+        /// Commits an explicit transaction.
+        /// </summary>
+        Task CommitTransactionAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Rolls back an explicit transaction.
+        /// </summary>
+        Task RollbackTransactionAsync(CancellationToken cancellationToken = default);
 
         // Entity Tracking Management
         void DetachAllEntities();
@@ -47,7 +57,7 @@ namespace SmartCare.Domain.IRepositories
         void AttachEntity<T>(T entity) where T : class;
         void SetEntityState<T>(T entity, EntityState state) where T : class;
         EntityState GetEntityState<T>(T entity) where T : class;
-        void ReloadEntityAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class;
+        Task ReloadEntityAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class;
 
         // Cleanup
         Task CloseConnectionAsync();

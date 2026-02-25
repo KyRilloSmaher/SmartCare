@@ -26,7 +26,7 @@ namespace SmartCare.InfraStructure.Configurations
             builder.HasMany(o => o.Items)
                 .WithOne(i => i.Order)
                 .HasForeignKey(i => i.OrderId);
-
+            
             builder.HasIndex(o => o.Status);
         }
     }

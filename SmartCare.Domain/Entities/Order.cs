@@ -22,6 +22,7 @@ namespace SmartCare.Domain.Entities
         public int PaymentVersion { get; set; } = 1;
 
         public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
+        public DateTime? UpdatedAt { get; set; }
         public bool IsDeleted { get; set; }
 
         public Payment? Payment { get; set; }

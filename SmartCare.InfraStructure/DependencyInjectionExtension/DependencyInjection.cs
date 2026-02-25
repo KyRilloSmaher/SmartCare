@@ -24,6 +24,7 @@ using SmartCare.Application.Handlers.ResponsesHandler;
 using SmartCare.Infrastructure.Repositories;
 using SmartCare.Application.commens;
 using SmartCare.Application.Mappings;
+using SmartCare.Infrastructure.Data;
 
 namespace SmartCare.InfraStructure.Extensions
 {
@@ -46,8 +47,9 @@ namespace SmartCare.InfraStructure.Extensions
             services.AddScoped<ICartRepository, CartRepository>();
             services.AddScoped<IReservationRepository , ReservationRepository>();
             services.AddScoped<IInventoryRepository, InventoryRepository>();
-
+            services.AddScoped<IEmailVerificationRepository, EmailVerificationRepository>();
             services.AddScoped<IPaymentRepository, PaymentRepository>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
             // ---------- Identity ----------
             services.AddIdentity<ApplictionUser, IdentityRole>(options =>
             {
