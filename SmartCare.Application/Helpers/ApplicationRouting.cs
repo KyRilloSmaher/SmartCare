@@ -17,6 +17,7 @@
 
             public const string Login = Prefix + "login";
             public const string SignUp = Prefix + "sign-up";
+            public const string pharmacistSignUp = Prefix + "Pharmacist-SignUp";
             public const string ConfirmEmail = Prefix + "confirm-email";
             public const string ResendConfirmationEmail = Prefix + "resend-confirmation-email";
             public const string ForgotPassword = Prefix + "forgot-password";
