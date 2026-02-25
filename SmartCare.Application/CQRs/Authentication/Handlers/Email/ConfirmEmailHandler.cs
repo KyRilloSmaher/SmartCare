@@ -1,19 +1,12 @@
 ﻿using AutoMapper;
 using MediatR;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Identity;
 using SmartCare.Application.CQRs.Authentication.Commands.Email;
-using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Domain.Constants;
-using SmartCare.Domain.Helpers;
-using SmartCare.Domain.Interfaces.IServices;
-using SmartCare.Domain.IRepositories;
+using SmartCare.Domain.Entities;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Authentication.Handlers.Email
@@ -22,35 +15,35 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Email
     {
         #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly IClientRepository _clientRepository;
-
+        private readonly UserManager<ApplictionUser> _userManager;
         #endregion
 
-        #region Constructor
-        public ConfirmEmailHandler(IResponseHandler responseHandler, IClientRepository clientRepository)
+        public ConfirmEmailHandler(IResponseHandler responseHandler, UserManager<ApplictionUser> userManager)
         {
             _responseHandler = responseHandler;
-            _clientRepository = clientRepository;
+            _userManager = userManager;
         }
-
-        #endregion
-
 
         public async Task<Response<bool>> Handle(ConfirmEmailAsyncCommand request, CancellationToken cancellationToken)
         {
             var dto = request.dto;
-            var user = await _clientRepository.GetByEmailAsync(dto.Email);
+
+            // Fetch user via Identity
+            var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
                 return _responseHandler.Failed<bool>(SystemMessages.USER_NOT_FOUND);
+
             if (user.EmailConfirmed)
                 return _responseHandler.Failed<bool>(SystemMessages.EMAIL_ALREADY_VERIFIED);
+
             if (user.VerificationURLExpiresAt < DateTime.UtcNow)
                 return _responseHandler.Failed<bool>(SystemMessages.EMAIL_VERIFICATION_LINK_EXPIRED);
 
-            var success = await _clientRepository.ConfirmEmailAsync(dto.Email, dto.Token);
-            var message = success ? SystemMessages.VERIFICATION_SUCCESS : SystemMessages.VERIFICATION_FAILED;
+            // Confirm email using Identity
+            var result = await _userManager.ConfirmEmailAsync(user, dto.Token);
+            var message = result.Succeeded ? SystemMessages.VERIFICATION_SUCCESS : SystemMessages.VERIFICATION_FAILED;
 
-            return success ? _responseHandler.Success(success, message) : _responseHandler.Failed<bool>(message);
+            return result.Succeeded ? _responseHandler.Success(true, message) : _responseHandler.Failed<bool>(message);
         }
     }
 }

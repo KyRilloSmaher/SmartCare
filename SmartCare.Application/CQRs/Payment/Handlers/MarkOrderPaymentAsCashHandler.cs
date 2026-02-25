@@ -37,31 +37,31 @@ namespace SmartCare.Application.CQRs.Payment.Handlers
 
         public async Task<Response<bool>> Handle(MarkOrderPaymentAsCashCommand request, CancellationToken cancellationToken)
         {
-            var OrderId = request.OrderId;
-            var order = await _orderRepository.GetByIdAsync(OrderId, true);
-            if (order == null) return _responseHandler.Failed<bool>(SystemMessages.ORDER_NOT_FOUND);
+            //var OrderId = request.OrderId;
+            //var order = await _orderRepository.GetByIdAsync(OrderId, true);
+            //if (order == null) return _responseHandler.Failed<bool>(SystemMessages.ORDER_NOT_FOUND);
 
-            if (order.Status != OrderStatus.Pending)
-                return _responseHandler.BadRequest<bool>("Order is not payable.");
-            order.Status = OrderStatus.Confirmed;
-            // ToDo : Set Payment Cash Case
-            await _orderRepository.UpdateAsync(order);
-            var client = await _clientRepository.GetByIdAsync(order.ClientId);
-            if (order.OrderType == OrderType.Online)
-            {
-                await _paymentExtensions.SendOrderConfirmationEmailAsync(order, client);
-            }
-            else
-            {
-                var pickupCode = RandomNumberGenerator
-                                    .GetInt32(0, 1_000_000)
-                                    .ToString("D7");
+            //if (order.Status != OrderStatus.Pending)
+            //    return _responseHandler.BadRequest<bool>("Order is not payable.");
+            //order.Status = OrderStatus.Confirmed;
+            //// ToDo : Set Payment Cash Case
+            //await _orderRepository.UpdateAsync(order);
+            //var client = await _clientRepository.GetByIdAsync(order.ClientId);
+            //if (order.OrderType == OrderType.Online)
+            //{
+            //    await _paymentExtensions.SendOrderConfirmationEmailAsync(order, client);
+            //}
+            //else
+            //{
+            //    var pickupCode = RandomNumberGenerator
+            //                        .GetInt32(0, 1_000_000)
+            //                        .ToString("D7");
 
-                await _orderRepository.UpdatePickupCodeHashAsync(
-                    order.Id,
-                    _paymentExtensions.ComputeSha256(pickupCode));
-                await _paymentExtensions.SendPickupEmailAsync(order, client, pickupCode, ((FromStoreOrder)order).StoreId);
-            }
+            //    await _orderRepository.UpdatePickupCodeHashAsync(
+            //        order.Id,
+            //        _paymentExtensions.ComputeSha256(pickupCode));
+            //    await _paymentExtensions.SendPickupEmailAsync(order, client, pickupCode, ((FromStoreOrder)order).StoreId);
+            //}
             return _responseHandler.Success(true);
         }
     }

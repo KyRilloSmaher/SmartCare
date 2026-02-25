@@ -1,21 +1,15 @@
-﻿using AutoMapper;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Identity;
 using SmartCare.API.Helpers;
 using SmartCare.Application.CQRs.Authentication.Commands.Email;
 using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Domain.Constants;
-using SmartCare.Domain.Helpers;
-using SmartCare.Domain.Interfaces.IServices;
-using SmartCare.Domain.IRepositories;
+using SmartCare.Domain.Entities;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Authentication.Handlers.Email
@@ -24,42 +18,64 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Email
     {
         #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly IClientRepository _clientRepository;
+        private readonly UserManager<ApplictionUser> _userManager;
         private readonly IEmailService _emailService;
         private readonly IHttpContextAccessor _httpContextAccessor;
-
         #endregion
 
         #region Constructor
-        public ReSendConfirmEmailAsyncHandler(IResponseHandler responseHandler, IClientRepository clientRepository, IEmailService emailService, IHttpContextAccessor httpContextAccessor)
+        public ReSendConfirmEmailAsyncHandler(
+            IResponseHandler responseHandler,
+            UserManager<ApplictionUser> userManager,
+            IEmailService emailService,
+            IHttpContextAccessor httpContextAccessor)
         {
             _responseHandler = responseHandler;
-            _clientRepository = clientRepository;
+            _userManager = userManager;
             _emailService = emailService;
             _httpContextAccessor = httpContextAccessor;
         }
-
         #endregion
-
 
         public async Task<Response<bool>> Handle(ReSendConfirmEmailAsyncCommand request, CancellationToken cancellationToken)
         {
             var dto = request.dto;
-            var user = await _clientRepository.GetByEmailAsync(dto.Email, true);
+
+            // Get user via UserManager
+            var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
                 return _responseHandler.Failed<bool>(SystemMessages.USER_NOT_FOUND);
+
             if (user.EmailConfirmed)
                 return _responseHandler.Failed<bool>(SystemMessages.EMAIL_ALREADY_VERIFIED);
-            //Generate email confirmation token and link
-            var token = await _clientRepository.GenerateEmailConfirmationTokenAsync(user);
+
+            // Generate email confirmation token
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var encodedToken = WebUtility.UrlEncode(token);
-            var httprequest = _httpContextAccessor.HttpContext!.Request;
-            var baseUrl = $"{httprequest.Scheme}://{httprequest.Host}";
+
+            // Build confirmation URL
+            var requestScheme = _httpContextAccessor.HttpContext!.Request.Scheme;
+            var requestHost = _httpContextAccessor.HttpContext.Request.Host;
+            var baseUrl = $"{requestScheme}://{requestHost}";
             var confirmEmailUrl = $"{baseUrl}/{ApplicationRouting.Authentication.ConfirmEmail}?email={user.Email}&token={encodedToken}";
+
+            // Update user properties
             user.EmailConfirmationLink = confirmEmailUrl;
             user.VerificationURLExpiresAt = DateTime.UtcNow.AddHours(24);
-            bool success = await _emailService.SendConfirmationEmailAsync(user.Email, confirmEmailUrl);
-            return success ? _responseHandler.Success(success, SystemMessages.FAILED) : _responseHandler.Failed<bool>(SystemMessages.FAILED);
+
+            // Save updated user
+            var updateResult = await _userManager.UpdateAsync(user);
+            if (!updateResult.Succeeded)
+                return _responseHandler.Failed<bool>(
+                    string.Join(", ", updateResult.Errors.Select(e => e.Description))
+                );
+
+            // Send confirmation email
+            bool emailSent = await _emailService.SendConfirmationEmailAsync(user.Email, confirmEmailUrl);
+
+            return emailSent
+                ? _responseHandler.Success(true, SystemMessages.SUCCESS)
+                : _responseHandler.Failed<bool>(SystemMessages.FAILED);
         }
     }
 }

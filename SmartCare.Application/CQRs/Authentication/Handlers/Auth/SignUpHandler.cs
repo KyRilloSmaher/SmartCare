@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using SmartCare.API.Helpers;
@@ -8,6 +9,7 @@ using SmartCare.Application.CQRs.Authentication.Commands.Auth;
 using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Domain.Constants;
+using SmartCare.Domain.Entities;
 using SmartCare.Domain.Enums;
 using SmartCare.Domain.Helpers;
 using SmartCare.Domain.Interfaces.IServices;
@@ -34,10 +36,11 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Auth
         private readonly JwtSettings _jwtSettings;
         private readonly IMapper _mapper;
         private readonly IUrlHelper _urlHelper;
+        private readonly UserManager<ApplictionUser>_userManager;
 
         #endregion
 
-        public SignUpHandler(IResponseHandler responseHandler, IClientRepository clientRepository, ITokenService tokenService, IEmailService emailService, IHttpContextAccessor httpContextAccessor, IImageUploaderService imageUploaderService, LinkGenerator linkGenerator, JwtSettings jwtSettings, IMapper mapper, IUrlHelper urlHelper)
+        public SignUpHandler(IResponseHandler responseHandler, IClientRepository clientRepository, ITokenService tokenService, IEmailService emailService, IHttpContextAccessor httpContextAccessor, IImageUploaderService imageUploaderService, LinkGenerator linkGenerator, JwtSettings jwtSettings, IMapper mapper, IUrlHelper urlHelper, UserManager<ApplictionUser> userManager)
         {
             _responseHandler = responseHandler;
             _clientRepository = clientRepository;
@@ -49,6 +52,7 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Auth
             _jwtSettings = jwtSettings;
             _mapper = mapper;
             _urlHelper = urlHelper;
+            _userManager = userManager;
         }
 
 
@@ -57,10 +61,10 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Auth
             string? uploadedImageUrl = null;
 
             var dto = request.dto;
-            var isEmailExists = await _clientRepository.GetByEmailAsync(dto.Email);
+            var isEmailExists = await _userManager.FindByEmailAsync(dto.Email);
             if (isEmailExists != null)
                 return _responseHandler.Failed<bool>(SystemMessages.EMAIL_ALREADY_EXISTS);
-            var isUserNameExists = await _clientRepository.GetByClientnameAsync(dto.UserName);
+            var isUserNameExists = await _userManager.FindByNameAsync(dto.UserName);
             if (isUserNameExists != null)
                 return _responseHandler.Failed<bool>(SystemMessages.USERNAME_ALREADY_EXISTS);
             var isPhoneNumberExists = await _clientRepository.IsClientPhoneNumberUniqueAsync(dto.PhoneNumber);
@@ -82,23 +86,17 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Auth
 
                 await _clientRepository.BeginTransactionAsync();
 
-                var user = _mapper.Map<SmartCare.Domain.Entities.Client>(dto);
+                // Map DTO to ApplictionUser
+                var user = _mapper.Map<ApplictionUser>(dto);
                 user.ProfileImageUrl = uploadedImageUrl;
 
-                var address = _mapper.Map<SmartCare.Domain.Entities.Address>(dto.Address);
-                user.Addresses = new List<SmartCare.Domain.Entities.Address> { address };
-                //Create user account
-                var createResult = await _clientRepository.CreateClientAsync(user, dto.Password);
+                // Initialize Client
+                user.Client = _mapper.Map<SmartCare.Domain.Entities.Client>(dto);
+                user.Client.Addresses = new List<SmartCare.Domain.Entities.Address> { _mapper.Map<SmartCare.Domain.Entities.Address>(dto.Address) };
+                user.Client.User = user;
 
-
-                //Generate email confirmation token and link
-                var token = await _clientRepository.GenerateEmailConfirmationTokenAsync(user);
-                var encodedToken = WebUtility.UrlEncode(token);
-                var httprequest = _httpContextAccessor.HttpContext!.Request;
-                var baseUrl = $"{httprequest.Scheme}://{httprequest.Host}";
-                var confirmEmailUrl = $"{baseUrl}/{ApplicationRouting.Authentication.ConfirmEmail}?email={user.Email}&token={encodedToken}";
-                user.EmailConfirmationLink = confirmEmailUrl;
-                user.VerificationURLExpiresAt = DateTime.UtcNow.AddHours(24);
+                // Create user in Identity
+                var createResult = await _userManager.CreateAsync(user, dto.Password);
 
                 if (!createResult.Succeeded)
                 {
@@ -107,8 +105,22 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Auth
                         string.Join(", ", createResult.Errors.Select(e => e.Description))
                     );
                 }
-                await _clientRepository.AddToRoleAsync(user, "CLIENT");
-                await _clientRepository.UpdateAsync(user);
+
+                // Add role
+                await _userManager.AddToRoleAsync(user, "CLIENT");
+
+                // Generate email confirmation
+                var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                var encodedToken = WebUtility.UrlEncode(token);
+                var httprequest = _httpContextAccessor.HttpContext!.Request;
+                var baseUrl = $"{httprequest.Scheme}://{httprequest.Host}";
+                var confirmEmailUrl = $"{baseUrl}/{ApplicationRouting.Authentication.ConfirmEmail}?email={user.Email}&token={encodedToken}";
+                user.EmailConfirmationLink = confirmEmailUrl;
+                user.VerificationURLExpiresAt = DateTime.UtcNow.AddHours(24);
+
+                // Save changes to ClientRepository
+                await _clientRepository.UpdateAsync(user.Client);
+
                 await _emailService.SendConfirmationEmailAsync(user.Email, confirmEmailUrl);
                 await _clientRepository.CommitTransactionAsync();
 

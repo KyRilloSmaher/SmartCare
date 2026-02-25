@@ -23,6 +23,7 @@ using Hangfire;
 using SmartCare.Application.Handlers.ResponsesHandler;
 using SmartCare.Infrastructure.Repositories;
 using SmartCare.Application.commens;
+using SmartCare.Application.Mappings;
 
 namespace SmartCare.InfraStructure.Extensions
 {
@@ -48,7 +49,7 @@ namespace SmartCare.InfraStructure.Extensions
 
             services.AddScoped<IPaymentRepository, PaymentRepository>();
             // ---------- Identity ----------
-            services.AddIdentity<Client, IdentityRole>(options =>
+            services.AddIdentity<ApplictionUser, IdentityRole>(options =>
             {
                 options.Password.RequireDigit = true;
                 options.Password.RequireLowercase = true;
@@ -65,14 +66,6 @@ namespace SmartCare.InfraStructure.Extensions
             .AddEntityFrameworkStores<ApplicationDBContext>()
             .AddDefaultTokenProviders();
 
-            services.AddIdentityCore<Pharmacist>(options =>
-            {
-                options.Password.RequireDigit = false;
-                options.Password.RequiredLength = 6;
-                options.User.RequireUniqueEmail = true;
-            })
-             .AddEntityFrameworkStores<ApplicationDBContext>() 
-             .AddDefaultTokenProviders();
 
             // ---------- Application Services ----------
             services.AddScoped<IAuthenticationService, AuthenticationService>();
@@ -115,7 +108,7 @@ namespace SmartCare.InfraStructure.Extensions
             services.AddHangfireServer();
 
             // ---------- AutoMapper ----------
-            services.AddAutoMapper(typeof(ClientMappingProfile));
+            services.AddAutoMapper(typeof(CartMappingProfile));
 
             // ---------- JWT Authentication ----------
             services.AddAuthentication(options =>

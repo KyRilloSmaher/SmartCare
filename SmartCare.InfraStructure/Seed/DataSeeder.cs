@@ -9,7 +9,8 @@ namespace SmartCare.InfraStructure.Seed
         {
             "CLIENT",
             "DASHBOARD_ADMIN",
-            "OWNER"
+            "OWNER",
+            "PHARMACIST"
         };
 
         public static async Task SeedAsync(IServiceProvider serviceProvider)

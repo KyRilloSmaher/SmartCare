@@ -1,19 +1,12 @@
 ﻿using AutoMapper;
 using MediatR;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Identity;
 using SmartCare.Application.CQRs.Authentication.Commands.Password;
-using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Domain.Constants;
-using SmartCare.Domain.Helpers;
-using SmartCare.Domain.Interfaces.IServices;
-using SmartCare.Domain.IRepositories;
+using SmartCare.Domain.Entities;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Authentication.Handlers.Password
@@ -22,41 +15,44 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Password
     {
         #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly IClientRepository _clientRepository;
-
+        private readonly UserManager<ApplictionUser> _userManager;
         #endregion
 
-        #region Constructor
-        public ChangePasswordHandler(IResponseHandler responseHandler, IClientRepository clientRepository)
+        public ChangePasswordHandler(IResponseHandler responseHandler, UserManager<ApplictionUser> userManager)
         {
             _responseHandler = responseHandler;
-            _clientRepository = clientRepository;
+            _userManager = userManager;
         }
-
-        #endregion
-
 
         public async Task<Response<bool>> Handle(ChangePasswordAsyncCommand request, CancellationToken cancellationToken)
         {
-            var UserId = request.UserId;
+            var userId = request.UserId;
             var dto = request.dto;
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                return _responseHandler.Failed<bool>(SystemMessages.USER_NOT_FOUND);
+
             try
             {
-                await _clientRepository.BeginTransactionAsync();
+                // Remove old password (if exists) and set new password
+                var removePassResult = await _userManager.RemovePasswordAsync(user);
+                if (!removePassResult.Succeeded)
+                    return _responseHandler.Failed<bool>(
+                        string.Join(", ", removePassResult.Errors));
 
-                var user = await _clientRepository.GetByIdAsync(UserId, true);
-                if (user == null)
-                    return _responseHandler.Failed<bool>(SystemMessages.USER_NOT_FOUND);
+                var addPassResult = await _userManager.AddPasswordAsync(user, dto.NewPassword);
+                if (!addPassResult.Succeeded)
+                    return _responseHandler.Failed<bool>(
+                        string.Join(", ", addPassResult.Errors));
 
-                await _clientRepository.RemovePasswordAsync(user);
-                await _clientRepository.AddPasswordAsync(user, dto.NewPassword);
+                // update security stamp to invalidate sessions/tokens
+                await _userManager.UpdateSecurityStampAsync(user);
 
-                await _clientRepository.CommitTransactionAsync();
                 return _responseHandler.Success(true, SystemMessages.PASSWORD_RESET_SUCCESS);
             }
             catch
             {
-                await _clientRepository.RollbackTransactionAsync();
                 return _responseHandler.Failed<bool>(SystemMessages.FAILED);
             }
         }

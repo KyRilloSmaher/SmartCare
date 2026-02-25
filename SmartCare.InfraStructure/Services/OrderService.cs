@@ -474,7 +474,7 @@ namespace SmartCare.InfraStructure.Services
                     var store = await _storeRepository.GetByIdAsync(storeId!.Value);
 
                     var emailBody = SystemMessages.PICKUP_ORDER_EMAIL_TEMPLATE
-                        .Replace("{{UserName}}", client.UserName)
+                        .Replace("{{UserName}}", client.User.UserName)
                         .Replace("{{PickupCode}}", pickupCode)
                         .Replace("{{StoreName}}", store.Name)
                         .Replace("{{StoreAddress}}", store.Address)
@@ -482,7 +482,7 @@ namespace SmartCare.InfraStructure.Services
                         .Replace("{{OrderTotal}}", order.TotalPrice.ToString("C"))
                         .Replace("{{Year}}", DateTime.UtcNow.Year.ToString());
 
-                    _backgroundJobService.Schedule(() => _emailService.SendEmailAsync(client.Email, "Your Pickup Order Details", emailBody),
+                    _backgroundJobService.Schedule(() => _emailService.SendEmailAsync(client.User.Email, "Your Pickup Order Details", emailBody),
                                                     TimeSpan.FromSeconds(5));
 
                 }

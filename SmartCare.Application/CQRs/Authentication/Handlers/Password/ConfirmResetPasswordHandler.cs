@@ -1,20 +1,13 @@
 ﻿using AutoMapper;
 using MediatR;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Identity;
 using SmartCare.Application.CQRs.Authentication.Queries;
-using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Domain.Constants;
-using SmartCare.Domain.Helpers;
-using SmartCare.Domain.Interfaces.IServices;
-using SmartCare.Domain.IRepositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using SmartCare.Domain.Entities;
+using System.Threading;
 using System.Threading.Tasks;
+using BCrypt.Net;
 
 namespace SmartCare.Application.CQRs.Authentication.Handlers.Password
 {
@@ -22,31 +15,31 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Password
     {
         #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly IClientRepository _clientRepository;
-
+        private readonly UserManager<ApplictionUser> _userManager;
         #endregion
 
-        #region Constructor
-        public ConfirmResetPasswordHandler(IResponseHandler responseHandler, IClientRepository clientRepository)
+        public ConfirmResetPasswordHandler(IResponseHandler responseHandler, UserManager<ApplictionUser> userManager)
         {
             _responseHandler = responseHandler;
-            _clientRepository = clientRepository;
+            _userManager = userManager;
         }
 
-        #endregion
         public async Task<Response<bool>> Handle(ConfirmResetPasswordQuery request, CancellationToken cancellationToken)
         {
             var dto = request.dto;
-            var user = await _clientRepository.GetByEmailAsync(dto.Email);
+
+            // Fetch user via Identity
+            var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
                 return _responseHandler.Failed<bool>(SystemMessages.USER_NOT_FOUND);
-            var Hashed_OTP = BCrypt.Net.BCrypt.HashPassword(dto.Code);
+
+            // Verify OTP code
             var isValidCode = BCrypt.Net.BCrypt.Verify(dto.Code, user.OTP);
             var message = isValidCode
                 ? SystemMessages.PASSWORD_RESET_CODE_CONFIRMED
                 : SystemMessages.INVALID_RESET_CODE;
 
-            return _responseHandler.Success(isValidCode, message);
+            return isValidCode? _responseHandler.Success(isValidCode, message) : _responseHandler.Failed<bool>(message);
         }
     }
 }

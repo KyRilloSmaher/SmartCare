@@ -1,16 +1,14 @@
 ﻿using AutoMapper;
 using MediatR;
+using Microsoft.AspNetCore.Identity;
 using SmartCare.Application.CQRs.Client.Queries;
 using SmartCare.Application.DTOs.Client.Responses;
-using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Application.IServices;
 using SmartCare.Domain.Constants;
-using SmartCare.Domain.IRepositories;
+using SmartCare.Domain.Entities;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Client.Handlers
@@ -19,31 +17,21 @@ namespace SmartCare.Application.CQRs.Client.Handlers
     {
         #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly IBackgroundJobService _backgroundJobService;
-        private readonly IClientRepository _clientRepository;
         private readonly IRedisCacheService _redisCacheService;
-        private readonly IRateRepository _rateRepository;
-        private readonly IImageUploaderService _imageUploaderService;
+        private readonly UserManager<ApplictionUser> _userManager;
         private readonly IMapper _mapper;
-        string tag = CacheConstants.Client;
-
+        private const string tag = CacheConstants.Client;
         #endregion
 
         public GetClientByEmailHandler(
             IResponseHandler responseHandler,
-            IBackgroundJobService backgroundJobService,
-            IClientRepository clientRepository,
             IRedisCacheService redisCacheService,
-            IRateRepository rateRepository,
-            IImageUploaderService imageUploaderService,
+            UserManager<ApplictionUser> userManager,
             IMapper mapper)
         {
             _responseHandler = responseHandler;
-            _backgroundJobService = backgroundJobService;
-            _clientRepository = clientRepository;
             _redisCacheService = redisCacheService;
-            _rateRepository = rateRepository;
-            _imageUploaderService = imageUploaderService;
+            _userManager = userManager;
             _mapper = mapper;
         }
 
@@ -55,20 +43,29 @@ namespace SmartCare.Application.CQRs.Client.Handlers
 
             string cacheKey = $"client_email_{email.ToLower()}";
 
+            // Try to get from cache first
             try
             {
                 var cachedClient = await _redisCacheService.GetDataAsync<ClientResponseDto>(cacheKey, tag);
-                if (cachedClient != null) return _responseHandler.Success(cachedClient);
+                if (cachedClient != null)
+                    return _responseHandler.Success(cachedClient);
             }
-            catch (Exception) { }
+            catch { /* ignore cache failures */ }
 
-            var client = await _clientRepository.GetByEmailAsync(email);
-            if (client == null)
+            // Fetch user from Identity
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
                 return _responseHandler.NotFound<ClientResponseDto?>(SystemMessages.USER_NOT_FOUND);
 
-            var clientDto = _mapper.Map<ClientResponseDto?>(client);
+            var clientDto = _mapper.Map<ClientResponseDto?>(user);
 
-            await _redisCacheService.SetDataAsync(cacheKey, clientDto, tag, Time.Default);
+            // Save to cache
+            try
+            {
+                await _redisCacheService.SetDataAsync(cacheKey, clientDto, tag, Time.Default);
+            }
+            catch { /* ignore cache failures */ }
+
             return _responseHandler.Success(clientDto);
         }
     }

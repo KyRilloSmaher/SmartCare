@@ -18,11 +18,11 @@ namespace SmartCare.Application.Mappers
 
         void CreatePharmacistSignupRequestDtoTopharmacist()
         {
-            CreateMap<pharmacistSignUpRequestDto, Pharmacist>()
-                .ForMember(dest => dest.ProfileImageUrl, opt => opt.Ignore())
-                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
-                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.userName))
-                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber));
+            //CreateMap<pharmacistSignUpRequestDto, Pharmacist>()
+            //    .ForMember(dest => dest.ProfileImageUrl, opt => opt.Ignore())
+            //    .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+            //    .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.userName))
+            //    .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber));
         }
     }
 }

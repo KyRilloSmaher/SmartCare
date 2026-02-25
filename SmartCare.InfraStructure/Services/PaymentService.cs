@@ -121,86 +121,86 @@ namespace SmartCare.InfraStructure.Services
         }
         private async Task HandlePaymentIntentSucceededAsync(Event stripeEvent)
         {
-            if (stripeEvent.Data.Object is not PaymentIntent intent)
-                return;
+            //if (stripeEvent.Data.Object is not PaymentIntent intent)
+            //    return;
 
-            //  Read metadata
-            if (!intent.Metadata.TryGetValue("orderId", out var orderIdStr) ||
-                !intent.Metadata.TryGetValue("version", out var versionStr))
-                return;
+            ////  Read metadata
+            //if (!intent.Metadata.TryGetValue("orderId", out var orderIdStr) ||
+            //    !intent.Metadata.TryGetValue("version", out var versionStr))
+            //    return;
 
-            if (!Guid.TryParse(orderIdStr, out var orderId) ||
-                !int.TryParse(versionStr, out var version))
-                return;
+            //if (!Guid.TryParse(orderIdStr, out var orderId) ||
+            //    !int.TryParse(versionStr, out var version))
+            //    return;
 
-            // Load order
-            var order = await _orderRepository.GetOrderWithDetailsByIdAsync(orderId);
-            if (order == null) return;
+            //// Load order
+            //var order = await _orderRepository.GetOrderWithDetailsByIdAsync(orderId);
+            //if (order == null) return;
 
-            // HARD SECURITY CHECKS 
-            if (order.PaymentIntentId != intent.Id) return;
-            if (order.PaymentVersion != version) return;
-            var paidAmount = intent.Amount / 100m;
-            if (decimal.Round(order.TotalPrice, 2) != decimal.Round(paidAmount, 2))
-                return;
+            //// HARD SECURITY CHECKS 
+            //if (order.PaymentIntentId != intent.Id) return;
+            //if (order.PaymentVersion != version) return;
+            //var paidAmount = intent.Amount / 100m;
+            //if (decimal.Round(order.TotalPrice, 2) != decimal.Round(paidAmount, 2))
+            //    return;
 
-            if (order.Status != OrderStatus.Pending) return;
+            //if (order.Status != OrderStatus.Pending) return;
 
-            // Mark order as paid
-            order.Status = OrderStatus.Confirmed;
+            //// Mark order as paid
+            //order.Status = OrderStatus.Confirmed;
 
-            var payment = await _paymentRepository.GetByOrderIdAsync(orderId);
-            if (payment == null) return;
+            //var payment = await _paymentRepository.GetByOrderIdAsync(orderId);
+            //if (payment == null) return;
 
-            payment.Status = PaymentStatus.Completed;
+            //payment.Status = PaymentStatus.Completed;
 
 
-            foreach (var item in order.Items ?? Enumerable.Empty<OrderItem>())
-            {
-                try
-                {
-                    await _inventoryRepository.FinalizeStockDeductionAsync(
-                        item.InvetoryId,
-                        item.Quantity,
-                        order is FromStoreOrder
-                    );
-                    await _reservationRepository.UpdateReservationStatusAsync(
-                        (Guid)item.ReservationId,
-                        ReservationStatus.Completed);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex,
-                        "Inventory finalization failed. Order {OrderId}, Inventory {InventoryId}",
-                        order.Id, item.InvetoryId);
-                }
-            }
+            //foreach (var item in order.Items ?? Enumerable.Empty<OrderItem>())
+            //{
+            //    try
+            //    {
+            //        await _inventoryRepository.FinalizeStockDeductionAsync(
+            //            item.InvetoryId,
+            //            item.Quantity,
+            //            order is FromStoreOrder
+            //        );
+            //        await _reservationRepository.UpdateReservationStatusAsync(
+            //            (Guid)item.ReservationId,
+            //            ReservationStatus.Completed);
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        _logger.LogError(ex,
+            //            "Inventory finalization failed. Order {OrderId}, Inventory {InventoryId}",
+            //            order.Id, item.InvetoryId);
+            //    }
+            //}
 
-            await IncrementClientOrdersAsync(order.ClientId);
-            await _orderRepository.UpdateAsync(order);
-            await _paymentRepository.UpdateAsync(payment);
-            ////  Clear cart
-            var cart = await _cartRepository.GetActiveCartAsync(order.ClientId);
-            await _cartRepository.DeleteAsync(cart);
-            await _cartRepository.CreateCartAsync(order.ClientId);
+            //await IncrementClientOrdersAsync(order.ClientId);
+            //await _orderRepository.UpdateAsync(order);
+            //await _paymentRepository.UpdateAsync(payment);
+            //////  Clear cart
+            //var cart = await _cartRepository.GetActiveCartAsync(order.ClientId);
+            //await _cartRepository.DeleteAsync(cart);
+            //await _cartRepository.CreateCartAsync(order.ClientId);
 
-            PublishPaymentEvent(order, "success", "Payment completed successfully.");
-            var client = await _clientRepository.GetByIdAsync(order.ClientId);
-            if (order.OrderType == OrderType.Online)
-            {
-                await SendOrderConfirmationEmailAsync(order, client);
-            }
-            else
-            {
-                var pickupCode = RandomNumberGenerator
-                                    .GetInt32(0, 1_000_000)
-                                    .ToString("D7");
+            //PublishPaymentEvent(order, "success", "Payment completed successfully.");
+            //var client = await _clientRepository.GetByIdAsync(order.ClientId);
+            //if (order.OrderType == OrderType.Online)
+            //{
+            //    await SendOrderConfirmationEmailAsync(order, client);
+            //}
+            //else
+            //{
+            //    var pickupCode = RandomNumberGenerator
+            //                        .GetInt32(0, 1_000_000)
+            //                        .ToString("D7");
 
-                await _orderRepository.UpdatePickupCodeHashAsync(
-                    order.Id,
-                    ComputeSha256(pickupCode));
-                await SendPickupEmailAsync(order, client, pickupCode, ((FromStoreOrder)order).StoreId);
-            }
+            //    await _orderRepository.UpdatePickupCodeHashAsync(
+            //        order.Id,
+            //        ComputeSha256(pickupCode));
+            //    await SendPickupEmailAsync(order, client, pickupCode, ((FromStoreOrder)order).StoreId);
+            //}
 
              
         }
@@ -251,30 +251,30 @@ namespace SmartCare.InfraStructure.Services
         }
         public async Task<Response<bool>> MarkOrderPaymentAsCash(Guid OrderId )
         {
-            var order = await _orderRepository.GetByIdAsync(OrderId, true);
-            if (order == null) return _responseHandler.Failed<bool>(SystemMessages.ORDER_NOT_FOUND);
+            //var order = await _orderRepository.GetByIdAsync(OrderId, true);
+            //if (order == null) return _responseHandler.Failed<bool>(SystemMessages.ORDER_NOT_FOUND);
 
-            if (order.Status != OrderStatus.Pending)
-                return _responseHandler.BadRequest<bool>("Order is not payable.");
-            order.Status = OrderStatus.Confirmed;
-            // ToDo : Set Payment Cash Case
-            await _orderRepository.UpdateAsync(order);
-            var client = await _clientRepository.GetByIdAsync(order.ClientId);
-            if (order.OrderType == OrderType.Online)
-            {
-                await SendOrderConfirmationEmailAsync(order, client);
-            }
-            else
-            {
-                var pickupCode = RandomNumberGenerator
-                                    .GetInt32(0, 1_000_000)
-                                    .ToString("D7");
+            //if (order.Status != OrderStatus.Pending)
+            //    return _responseHandler.BadRequest<bool>("Order is not payable.");
+            //order.Status = OrderStatus.Confirmed;
+            //// ToDo : Set Payment Cash Case
+            //await _orderRepository.UpdateAsync(order);
+            //var client = await _clientRepository.GetByIdAsync(order.ClientId);
+            //if (order.OrderType == OrderType.Online)
+            //{
+            //    await SendOrderConfirmationEmailAsync(order, client);
+            //}
+            //else
+            //{
+            //    var pickupCode = RandomNumberGenerator
+            //                        .GetInt32(0, 1_000_000)
+            //                        .ToString("D7");
 
-                await _orderRepository.UpdatePickupCodeHashAsync(
-                    order.Id,
-                    ComputeSha256(pickupCode));
-                await SendPickupEmailAsync(order, client, pickupCode, ((FromStoreOrder)order).StoreId);
-            }
+            //    await _orderRepository.UpdatePickupCodeHashAsync(
+            //        order.Id,
+            //        ComputeSha256(pickupCode));
+            //    await SendPickupEmailAsync(order, client, pickupCode, ((FromStoreOrder)order).StoreId);
+            //}
             return _responseHandler.Success(true);
         }
 
@@ -605,7 +605,7 @@ namespace SmartCare.InfraStructure.Services
         //        await MarkPaymentFailureAsync(orderId);
         //    }
         //}
-        private async Task SendPickupEmailAsync(Order order, Client client, string pickupCode, Guid storeId)
+        private async Task SendPickupEmailAsync(Order order, ApplictionUser client, string pickupCode, Guid storeId)
         {
             var store = await _storeRepository.GetByIdAsync(storeId);
 
@@ -625,7 +625,7 @@ namespace SmartCare.InfraStructure.Services
                     emailBody),
                 TimeSpan.FromSeconds(5));
         }
-        private async Task SendOrderConfirmationEmailAsync(Order order, Client client)
+        private async Task SendOrderConfirmationEmailAsync(Order order, ApplictionUser client)
         {
 
             var emailBody = SystemMessages.ORDERCONFIRMATION_TEMPLATE

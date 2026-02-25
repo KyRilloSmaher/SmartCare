@@ -1,44 +1,28 @@
 ﻿using AutoMapper;
+using SmartCare.Application.CQRs.Authentication.Commands.Auth;
+using SmartCare.Application.DTOs.Address.Requests;
 using SmartCare.Application.DTOs.Auth.Requests;
-using SmartCare.Application.DTOs.Client.Requests;
-using SmartCare.Application.DTOs.Client.Responses;
 using SmartCare.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace SmartCare.Application.Mappers
+public class SignUpProfile : Profile
 {
-    public class ClientMappingProfile : Profile
+    public SignUpProfile()
     {
-        public ClientMappingProfile() {
-            SignUpRequestToClient();
-            ClientToClientDTO();
-            UpdateClientRequestToClient();
-        }
+        CreateMap<SignUpRequest, ApplictionUser>()
+            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName))
+            .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+            .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
+            .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.FirstName))
+            .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName))
+            .ForMember(dest => dest.BirthDate, opt => opt.MapFrom(src => src.BirthDate))
+            .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.Gender))
+            .ForMember(dest => dest.Client, opt => opt.MapFrom(src => src)); // Map DTO to Client
 
-        void SignUpRequestToClient (){
-            CreateMap<SignUpRequest, Client>()
-                        .ForMember(dest => dest.ProfileImageUrl, opt => opt.Ignore()) // handled after upload
-                        .ForMember(dest => dest.Favorites, opt => opt.Ignore())
-                        .ForMember(dest => dest.Orders, opt => opt.Ignore())
-                        .ForMember(dest => dest.Rates, opt => opt.Ignore());
-                      
-    
-        }
-        void ClientToClientDTO()
-        {
-            CreateMap<Client, ClientResponseDto>()
-                .ForMember(dest =>dest.AccountType ,opt =>opt.MapFrom(src=>src.AccountType.ToString()))
-                .ForMember(dest =>dest.Gender ,opt =>opt.MapFrom(src=>src.Gender.ToString()));
+        CreateMap<SignUpRequest, Client>()
+            .ForMember(dest => dest.AccountType, opt => opt.MapFrom(src => src.AccountType))
+            .ForMember(dest => dest.Addresses, opt => opt.Ignore()) // We'll map manually
+            .ForMember(dest => dest.User, opt => opt.Ignore()); // Will set after creation
 
-        }
-
-        void UpdateClientRequestToClient()
-        {
-            CreateMap<UpdateClientRequest, Client>();
-        }
+        CreateMap<CreateAddressRequestDto, Address>();
     }
 }

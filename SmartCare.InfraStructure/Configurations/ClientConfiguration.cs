@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 
 namespace SmartCare.InfraStructure.Configurations
 {
-    public class ClientConfiguration : IEntityTypeConfiguration<Client>
+    public class ClientConfiguration : IEntityTypeConfiguration<ApplictionUser>
     {
-        public void Configure(EntityTypeBuilder<Client> builder)
+        public void Configure(EntityTypeBuilder<ApplictionUser> builder)
         {
             builder.Property(c => c.ProfileImageUrl)
                 .HasMaxLength(255);
@@ -32,27 +32,20 @@ namespace SmartCare.InfraStructure.Configurations
                 .IsRequired(false)
                 .HasMaxLength(500);
 
-            builder.Property(c=>c.RatesCount).HasDefaultValue(0);
-            builder.Property(c => c.FavoritesCount).HasDefaultValue(0);
-            builder.Property(c=>c.OrdersCount).HasDefaultValue(0);
+            builder
+                .HasOne(u => u.Client)
+                .WithOne(c => c.User)
+                .HasForeignKey<Client>(c => c.Id);
 
+            builder
+                .HasOne(u => u.Pharmacist)
+                .WithOne(p => p.User)
+                .HasForeignKey<Pharmacist>(p => p.Id);
 
-            //Relations
-
-            builder.HasMany(c => c.Favorites)
-                .WithOne(c => c.Client)
-                .HasForeignKey(c => c.ClientId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            builder.HasMany(c => c.Addresses)
-                .WithOne(c => c.Client)
-                .HasForeignKey(c => c.ClientId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            builder.HasMany(c => c.Orders)
-                .WithOne(c => c.Client)
-                .HasForeignKey(c => c.ClientId)
-                .OnDelete(DeleteBehavior.SetNull);
+            builder
+                .HasOne(u => u.Admin)
+                .WithOne(a => a.User)
+                .HasForeignKey<Admin>(a => a.Id);
 
 
         }

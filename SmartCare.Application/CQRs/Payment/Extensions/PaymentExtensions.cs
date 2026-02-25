@@ -90,7 +90,7 @@ namespace SmartCare.Application.CQRs.Payment.Extensions
                 publisher.PublishPaymentStatusChanged(order.Id, order.ClientId, status, message));
         }
 
-        public async Task SendPickupEmailAsync(SmartCare.Domain.Entities.Order order, SmartCare.Domain.Entities.Client client, string pickupCode, Guid storeId)
+        public async Task SendPickupEmailAsync(SmartCare.Domain.Entities.Order order, SmartCare.Domain.Entities.ApplictionUser client, string pickupCode, Guid storeId)
         {
             var store = await _storeRepository.GetByIdAsync(storeId);
 
@@ -110,7 +110,7 @@ namespace SmartCare.Application.CQRs.Payment.Extensions
                     emailBody),
                 TimeSpan.FromSeconds(5));
         }
-        public async Task SendOrderConfirmationEmailAsync(SmartCare.Domain.Entities.Order order, SmartCare.Domain.Entities.Client client)
+        public async Task SendOrderConfirmationEmailAsync(SmartCare.Domain.Entities.Order order, SmartCare.Domain.Entities.ApplictionUser client)
         {
 
             var emailBody = SystemMessages.ORDERCONFIRMATION_TEMPLATE
