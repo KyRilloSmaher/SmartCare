@@ -15,5 +15,6 @@ namespace SmartCare.Domain.IRepositories
         public  Task<IEnumerable<Store>> GetAllStoresForAdminAsync();
 
         public Task<IEnumerable<Store>> SearchStoresAsync(string searchTerm);
+        public Task<Store> GetStoreByIdAsync(Guid storeId);
     }
 }
