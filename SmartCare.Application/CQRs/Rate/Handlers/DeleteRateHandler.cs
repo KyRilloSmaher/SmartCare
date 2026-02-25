@@ -6,32 +6,29 @@ using SmartCare.Application.IServices;
 using SmartCare.Domain.Constants;
 using SmartCare.Domain.IRepositories;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Rate.Handlers
 {
     public class DeleteRateHandler : IRequestHandler<DeleteRateAsyncCommand, Response<bool>>
     {
-        #region Feilds
-        private readonly IRateRepository _rateRepository;
-        private readonly IProductRepository _productRepository;
-        private readonly IClientRepository _clientRepository;
+        #region Fields
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IRedisCacheService _redisCacheService;
         private readonly IMapper _mapper;
         private readonly IResponseHandler _responseHandler;
-        string Rate_tag = CacheConstants.Rates;
-        string Products_tag = CacheConstants.Products;
-
+        private readonly string Rate_tag = CacheConstants.Rates;
+        private readonly string Products_tag = CacheConstants.Products;
         #endregion
 
-        public DeleteRateHandler(IRateRepository rateRepository, IProductRepository productRepository, IClientRepository clientRepository, IRedisCacheService redisCacheService, IMapper mapper, IResponseHandler responseHandler)
+        public DeleteRateHandler(
+            IUnitOfWork unitOfWork,
+            IRedisCacheService redisCacheService,
+            IMapper mapper,
+            IResponseHandler responseHandler)
         {
-            _rateRepository = rateRepository;
-            _productRepository = productRepository;
-            _clientRepository = clientRepository;
+            _unitOfWork = unitOfWork;
             _redisCacheService = redisCacheService;
             _mapper = mapper;
             _responseHandler = responseHandler;
@@ -41,24 +38,42 @@ namespace SmartCare.Application.CQRs.Rate.Handlers
         {
             var userId = request.userId;
             var Id = request.Id;
+
             if (string.IsNullOrEmpty(userId) || Id == Guid.Empty)
             {
                 return _responseHandler.Failed<bool>(SystemMessages.INVALID_INPUT);
             }
-            var user = await _clientRepository.GetByIdAsync(userId, true);
+
+            var user = await _unitOfWork.Clients.GetByIdAsync(userId, true);
             if (user == null)
             {
                 return _responseHandler.Failed<bool>(SystemMessages.USER_NOT_FOUND);
             }
-            var existingRate = await _rateRepository.GetByIdAsync(Id, true);
+
+            var existingRate = await _unitOfWork.Rates.GetByIdAsync(Id, true);
             if (existingRate == null)
             {
                 return _responseHandler.Failed<bool>(SystemMessages.RATE_NOT_FOUND);
             }
+
+            var productId = existingRate.ProductId;
+
             user.RatesCount--;
-            await _clientRepository.UpdateAsync(user);
-            await _rateRepository.DeleteAsync(existingRate);
-            await _rateRepository.UpdateAverageRateForProductAsync(existingRate.ProductId);
+            await _unitOfWork.Rates.DeleteAsync(existingRate);
+
+            // Save all changes atomically through UnitOfWork
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            // Update average rate for product (separate operation)
+            await _unitOfWork.Rates.UpdateAverageRateForProductAsync(productId);
+
+            // Clear cache keys
+            string rates_ForUserKey = $"rates_user_{userId}";
+            string rates_ForProductKey = $"rates_product_{productId}";
+
+            await _redisCacheService.RemoveKeyAsync(rates_ForUserKey, Rate_tag);
+            await _redisCacheService.RemoveKeyAsync(rates_ForProductKey, Rate_tag);
+
             return _responseHandler.Success(true);
         }
     }

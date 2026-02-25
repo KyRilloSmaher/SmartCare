@@ -1,19 +1,12 @@
 ﻿using AutoMapper;
 using MediatR;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using SmartCare.Application.commens;
 using SmartCare.Application.CQRs.Order.Commands;
-using SmartCare.Application.ExternalServiceInterfaces;
-using SmartCare.Application.Handlers.ResponseHandler;
-using SmartCare.Application.IServices;
 using SmartCare.Domain.Enums;
 using SmartCare.Domain.IRepositories;
-using Stripe.Climate;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Order.Handlers
@@ -21,20 +14,19 @@ namespace SmartCare.Application.CQRs.Order.Handlers
     public class ReleaseOrderReservationsAsyncHandler : IRequestHandler<ReleaseOrderReservationsAsyncCommand, Unit>
     {
         #region Fields
-        private readonly IOrderRepository _orderRepository;
-        private readonly IReservationRepository _reservationRepository;
-
+        private readonly IUnitOfWork _unitOfWork;
         #endregion
-        public ReleaseOrderReservationsAsyncHandler(IOrderRepository orderRepository, IReservationRepository reservationRepository)
+
+        public ReleaseOrderReservationsAsyncHandler(IUnitOfWork unitOfWork)
         {
-            _orderRepository = orderRepository;
-            _reservationRepository = reservationRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<Unit> Handle(ReleaseOrderReservationsAsyncCommand request, CancellationToken cancellationToken)
         {
             var orderId = request.orderId;
-            var order = await _orderRepository.GetOrderWithDetailsByIdAsync(orderId);
+            var order = await _unitOfWork.Orders.GetOrderWithDetailsByIdAsync(orderId);
+
             if (order == null)
                 return Unit.Value;
 
@@ -54,7 +46,7 @@ namespace SmartCare.Application.CQRs.Order.Handlers
                 if (!item.ReservationId.HasValue)
                     continue;
 
-                await _reservationRepository.CancelReservationAsync(
+                await _unitOfWork.Reservations.CancelReservationAsync(
                     reservationId: item.ReservationId.Value,
                     inventoryId: item.InvetoryId,
                     status: reservationStatus
@@ -62,7 +54,9 @@ namespace SmartCare.Application.CQRs.Order.Handlers
             }
 
             order.Status = OrderStatus.Expired;
-            await _orderRepository.UpdateAsync(order);
+
+            // Save changes through UnitOfWork
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return Unit.Value;
         }

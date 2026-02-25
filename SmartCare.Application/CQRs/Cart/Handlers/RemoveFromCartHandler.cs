@@ -24,32 +24,32 @@ namespace SmartCare.Application.CQRs.Cart.Handlers
         #region Fields
 
         private readonly IResponseHandler _responseHandler;
-        private readonly ICartRepository _cartRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<RemoveFromCartHandler> _logger;
 
         #endregion
-        public RemoveFromCartHandler(IResponseHandler responseHandler, ICartRepository cartRepository, ILogger<RemoveFromCartHandler> logger)
+        public RemoveFromCartHandler(IResponseHandler responseHandler, ILogger<RemoveFromCartHandler> logger, IUnitOfWork unitOfWork)
         {
             _responseHandler = responseHandler;
-            _cartRepository = cartRepository;
             _logger = logger;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<Response<bool>> Handle(RemoveFromCartAsyncCommand request, CancellationToken cancellationToken)
         {
             var dto = request.dto;
-            var cart = await _cartRepository.EnsureCartExistsAsync(dto.CartId);
+            var cart = await _unitOfWork.Carts.EnsureCartExistsAsync(dto.CartId);
             if (cart == null)
                 return _responseHandler.NotFound<bool>(SystemMessages.NOT_FOUND);
 
-            var cartItem = await _cartRepository.GetCartItemAsync(dto.CartItemId);
+            var cartItem = await _unitOfWork.Carts.GetCartItemAsync(dto.CartItemId);
             if (cartItem == null)
                 return _responseHandler.NotFound<bool>(SystemMessages.NOT_FOUND);
-
-            var removed = await _cartRepository.RemoveCartItemAsync(cartItem);
-            if (!removed)
-                return _responseHandler.BadRequest<bool>(SystemMessages.SERVER_ERROR);
-            await _cartRepository.CalculateCartTotalAsync(cart.Id);
+            await _unitOfWork.Carts.RemoveCartItemAsync(cartItem);
+            //if (!removed)
+            //    return _responseHandler.BadRequest<bool>(SystemMessages.SERVER_ERROR);
+            await _unitOfWork.Carts.CalculateCartTotalAsync(cart.Id);
+            await _unitOfWork.SaveChangesAsync();
             return _responseHandler.Success(true, SystemMessages.ITEM_REMOVED_FROM_CART);
         }
     }

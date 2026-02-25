@@ -11,27 +11,24 @@ using SmartCare.Domain.Entities;
 using SmartCare.Domain.Enums;
 using SmartCare.Domain.IRepositories;
 using Stripe;
-using Stripe.Checkout;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Payment.Handlers
 {
     public class HandlePaymentIntentFailedHandler : IRequestHandler<HandlePaymentIntentFailedAsyncCommand, Unit>
     {
-
-        private readonly IPaymentRepository _paymentRepository;
-        private readonly IOrderRepository _orderRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IBackgroundJobService _backgroundJobs;
         private readonly PaymentExtensions _paymentExtensions;
 
-        public HandlePaymentIntentFailedHandler(IPaymentRepository paymentRepository, IOrderRepository orderRepository, IBackgroundJobService backgroundJobs, PaymentExtensions paymentExtensions)
+        public HandlePaymentIntentFailedHandler(
+            IUnitOfWork unitOfWork,
+            IBackgroundJobService backgroundJobs,
+            PaymentExtensions paymentExtensions)
         {
-            _paymentRepository = paymentRepository;
-            _orderRepository = orderRepository;
+            _unitOfWork = unitOfWork;
             _backgroundJobs = backgroundJobs;
             _paymentExtensions = paymentExtensions;
         }
@@ -46,21 +43,21 @@ namespace SmartCare.Application.CQRs.Payment.Handlers
                 !Guid.TryParse(orderIdStr, out var orderId))
                 return Unit.Value;
 
-            var order = await _orderRepository.GetByIdAsync(orderId, true);
+            var order = await _unitOfWork.Orders.GetByIdAsync(orderId, true);
             if (order == null) return Unit.Value;
 
             if (order.Status != OrderStatus.Pending) return Unit.Value;
 
             order.Status = OrderStatus.PaymentFailed;
 
-            var payment = await _paymentRepository.GetByOrderIdAsync(orderId);
+            var payment = await _unitOfWork.Payments.GetByOrderIdAsync(orderId);
             if (payment == null) return Unit.Value;
 
             payment.Status = PaymentStatus.Completed;
 
 
-            await _orderRepository.UpdateAsync(order);
-            await _paymentRepository.UpdateAsync(payment);
+            // Save all changes atomically through UnitOfWork
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _paymentExtensions.PublishPaymentEvent(order, "failed", "Payment failed");
             return Unit.Value;

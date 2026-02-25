@@ -12,7 +12,7 @@ using SmartCare.Domain.IRepositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Product.Handlers
@@ -21,18 +21,22 @@ namespace SmartCare.Application.CQRs.Product.Handlers
     {
         #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly IProductRepository _productRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IImageUploaderService _imageUploaderService;
         private readonly IRedisCacheService _redisCacheService;
         private readonly IMapper _mapper;
-        string tag = CacheConstants.Products;
-
+        private readonly string tag = CacheConstants.Products;
         #endregion
 
-        public CreateProductHandler(IResponseHandler responseHandler, IProductRepository productRepository, IImageUploaderService imageUploaderService, IRedisCacheService redisCacheService, IMapper mapper)
+        public CreateProductHandler(
+            IResponseHandler responseHandler,
+            IUnitOfWork unitOfWork,
+            IImageUploaderService imageUploaderService,
+            IRedisCacheService redisCacheService,
+            IMapper mapper)
         {
             _responseHandler = responseHandler;
-            _productRepository = productRepository;
+            _unitOfWork = unitOfWork;
             _imageUploaderService = imageUploaderService;
             _redisCacheService = redisCacheService;
             _mapper = mapper;
@@ -42,7 +46,6 @@ namespace SmartCare.Application.CQRs.Product.Handlers
         {
             var ProductDto = request.ProductDto;
             List<string> uploadedImageUrls = new();
-            bool transactionStarted = false;
 
             try
             {
@@ -64,27 +67,24 @@ namespace SmartCare.Application.CQRs.Product.Handlers
                     uploadedImageUrls = uploadResults.Select(r => r.Url.ToString()).ToList();
                 }
 
-                await _productRepository.BeginTransactionAsync();
-                transactionStarted = true;
-
                 var product = _mapper.Map<SmartCare.Domain.Entities.Product>(ProductDto);
 
                 if (uploadedImageUrls.Any())
                 {
                     product.Images = uploadedImageUrls
-                    .Select(url => new ProductImage { Url = url })
-                    .ToList();
-
+                        .Select(url => new ProductImage { Url = url })
+                        .ToList();
                 }
 
-                var createdEntity = await _productRepository.AddAsync(product);
+                var createdEntity = await _unitOfWork.Products.AddAsync(product);
 
                 if (createdEntity is null)
                     throw new InvalidOperationException("Product creation failed.");
 
-                await _productRepository.SaveChangesAsync();
-                await _productRepository.CommitTransactionAsync();
+                // Save changes through UnitOfWork
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+                // Clear cache
                 await _redisCacheService.DeleteKeysByTag(tag);
 
                 var createdProductDto = _mapper.Map<ProductResponseDtoForAdmin>(createdEntity);
@@ -92,12 +92,9 @@ namespace SmartCare.Application.CQRs.Product.Handlers
             }
             catch (Exception ex)
             {
-                if (transactionStarted)
-                    await _productRepository.RollBackAsync();
-
+                // Clean up uploaded images if something went wrong
                 foreach (var url in uploadedImageUrls)
                     await _imageUploaderService.DeleteImageByUrlAsync(url);
-
 
                 return _responseHandler.Failed<ProductResponseDtoForAdmin>(SystemMessages.FAILED);
             }

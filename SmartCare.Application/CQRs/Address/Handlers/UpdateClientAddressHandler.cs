@@ -19,20 +19,16 @@ namespace SmartCare.Application.CQRs.Address.Handlers
     {
         #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly IClientRepository _clientRepository;
-        private readonly IAddressRepository _addressRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IRedisCacheService _redisCacheService;
         private readonly IMapper _mapper;
         string tag = CacheConstants.Addresses;
 
         #endregion
-        public UpdateClientAddressHandler(IResponseHandler responseHandler, IClientRepository clientRepository, IAddressRepository addressRepository, IRedisCacheService redisCacheService, IMapper mapper)
+        public UpdateClientAddressHandler(IResponseHandler responseHandler, IClientRepository clientRepository, IAddressRepository addressRepository, IRedisCacheService redisCacheService, IMapper mapper, IUnitOfWork unitOfWork)
         {
-            _responseHandler = responseHandler;
-            _clientRepository = clientRepository;
-            _addressRepository = addressRepository;
-            _redisCacheService = redisCacheService;
             _mapper = mapper;
+            _unitOfWork = unitOfWork;
         }
 
 
@@ -40,11 +36,11 @@ namespace SmartCare.Application.CQRs.Address.Handlers
         {
             var dto = request.dto;
             var clientId = request.clientId;
-            var client = await _clientRepository.GetValidClientAsync(clientId);
+            var client = await _unitOfWork.Clients.GetValidClientAsync(clientId);
             if (client == null)
                 return await _responseHandler.ClientNotFoundAsync<AddressResponseDto>();
 
-            var address = await _addressRepository.GetByIdAsync(dto.Id, true);
+            var address = await _unitOfWork.Addresses.GetByIdAsync(dto.Id, true);
             if (address == null || address.ClientId != client.Id)
                 return _responseHandler.NotFound<AddressResponseDto>(SystemMessages.ADDRESS_NOT_FOUND);
 
@@ -52,13 +48,13 @@ namespace SmartCare.Application.CQRs.Address.Handlers
 
             if (primaryChange)
             {
-                await _addressRepository.HandlePrimaryAddressChangeAsync(client.Id, address);
+                await _unitOfWork.Addresses.HandlePrimaryAddressChangeAsync(client.Id, address);
             }
 
             _mapper.Map(dto, address);
             address.IsPrimary = dto.IsPrimary;
 
-            await _addressRepository.UpdateAsync(address);
+            await _unitOfWork.SaveChangesAsync();
 
             string cacheKey = $"client_addresses_{client.Id}";
 

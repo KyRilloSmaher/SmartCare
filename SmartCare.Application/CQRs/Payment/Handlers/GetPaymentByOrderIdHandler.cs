@@ -8,9 +8,7 @@ using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Application.IServices;
 using SmartCare.Domain.IRepositories;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using PaymentEntity = SmartCare.Domain.Entities.Payment;
 
@@ -18,14 +16,14 @@ namespace SmartCare.Application.CQRs.Payment.Handlers
 {
     public class GetPaymentByOrderIdHandler : IRequestHandler<GetPaymentByOrderIdAsyncQuery, PaymentEntity?>
     {
-        private readonly IPaymentRepository _paymentRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public GetPaymentByOrderIdHandler(IPaymentRepository paymentRepository)
+        public GetPaymentByOrderIdHandler(IUnitOfWork unitOfWork)
         {
-            _paymentRepository = paymentRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public Task<PaymentEntity?> Handle(GetPaymentByOrderIdAsyncQuery request, CancellationToken cancellationToken)
-            => _paymentRepository.GetByOrderIdAsync(request.orderId);
+            => _unitOfWork.Payments.GetByOrderIdAsync(request.orderId);
     }
 }

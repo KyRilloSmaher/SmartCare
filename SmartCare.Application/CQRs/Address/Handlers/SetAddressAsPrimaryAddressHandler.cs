@@ -19,8 +19,7 @@ namespace SmartCare.Application.CQRs.Address.Handlers
     {
         #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly IClientRepository _clientRepository;
-        private readonly IAddressRepository _addressRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IRedisCacheService _redisCacheService;
         private readonly IMapper _mapper;
         string tag = CacheConstants.Addresses;
@@ -28,29 +27,28 @@ namespace SmartCare.Application.CQRs.Address.Handlers
 
         #endregion
 
-        public SetAddressAsPrimaryAddressHandler(IResponseHandler responseHandler, IClientRepository clientRepository, IAddressRepository addressRepository, IRedisCacheService redisCacheService, IMapper mapper)
+        public SetAddressAsPrimaryAddressHandler(IResponseHandler responseHandler, IClientRepository clientRepository, IAddressRepository addressRepository, IRedisCacheService redisCacheService, IMapper mapper, IUnitOfWork unitOfWork)
         {
             _responseHandler = responseHandler;
-            _clientRepository = clientRepository;
-            _addressRepository = addressRepository;
             _redisCacheService = redisCacheService;
             _mapper = mapper;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<Response<AddressResponseDto>> Handle(SetAddressAsPrimaryAddressAsyncCommand request, CancellationToken cancellationToken)
         {
             var clientId = request.clientId;
             var addressId = request.addressId;
-            var client = await _clientRepository.GetValidClientAsync(clientId);
+            var client = await _unitOfWork.Clients.GetValidClientAsync(clientId);
             if (client == null)
                 return await _responseHandler.ClientNotFoundAsync<AddressResponseDto>();
 
-            var address = await _addressRepository.GetByIdAsync(addressId, true);
+            var address = await _unitOfWork.Addresses.GetByIdAsync(addressId, true);
             if (address == null || address.ClientId != client.Id)
                 return _responseHandler.NotFound<AddressResponseDto>(SystemMessages.ADDRESS_NOT_FOUND);
 
-            await _addressRepository.HandlePrimaryAddressChangeAsync(client.Id, address);
-            await _addressRepository.UpdateAsync(address);
+            await _unitOfWork.Addresses.HandlePrimaryAddressChangeAsync(client.Id, address);
+            await _unitOfWork.SaveChangesAsync();
 
 
             string cacheKey = $"client_addresses_{client.Id}";

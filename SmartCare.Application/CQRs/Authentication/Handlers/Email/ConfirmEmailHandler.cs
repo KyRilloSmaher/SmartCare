@@ -58,7 +58,7 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Email
                 }
 
                 // Get valid verification from EmailVerifications table
-                var verification = await _unitOfWork.EmailVerifications.GetByEmailAndCodeAsync(dto.Email, dto.Token);
+                var verification = await _unitOfWork.EmailVerifications.GetValidVerificationAsync(dto.Email, dto.Token);
 
                 if (verification == null)
                 {

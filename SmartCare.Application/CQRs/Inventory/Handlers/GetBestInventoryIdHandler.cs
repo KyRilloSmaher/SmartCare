@@ -5,9 +5,7 @@ using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Domain.Constants;
 using SmartCare.Domain.IRepositories;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Inventory.Handlers
@@ -16,33 +14,34 @@ namespace SmartCare.Application.CQRs.Inventory.Handlers
     {
         #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly IInventoryRepository _inventoryRepository;
-        private readonly IProductRepository _productRepository;
-        private readonly IStoreRepository _storeRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-
-
         #endregion
 
-        public GetBestInventoryIdHandler(IResponseHandler responseHandler, IInventoryRepository inventoryRepository, IProductRepository productRepository, IStoreRepository storeRepository, IMapper mapper)
+        public GetBestInventoryIdHandler(
+            IResponseHandler responseHandler,
+            IUnitOfWork unitOfWork,
+            IMapper mapper)
         {
             _responseHandler = responseHandler;
-            _inventoryRepository = inventoryRepository;
-            _productRepository = productRepository;
-            _storeRepository = storeRepository;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
 
         public async Task<Response<Guid>> Handle(GetBestInventoryIdQuery request, CancellationToken cancellationToken)
         {
             var productId = request.productId;
-            var  quantityRequired = request.quantityRequired;
-            if (productId == Guid.Empty && quantityRequired <= 0)
+            var quantityRequired = request.quantityRequired;
+            
+            if (productId == Guid.Empty || quantityRequired <= 0)
                 return _responseHandler.BadRequest<Guid>(SystemMessages.INVALID_INPUT);
-            var inventoryId = await _inventoryRepository.GetBestInventoryIdAsync(productId, quantityRequired);
-            if (inventoryId == Guid.Empty)
+                
+            var inventory = await _unitOfWork.Inventories.GetAvailableInventoryAsync(productId, quantityRequired);
+            
+            if (inventory is null)
                 return _responseHandler.Failed<Guid>(SystemMessages.NOT_FOUND);
-            return _responseHandler.Success(inventoryId);
+                
+            return _responseHandler.Success(inventory.Id);
         }
     }
 }

@@ -6,10 +6,7 @@ using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Domain.Constants;
 using SmartCare.Domain.IRepositories;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using SmartCare.Domain.Entities;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Inventory.Handlers
@@ -18,39 +15,42 @@ namespace SmartCare.Application.CQRs.Inventory.Handlers
     {
         #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly IInventoryRepository _inventoryRepository;
-        private readonly IProductRepository _productRepository;
-        private readonly IStoreRepository _storeRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-
-
         #endregion
 
-        public CreateInventoryHandler(IResponseHandler responseHandler, IInventoryRepository inventoryRepository, IProductRepository productRepository, IStoreRepository storeRepository, IMapper mapper)
+        public CreateInventoryHandler(
+            IResponseHandler responseHandler,
+            IUnitOfWork unitOfWork,
+            IMapper mapper)
         {
             _responseHandler = responseHandler;
-            _inventoryRepository = inventoryRepository;
-            _productRepository = productRepository;
-            _storeRepository = storeRepository;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
 
         public async Task<Response<InventoryAdminResponseDto>> Handle(CreateInventoryAsyncCommand request, CancellationToken cancellationToken)
         {
             var inventoryDto = request.inventoryDto;
-            var product = await _productRepository.GetByIdAsync(inventoryDto.ProductId);
+
+            var product = await _unitOfWork.Products.GetByIdAsync(inventoryDto.ProductId);
             if (product == null)
             {
                 return _responseHandler.Failed<InventoryAdminResponseDto>(SystemMessages.PRODUCT_NOT_FOUND);
             }
 
-            var store = await _storeRepository.GetByIdAsync(inventoryDto.StoreId);
+            var store = await _unitOfWork.Stores.GetByIdAsync(inventoryDto.StoreId);
             if (store == null)
             {
                 return _responseHandler.Failed<InventoryAdminResponseDto>(SystemMessages.STORE_NOT_FOUND);
             }
+
             var inventory = _mapper.Map<SmartCare.Domain.Entities.Inventory>(inventoryDto);
-            var savedInventory = await _inventoryRepository.AddAsync(inventory);
+            var savedInventory = await _unitOfWork.Inventories.AddAsync(inventory);
+
+            // Save changes through UnitOfWork
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
             var InventoryDto = _mapper.Map<InventoryAdminResponseDto>(savedInventory);
             return _responseHandler.Success(InventoryDto);
         }

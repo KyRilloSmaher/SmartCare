@@ -3,10 +3,6 @@ using SmartCare.Domain.Entities;
 using SmartCare.Domain.Enums;
 using SmartCare.Domain.IRepositories;
 using SmartCare.InfraStructure.DbContexts;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SmartCare.InfraStructure.Repositories
 {
@@ -19,22 +15,21 @@ namespace SmartCare.InfraStructure.Repositories
             _context = context;
         }
 
-        #region --- Private Helpers ---
+        #region Private Helpers
 
-        /// <summary>
-        /// Common include chain for loading carts with items and product images.
-        /// </summary>
-        private IQueryable<Cart> CartIncludes()
+        private IQueryable<Cart> CartIncludes(bool trackChanges = false)
         {
-            return _context.Carts
+            var query = _context.Carts
                 .Include(c => c.Items)
                     .ThenInclude(i => i.Product)
                         .ThenInclude(p => p.Images);
+
+            return trackChanges ? query : query.AsNoTracking();
         }
 
         #endregion
 
-        #region --- Cart Methods ---
+        #region Cart Methods
 
         public async Task<Cart> CreateCartAsync(string userId)
         {
@@ -48,23 +43,18 @@ namespace SmartCare.InfraStructure.Repositories
             return cart;
         }
 
-        public async Task<Cart?> GetActiveCartAsync(string userId)
+        public async Task<Cart?> GetActiveCartAsync(string userId, bool trackChanges = false)
         {
-            return await CartIncludes()
-                .AsNoTracking()
-                .FirstOrDefaultAsync(c =>
-                    c.ClientId == userId &&
-                    c.status == CartStatus.Active);
+            var query = CartIncludes(trackChanges)
+                .Where(c => c.ClientId == userId && c.status == CartStatus.Active);
+
+            return await query.FirstOrDefaultAsync();
         }
 
         public override async Task<Cart?> GetByIdAsync(Guid id, bool asTracking = false)
         {
-            var query = CartIncludes().Where(c => c.Id == id);
-
-            if (!asTracking)
-                query = query.AsNoTracking();
-
-            return await query.FirstOrDefaultAsync();
+            return await CartIncludes(asTracking)
+                .FirstOrDefaultAsync(c => c.Id == id);
         }
 
         public async Task<IEnumerable<CartItem>> GetCartItemsAsync(Guid cartId)
@@ -73,51 +63,20 @@ namespace SmartCare.InfraStructure.Repositories
                 .Include(ci => ci.Product)
                     .ThenInclude(p => p.Images)
                 .Where(ci => ci.CartId == cartId)
+                .AsNoTracking()
                 .ToListAsync();
         }
 
-        public async Task<bool> MarkCartAsCheckedOutAsync(Cart cart)
+        public Task MarkCartAsCheckedOutAsync(Cart cart)
         {
             cart.status = CartStatus.CheckedOut;
-            await UpdateAsync(cart);
-            return true;
+            return Task.CompletedTask;
         }
 
-        public override async Task<bool> DeleteAsync(Cart cart)
+        public override Task DeleteAsync(Cart cart)
         {
             cart.status = CartStatus.Abandoned;
-            await UpdateAsync(cart);
-            return true;
-        }
-
-        #endregion
-
-        #region --- CartItem Methods ---
-
-        public async Task<CartItem?> GetCartItemAsync(Guid cartItemId)
-        {
-            return await _context.CartItems
-                .Include(ci => ci.Product)
-                    .ThenInclude(p => p.Images)
-                .FirstOrDefaultAsync(ci => ci.CartItemId == cartItemId);
-        }
-
-        public async Task<bool> AddCartItemAsync(CartItem cartItem)
-        {
-            await _context.CartItems.AddAsync(cartItem);
-            return await _context.SaveChangesAsync() > 0;
-        }
-
-        public async Task<bool> UpdateItemCartAsync(CartItem cartItem)
-        {
-            _context.CartItems.Update(cartItem);
-            return await _context.SaveChangesAsync() > 0;
-        }
-
-        public async Task<bool> RemoveCartItemAsync(CartItem cartItem)
-        {
-            _context.CartItems.Remove(cartItem);
-            return await _context.SaveChangesAsync() > 0;
+            return Task.CompletedTask;
         }
 
         public async Task<decimal> CalculateCartTotalAsync(Guid cartId)
@@ -128,30 +87,52 @@ namespace SmartCare.InfraStructure.Repositories
 
             var cart = await _context.Carts.FirstOrDefaultAsync(c => c.Id == cartId);
             if (cart != null)
-            {
                 cart.TotalPrice = total;
-                _context.Carts.Update(cart);
-                await _context.SaveChangesAsync();
-            }
 
             return total;
         }
 
-        public async Task<bool> ClearCartAsync(Cart cart)
+        public async Task<bool> CheckIfProductExistInCart(Guid cartId, Guid productId)
+        {
+            return await _context.CartItems
+                .AnyAsync(ci => ci.CartId == cartId && ci.ProductId == productId);
+        }
+
+        #endregion
+
+        #region CartItem Methods
+
+        public async Task<CartItem?> GetCartItemAsync(Guid cartItemId, bool trackChanges = false)
+        {
+            var query = _context.CartItems
+                .Include(ci => ci.Product)
+                    .ThenInclude(p => p.Images)
+                .Where(ci => ci.CartItemId == cartItemId);
+
+            return trackChanges
+                ? await query.FirstOrDefaultAsync()
+                : await query.AsNoTracking().FirstOrDefaultAsync();
+        }
+
+        public async Task AddCartItemAsync(CartItem cartItem)
+        {
+            await _context.CartItems.AddAsync(cartItem);
+        }
+
+        public Task RemoveCartItemAsync(CartItem cartItem)
+        {
+            _context.CartItems.Remove(cartItem);
+            return Task.CompletedTask;
+        }
+
+        public async Task<bool> ClearCartAsync(Guid cartId)
         {
             var items = await _context.CartItems
-                .Where(ci => ci.CartId == cart.Id)
+                .Where(ci => ci.CartId == cartId)
                 .ToListAsync();
 
             _context.CartItems.RemoveRange(items);
-            return await _context.SaveChangesAsync() > 0;
-        }
-
-        public async Task<bool> CheckIfProductExistInCart(Guid cartId, Guid productId)
-        {
-            return await _context.CartItems.AnyAsync(ci =>
-                ci.CartId == cartId &&
-                ci.ProductId == productId);
+            return true;
         }
 
         #endregion

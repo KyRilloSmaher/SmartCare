@@ -1,4 +1,5 @@
-﻿using SmartCare.Domain.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using SmartCare.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,9 +10,10 @@ namespace SmartCare.Domain.IRepositories
 {
     public interface ICategoryRepository : IGenericRepository<Category>
     {
-        Task<IEnumerable<Category>> GetAllCategoriesAsync();
-        IQueryable<Category> GetAllCategoriesQuerable();
-        Task<IEnumerable<Category>> GetAllCategoriesForAdminAsync();
+        Task<IEnumerable<Category>> GetAllActiveCategoriesAsync();
+         IQueryable<Category> GetCategoriesQueryable(bool includeDeleted = false);
+         Task DeleteAsync(Category entity);
+
         Task<IEnumerable<Category>> SearchCategoryByNameAsync(string name);
 
     }

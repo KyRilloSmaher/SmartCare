@@ -1,4 +1,5 @@
-﻿using SmartCare.Domain.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using SmartCare.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace SmartCare.Domain.IRepositories
     public interface IAddressRepository : IGenericRepository<Address>
     {
         Task<IEnumerable<Address>> GetClientAddressesAsync(string clientId);
-        Task<Address?> GetClientAddressByIdAsync(string clientId, Guid addressId);
+        Task<Address?> GetClientAddressByIdAsync(string clientId, Guid addressId, bool trackChanges = false);
         Task<Address?> GetPrimaryAddressAsync(string clientId);
     }
 }

@@ -8,27 +8,30 @@ using SmartCare.Application.IServices;
 using SmartCare.Domain.Constants;
 using SmartCare.Domain.IRepositories;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Store.Handlers
 {
-    public class GetNearestStoreHandler : IRequestHandler<GetNearestStoreAsyncQuery , Response<StoreResponseDto>>
+    public class GetNearestStoreHandler : IRequestHandler<GetNearestStoreAsyncQuery, Response<StoreResponseDto>>
     {
-        #region Feilds
-        private readonly IStoreRepository _storeRepository;
+        #region Fields
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IRedisCacheService _redisCacheService;
         private readonly IMapper _mapper;
         private readonly IMapService _mapService;
         private readonly IResponseHandler _responseHandler;
-        string tag = CacheConstants.Stories;
-
+        private readonly string tag = CacheConstants.Stories;
         #endregion
-        public GetNearestStoreHandler(IStoreRepository storeRepository, IRedisCacheService redisCacheService, IMapper mapper, IMapService mapService, IResponseHandler responseHandler)
+
+        public GetNearestStoreHandler(
+            IUnitOfWork unitOfWork,
+            IRedisCacheService redisCacheService,
+            IMapper mapper,
+            IMapService mapService,
+            IResponseHandler responseHandler)
         {
-            _storeRepository = storeRepository;
+            _unitOfWork = unitOfWork;
             _redisCacheService = redisCacheService;
             _mapper = mapper;
             _mapService = mapService;
@@ -38,10 +41,10 @@ namespace SmartCare.Application.CQRs.Store.Handlers
         public async Task<Response<StoreResponseDto>> Handle(GetNearestStoreAsyncQuery request, CancellationToken cancellationToken)
         {
             var dto = request.dto;
-            var stores = await _storeRepository.GetAllStoresAsync();
+            var stores = await _unitOfWork.Stores.GetAllStoresAsync();
 
             SmartCare.Domain.Entities.Store? nearestStore = null;
-            float minDistance = float.MaxValue;
+            double minDistance = double.MaxValue; // Changed to double for better precision
 
             foreach (var store in stores)
             {
@@ -54,8 +57,10 @@ namespace SmartCare.Application.CQRs.Store.Handlers
                     nearestStore = store;
                 }
             }
+
             if (nearestStore == null)
                 return _responseHandler.NotFound<StoreResponseDto>(SystemMessages.NOT_FOUND);
+
             var nearestStoreDto = _mapper.Map<StoreResponseDto>(nearestStore);
 
             return _responseHandler.Success(nearestStoreDto);

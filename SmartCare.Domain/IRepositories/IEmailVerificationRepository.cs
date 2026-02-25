@@ -1,4 +1,5 @@
-﻿using SmartCare.Domain.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using SmartCare.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,10 +10,13 @@ namespace SmartCare.Domain.IRepositories
 {
     public interface IEmailVerificationRepository
     {
-        public Task AddVerificationAsync(string email, string code, TimeSpan validFor);
-        public Task<EmailVerification?> GetByEmailAndCodeAsync(string email, string code);
-        public Task<EmailVerification?> GetVerificationAsync(string email);
-        public Task RemoveAsync(EmailVerification entity);
-        public Task RemoveExpiredAsync();
+        Task AddVerificationAsync(string email, string code, TimeSpan validFor);
+        Task<EmailVerification?> GetValidVerificationAsync(string email, string code);
+        Task<EmailVerification?> GetLatestByEmailAsync(string email);
+        Task<bool> HasValidVerificationAsync(string email);
+        Task MarkAsUsedAsync(int verificationId);
+        Task<bool> MarkAsUsedAsync(string email, string token);
+        Task RemoveExpiredAsync();
+        IQueryable<EmailVerification> GetQueryable();
     }
 }

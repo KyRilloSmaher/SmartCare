@@ -19,11 +19,9 @@ namespace SmartCare.Application.CQRs.Client.Handlers
         #region Fields
         private readonly IResponseHandler _responseHandler;
         private readonly IBackgroundJobService _backgroundJobService;
-        private readonly IClientRepository _clientRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IRedisCacheService _redisCacheService;
-        private readonly IRateRepository _rateRepository;
         private readonly IImageUploaderService _imageUploaderService;
-        private readonly UserManager<ApplictionUser> _userManager;
         private readonly IMapper _mapper;
         private const string tag = CacheConstants.Client;
         #endregion
@@ -31,20 +29,16 @@ namespace SmartCare.Application.CQRs.Client.Handlers
         public DeleteClientHandler(
             IResponseHandler responseHandler,
             IBackgroundJobService backgroundJobService,
-            IClientRepository clientRepository,
+            IUnitOfWork unitOfWork,
             IRedisCacheService redisCacheService,
-            IRateRepository rateRepository,
             IImageUploaderService imageUploaderService,
-            UserManager<ApplictionUser> userManager,
             IMapper mapper)
         {
             _responseHandler = responseHandler;
             _backgroundJobService = backgroundJobService;
-            _clientRepository = clientRepository;
+            _unitOfWork = unitOfWork;
             _redisCacheService = redisCacheService;
-            _rateRepository = rateRepository;
             _imageUploaderService = imageUploaderService;
-            _userManager = userManager;
             _mapper = mapper;
         }
 
@@ -57,10 +51,8 @@ namespace SmartCare.Application.CQRs.Client.Handlers
 
             try
             {
-                await _clientRepository.BeginTransactionAsync();
-
-                // Fetch the client domain entity
-                var client = await _clientRepository.GetByIdAsync(id, true);
+                // Fetch the client domain entity using UnitOfWork
+                var client = await _unitOfWork.Clients.GetByIdAsync(id, true);
                 if (client == null)
                     return _responseHandler.NotFound<bool>(SystemMessages.USER_NOT_FOUND);
 
@@ -68,24 +60,26 @@ namespace SmartCare.Application.CQRs.Client.Handlers
                 var imageUrl = client.User.ProfileImageUrl;
 
                 // Soft delete client domain entity
-                var deleteResult = await _clientRepository.DeleteAsync(client);
+                await _unitOfWork.Clients.DeleteAsync(client);
 
-                if (!deleteResult)
-                    throw new Exception("Failed to delete client domain entity.");
 
                 // Soft delete Identity user
                 var user = client.User;
                 user.IsDeleted = true;
-                var identityResult = await _userManager.UpdateAsync(user);
+                var identityResult = await _unitOfWork.UserManager.UpdateAsync(user);
                 if (!identityResult.Succeeded)
                     throw new Exception("Failed to mark Identity user as deleted.");
 
-                // Delete profile image
+                // Save all changes atomically through UnitOfWork
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+                // Delete profile image (after successful database changes)
                 var deleteImageResult = await _imageUploaderService.DeleteImageByUrlAsync(imageUrl);
                 if (!deleteImageResult)
-                    throw new Exception("Failed to delete profile image.");
-
-                await _clientRepository.CommitTransactionAsync();
+                {
+                    // Log this but don't rollback transaction - image deletion failure shouldn't undo user deletion
+                    // Consider adding logging here
+                }
 
                 // Clear cache
                 await _redisCacheService.RemoveKeyAsync($"client_id_{id}", tag);
@@ -93,13 +87,13 @@ namespace SmartCare.Application.CQRs.Client.Handlers
                 await _redisCacheService.RemoveKeyAsync($"client_email_{user.Email?.ToLower()}", tag);
 
                 // Enqueue background job to mark rates as deleted
-                _backgroundJobService.Enqueue(() => _rateRepository.MarkAllClientRatesAsDeleted(id));
+                _backgroundJobService.Enqueue(() => _unitOfWork.Rates.MarkAllClientRatesAsDeletedAsync(id));
 
                 return _responseHandler.Success(true, SystemMessages.SUCCESS);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                await _clientRepository.RollbackTransactionAsync();
+                // UnitOfWork will automatically rollback if SaveChangesAsync fails
                 return _responseHandler.Failed<bool>(SystemMessages.FAILED);
             }
         }

@@ -8,7 +8,7 @@ using SmartCare.Domain.IRepositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Inventory.Handlers
@@ -17,36 +17,37 @@ namespace SmartCare.Application.CQRs.Inventory.Handlers
     {
         #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly IInventoryRepository _inventoryRepository;
-        private readonly IProductRepository _productRepository;
-        private readonly IStoreRepository _storeRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-
         #endregion
 
-        public GetAvailableInventoriesForProductHandler(IResponseHandler responseHandler, IInventoryRepository inventoryRepository, IProductRepository productRepository, IStoreRepository storeRepository, IMapper mapper)
+        public GetAvailableInventoriesForProductHandler(
+            IResponseHandler responseHandler,
+            IUnitOfWork unitOfWork,
+            IMapper mapper)
         {
             _responseHandler = responseHandler;
-            _inventoryRepository = inventoryRepository;
-            _productRepository = productRepository;
-            _storeRepository = storeRepository;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
-
 
         public async Task<Response<IEnumerable<InventoryUserResponseDto>>> Handle(GetAvailableInventoriesForProductQuery request, CancellationToken cancellationToken)
         {
             var productId = request.productId;
-            var product = await _productRepository.GetByIdAsync(productId);
+
+            if (productId == Guid.Empty)
+                return _responseHandler.BadRequest<IEnumerable<InventoryUserResponseDto>>(SystemMessages.INVALID_INPUT);
+
+            var product = await _unitOfWork.Products.GetByIdAsync(productId);
             if (product == null)
             {
                 return _responseHandler.Failed<IEnumerable<InventoryUserResponseDto>>(SystemMessages.PRODUCT_NOT_FOUND);
             }
-            if (productId == Guid.Empty)
-                return _responseHandler.BadRequest<IEnumerable<InventoryUserResponseDto>>(SystemMessages.INVALID_INPUT);
-            var inventories = await _inventoryRepository.GetAvailableInventoriesForProductAsync(productId);
+
+            var inventories = await _unitOfWork.Inventories.GetAvailableInventoriesForProductAsync(productId);
             if (inventories == null)
                 return _responseHandler.Failed<IEnumerable<InventoryUserResponseDto>>(SystemMessages.NOT_FOUND);
+
             var inventoryDtoList = _mapper.Map<IEnumerable<InventoryUserResponseDto>>(inventories.ToList());
             return _responseHandler.Success(inventoryDtoList);
         }

@@ -9,43 +9,39 @@ using SmartCare.Domain.Constants;
 using SmartCare.Domain.IRepositories;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Category.Handlers
 {
     public class SearchCategoriesByNameHandler : IRequestHandler<SearchCategoriesByNameAsyncQuery, Response<IEnumerable<CategoryResponseDto>>>
     {
-        #region Feilds
+        #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly ICategoryRepository _categoryRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IRedisCacheService _redisCacheService;
         private readonly IImageUploaderService _imageUploaderService;
         private readonly IMapper _mapper;
-        string tag = CacheConstants.Categories;
-
-
-
+        private readonly string tag = CacheConstants.Categories;
         #endregion
+
         public SearchCategoriesByNameHandler(
             IResponseHandler responseHandler,
-            ICategoryRepository categoryRepository,
+            IUnitOfWork unitOfWork,
             IRedisCacheService redisCacheService,
             IImageUploaderService imageUploaderService,
             IMapper mapper)
         {
             _responseHandler = responseHandler;
-            _categoryRepository = categoryRepository;
+            _unitOfWork = unitOfWork;
             _redisCacheService = redisCacheService;
             _imageUploaderService = imageUploaderService;
             _mapper = mapper;
         }
 
-
         public async Task<Response<IEnumerable<CategoryResponseDto>>> Handle(SearchCategoriesByNameAsyncQuery request, CancellationToken cancellationToken)
         {
-            var categories = await _categoryRepository.SearchCategoryByNameAsync(request.name);
+            var categories = await _unitOfWork.Categories.SearchCategoryByNameAsync(request.name);
             var categoriesDto = _mapper.Map<IEnumerable<CategoryResponseDto>>(categories);
             return _responseHandler.Success(categoriesDto);
         }

@@ -6,16 +6,13 @@ using SmartCare.Application.CQRs.Payment.Commands;
 using SmartCare.Application.DTOs.Payment;
 using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.Handlers.ResponseHandler;
-using SmartCare.Application.Handlers.ResponsesHandler;
 using SmartCare.Application.IServices;
 using SmartCare.Domain.Enums;
 using paymentEntity = SmartCare.Domain.Entities.Payment;
 using SmartCare.Domain.IRepositories;
 using Stripe;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Payment.Handlers
@@ -23,22 +20,24 @@ namespace SmartCare.Application.CQRs.Payment.Handlers
     public class CreateOrUpdatePaymentHandler : IRequestHandler<CreateOrUpdatePaymentAsyncCommand, Response<PaymentIntentResponse>>
     {
         private readonly IPaymentGetway _paymentGateway;
-        private readonly IPaymentRepository _paymentRepository;
-        private readonly IOrderRepository _orderRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IResponseHandler _responseHandler;
 
-        public CreateOrUpdatePaymentHandler(IPaymentGetway paymentGateway, IPaymentRepository paymentRepository, IOrderRepository orderRepository, IResponseHandler responseHandler)
+        public CreateOrUpdatePaymentHandler(
+            IPaymentGetway paymentGateway,
+            IUnitOfWork unitOfWork,
+            IResponseHandler responseHandler)
         {
             _paymentGateway = paymentGateway;
-            _paymentRepository = paymentRepository;
-            _orderRepository = orderRepository;
+            _unitOfWork = unitOfWork;
             _responseHandler = responseHandler;
         }
 
         public async Task<Response<PaymentIntentResponse>> Handle(CreateOrUpdatePaymentAsyncCommand request, CancellationToken cancellationToken)
         {
             var orderId = request.orderId;
-            var order = await _orderRepository.GetOrderWithDetailsByIdAsync(orderId);
+            var order = await _unitOfWork.Orders.GetOrderWithDetailsByIdAsync(orderId);
+
             if (order == null)
                 return _responseHandler.BadRequest<PaymentIntentResponse>("Order not found");
 
@@ -56,7 +55,7 @@ namespace SmartCare.Application.CQRs.Payment.Handlers
 
                 order.PaymentIntentId = intent.Id;
 
-                await _paymentRepository.AddAsync(new paymentEntity
+                await _unitOfWork.Payments.AddAsync(new paymentEntity
                 {
                     OrderId = order.Id,
                     Amount = order.TotalPrice,
@@ -72,8 +71,9 @@ namespace SmartCare.Application.CQRs.Payment.Handlers
                     order.TotalPrice);
             }
 
-            await _orderRepository.UpdateAsync(order);
 
+            // Save all changes atomically through UnitOfWork
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return _responseHandler.Success(new PaymentIntentResponse
             {

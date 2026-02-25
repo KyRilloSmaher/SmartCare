@@ -23,15 +23,15 @@ namespace SmartCare.Application.CQRs.Cart.Handlers
         #region Fields
 
         private readonly IResponseHandler _responseHandler;
-        private readonly ICartRepository _cartRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<CreateCartForUserHandler> _logger;
 
         #endregion
 
-        public CreateCartForUserHandler(IResponseHandler responseHandler, ICartRepository cartRepository, ILogger<CreateCartForUserHandler> logger)
+        public CreateCartForUserHandler(IResponseHandler responseHandler, IUnitOfWork unitOfWork, ILogger<CreateCartForUserHandler> logger)
         {
             _responseHandler = responseHandler;
-            _cartRepository = cartRepository;
+            _unitOfWork = unitOfWork;
             _logger = logger;
         }
 
@@ -41,11 +41,12 @@ namespace SmartCare.Application.CQRs.Cart.Handlers
             if (string.IsNullOrWhiteSpace(userId))
                 return _responseHandler.BadRequest<Guid>(SystemMessages.BAD_REQUEST);
 
-            var existing = await _cartRepository.GetActiveCartAsync(userId);
+            var existing = await _unitOfWork.Carts.GetActiveCartAsync(userId);
             if (existing != null)
                 return _responseHandler.Success(existing.Id, SystemMessages.CART_ALREADY_EXISTS);
 
-            var newCart = await _cartRepository.CreateCartAsync(userId);
+            var newCart = await _unitOfWork.Carts.CreateCartAsync(userId);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             return _responseHandler.Success(newCart.Id, SystemMessages.CART_CREATED);
         }
     }

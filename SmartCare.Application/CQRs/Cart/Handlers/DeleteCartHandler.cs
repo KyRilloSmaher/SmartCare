@@ -24,29 +24,27 @@ namespace SmartCare.Application.CQRs.Cart.Handlers
         #region Fields
 
         private readonly IResponseHandler _responseHandler;
-        private readonly ICartRepository _cartRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<DeleteCartHandler> _logger;
 
         #endregion
 
-        public DeleteCartHandler(IResponseHandler responseHandler, ICartRepository cartRepository, ILogger<DeleteCartHandler> logger)
+        public DeleteCartHandler(IResponseHandler responseHandler, ILogger<DeleteCartHandler> logger, IUnitOfWork unitOfWork)
         {
             _responseHandler = responseHandler;
-            _cartRepository = cartRepository;
             _logger = logger;
+            _unitOfWork = unitOfWork;
         }
 
 
 
         public async Task<Response<bool>> Handle(DeleteCartAsyncCommand request, CancellationToken cancellationToken)
         {
-            var cart = await _cartRepository.EnsureCartExistsAsync(request.cartId);
+            var cart = await _unitOfWork.Carts.EnsureCartExistsAsync(request.cartId);
             if (cart == null)
                 return _responseHandler.NotFound<bool>(SystemMessages.NOT_FOUND);
 
-            var deleted = await _cartRepository.DeleteAsync(cart);
-            if (!deleted)
-                return _responseHandler.Failed<bool>(SystemMessages.FAILED);
+            await _unitOfWork.Carts.DeleteAsync(cart);
             return _responseHandler.Success(true, SystemMessages.RECORD_DELETED);
         }
     }

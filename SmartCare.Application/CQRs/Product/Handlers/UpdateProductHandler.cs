@@ -8,9 +8,7 @@ using SmartCare.Application.IServices;
 using SmartCare.Domain.Constants;
 using SmartCare.Domain.IRepositories;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Product.Handlers
@@ -19,19 +17,22 @@ namespace SmartCare.Application.CQRs.Product.Handlers
     {
         #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly IProductRepository _productRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IImageUploaderService _imageUploaderService;
         private readonly IRedisCacheService _redisCacheService;
         private readonly IMapper _mapper;
-        string tag = CacheConstants.Products;
-
-
+        private readonly string tag = CacheConstants.Products;
         #endregion
 
-        public UpdateProductHandler(IResponseHandler responseHandler, IProductRepository productRepository, IImageUploaderService imageUploaderService, IRedisCacheService redisCacheService, IMapper mapper)
+        public UpdateProductHandler(
+            IResponseHandler responseHandler,
+            IUnitOfWork unitOfWork,
+            IImageUploaderService imageUploaderService,
+            IRedisCacheService redisCacheService,
+            IMapper mapper)
         {
             _responseHandler = responseHandler;
-            _productRepository = productRepository;
+            _unitOfWork = unitOfWork;
             _imageUploaderService = imageUploaderService;
             _redisCacheService = redisCacheService;
             _mapper = mapper;
@@ -41,20 +42,23 @@ namespace SmartCare.Application.CQRs.Product.Handlers
         {
             var ProductDto = request.ProductDto;
             var Id = request.Id;
+
             if (Id == Guid.Empty || ProductDto == null)
                 return _responseHandler.BadRequest<ProductResponseDtoForAdmin>(SystemMessages.INVALID_INPUT);
 
-            var product = await _productRepository.GetByIdAsync(Id, true);
+            var product = await _unitOfWork.Products.GetByIdAsync(Id, true);
             if (product == null)
                 return _responseHandler.NotFound<ProductResponseDtoForAdmin>(SystemMessages.NOT_FOUND);
 
             _mapper.Map(ProductDto, product);
-            var updatedProduct = await _productRepository.UpdateAsync(product);
 
+            // Save changes through UnitOfWork
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+            // Clear cache
             await _redisCacheService.DeleteKeysByTag(tag);
 
-            var updatedProductDto = _mapper.Map<ProductResponseDtoForAdmin>(updatedProduct);
+            var updatedProductDto = _mapper.Map<ProductResponseDtoForAdmin>(product);
             return _responseHandler.Success(updatedProductDto, SystemMessages.RECORD_UPDATED);
         }
     }

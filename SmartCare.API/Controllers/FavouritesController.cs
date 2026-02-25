@@ -11,8 +11,6 @@ using SmartCare.Application.DTOs.Favorites.Responses;
 using SmartCare.Application.DTOs.Inventory.Response;
 using SmartCare.Application.DTOs.Rates.Requests;
 using SmartCare.Application.Handlers.ResponseHandler;
-using SmartCare.Application.IServices;
-using SmartCare.InfraStructure.Services;
 using System.Security.Claims;
 
 namespace SmartCare.API.Controllers

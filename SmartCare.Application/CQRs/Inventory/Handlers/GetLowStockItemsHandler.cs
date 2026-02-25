@@ -7,8 +7,7 @@ using SmartCare.Domain.Constants;
 using SmartCare.Domain.IRepositories;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Inventory.Handlers
@@ -17,30 +16,31 @@ namespace SmartCare.Application.CQRs.Inventory.Handlers
     {
         #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly IInventoryRepository _inventoryRepository;
-        private readonly IProductRepository _productRepository;
-        private readonly IStoreRepository _storeRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-
-
         #endregion
-        public GetLowStockItemsHandler(IResponseHandler responseHandler, IInventoryRepository inventoryRepository, IProductRepository productRepository, IStoreRepository storeRepository, IMapper mapper)
+
+        public GetLowStockItemsHandler(
+            IResponseHandler responseHandler,
+            IUnitOfWork unitOfWork,
+            IMapper mapper)
         {
             _responseHandler = responseHandler;
-            _inventoryRepository = inventoryRepository;
-            _productRepository = productRepository;
-            _storeRepository = storeRepository;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
 
         public async Task<Response<IEnumerable<InventoryAdminResponseDto>>> Handle(GetLowStockItemsAsyncQuery request, CancellationToken cancellationToken)
         {
             var threshold = request.threshold;
+
             if (threshold < 0)
                 return _responseHandler.BadRequest<IEnumerable<InventoryAdminResponseDto>>(SystemMessages.INVALID_INPUT);
-            var inventories = await _inventoryRepository.GetLowStockItemsAsync(threshold);
+
+            var inventories = await _unitOfWork.Inventories.GetLowStockItemsAsync(threshold);
             if (inventories == null)
                 return _responseHandler.Failed<IEnumerable<InventoryAdminResponseDto>>(SystemMessages.NOT_FOUND);
+
             var InventoryDto = _mapper.Map<IEnumerable<InventoryAdminResponseDto>>(inventories);
             return _responseHandler.Success(InventoryDto);
         }

@@ -5,47 +5,43 @@ using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Domain.Constants;
 using SmartCare.Domain.IRepositories;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Inventory.Handlers
 {
     public class GetTotalStockForProductHandler : IRequestHandler<GetTotalStockForProductQuery, Response<int>>
     {
-
         #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly IInventoryRepository _inventoryRepository;
-        private readonly IProductRepository _productRepository;
-        private readonly IStoreRepository _storeRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-
-
         #endregion
 
-        public GetTotalStockForProductHandler(IResponseHandler responseHandler, IInventoryRepository inventoryRepository, IProductRepository productRepository, IStoreRepository storeRepository, IMapper mapper)
+        public GetTotalStockForProductHandler(
+            IResponseHandler responseHandler,
+            IUnitOfWork unitOfWork,
+            IMapper mapper)
         {
             _responseHandler = responseHandler;
-            _inventoryRepository = inventoryRepository;
-            _productRepository = productRepository;
-            _storeRepository = storeRepository;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
 
         public async Task<Response<int>> Handle(GetTotalStockForProductQuery request, CancellationToken cancellationToken)
         {
             var productId = request.productId;
-            var product = await _productRepository.GetByIdAsync(productId);
+
+            if (productId == Guid.Empty)
+                return _responseHandler.BadRequest<int>(SystemMessages.INVALID_INPUT);
+
+            var product = await _unitOfWork.Products.GetByIdAsync(productId);
             if (product == null)
             {
                 return _responseHandler.Failed<int>(SystemMessages.PRODUCT_NOT_FOUND);
             }
-            if (productId == Guid.Empty)
-                return _responseHandler.BadRequest<int>(SystemMessages.INVALID_INPUT);
 
-            var totalStock = await _inventoryRepository.GetTotalStockForProductAsync(productId);
+            var totalStock = await _unitOfWork.Inventories.GetTotalStockForProductAsync(productId);
             return _responseHandler.Success(totalStock);
         }
     }

@@ -5,9 +5,7 @@ using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Domain.Constants;
 using SmartCare.Domain.IRepositories;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Inventory.Handlers
@@ -16,33 +14,37 @@ namespace SmartCare.Application.CQRs.Inventory.Handlers
     {
         #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly IInventoryRepository _inventoryRepository;
-        private readonly IProductRepository _productRepository;
-        private readonly IStoreRepository _storeRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-
-
         #endregion
 
-        public DeleteInventoryHandler(IResponseHandler responseHandler, IInventoryRepository inventoryRepository, IProductRepository productRepository, IStoreRepository storeRepository, IMapper mapper)
+        public DeleteInventoryHandler(
+            IResponseHandler responseHandler,
+            IUnitOfWork unitOfWork,
+            IMapper mapper)
         {
             _responseHandler = responseHandler;
-            _inventoryRepository = inventoryRepository;
-            _productRepository = productRepository;
-            _storeRepository = storeRepository;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
 
         public async Task<Response<bool>> Handle(DeleteInventoryAsyncCommand request, CancellationToken cancellationToken)
         {
             var Id = request.Id;
+
             if (Id == Guid.Empty)
                 return _responseHandler.BadRequest<bool>(SystemMessages.INVALID_INPUT);
-            var inventory = await _inventoryRepository.GetByIdAsync(Id);
+
+            var inventory = await _unitOfWork.Inventories.GetByIdAsync(Id);
             if (inventory == null)
                 return _responseHandler.NotFound<bool>(SystemMessages.NOT_FOUND);
-            var result = await _inventoryRepository.DeleteAsync(inventory);
-            return result ? _responseHandler.Success(true, SystemMessages.RECORD_DELETED) : _responseHandler.Failed<bool>(SystemMessages.FAILED);
+
+            await _unitOfWork.Inventories.DeleteAsync(inventory);
+
+            // Save changes through UnitOfWork
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            return _responseHandler.Success(true, SystemMessages.RECORD_DELETED);
         }
     }
 }

@@ -25,18 +25,18 @@ namespace SmartCare.Application.CQRs.Cart.Handlers
         #region Fields
 
         private readonly IResponseHandler _responseHandler;
-        private readonly ICartRepository _cartRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<GetCartItemsHandler> _logger;
 
 
         #endregion
-        public GetCartItemsHandler(IResponseHandler responseHandler, ICartRepository cartRepository, IMapper mapper, ILogger<GetCartItemsHandler> logger)
+        public GetCartItemsHandler(IResponseHandler responseHandler, IMapper mapper, ILogger<GetCartItemsHandler> logger, IUnitOfWork unitOfWork)
         {
             _responseHandler = responseHandler;
-            _cartRepository = cartRepository;
             _mapper = mapper;
             _logger = logger;
+            _unitOfWork = unitOfWork;
         }
 
 
@@ -45,14 +45,14 @@ namespace SmartCare.Application.CQRs.Cart.Handlers
             var cartId = request.cartId;
             _logger.LogDebug("GetCartItemsAsync called for CartId={CartId}", cartId);
 
-            var cart = await _cartRepository.EnsureCartExistsAsync(cartId);
+            var cart = await _unitOfWork.Carts.EnsureCartExistsAsync(cartId);
             if (cart == null)
             {
                 _logger.LogWarning("Cart not found for GetCartItemsAsync: {CartId}", cartId);
                 return _responseHandler.NotFound<IEnumerable<CartItemResponseDto>>(SystemMessages.NOT_FOUND);
             }
 
-            var items = await _cartRepository.GetCartItemsAsync(cart.Id);
+            var items = await _unitOfWork.Carts.GetCartItemsAsync(cart.Id);
             var dto = _mapper.Map<IEnumerable<CartItemResponseDto>>(items);
             return _responseHandler.Success(dto);
         }

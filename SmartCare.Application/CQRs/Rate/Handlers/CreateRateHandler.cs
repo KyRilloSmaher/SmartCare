@@ -7,32 +7,29 @@ using SmartCare.Application.IServices;
 using SmartCare.Domain.Constants;
 using SmartCare.Domain.IRepositories;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Rate.Handlers
 {
-
     public class CreateRateHandler : IRequestHandler<CreateRateAsyncCommand, Response<RateResponseDto>>
     {
-        #region Feilds
-        private readonly IRateRepository _rateRepository;
-        private readonly IProductRepository _productRepository;
-        private readonly IClientRepository _clientRepository;
+        #region Fields
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IRedisCacheService _redisCacheService;
         private readonly IMapper _mapper;
         private readonly IResponseHandler _responseHandler;
-        string Rate_tag = CacheConstants.Rates;
-        string Products_tag = CacheConstants.Products;
-
+        private readonly string Rate_tag = CacheConstants.Rates;
+        private readonly string Products_tag = CacheConstants.Products;
         #endregion
-        public CreateRateHandler(IRateRepository rateRepository, IProductRepository productRepository, IClientRepository clientRepository, IRedisCacheService redisCacheService, IMapper mapper, IResponseHandler responseHandler)
+
+        public CreateRateHandler(
+            IUnitOfWork unitOfWork,
+            IRedisCacheService redisCacheService,
+            IMapper mapper,
+            IResponseHandler responseHandler)
         {
-            _rateRepository = rateRepository;
-            _productRepository = productRepository;
-            _clientRepository = clientRepository;
+            _unitOfWork = unitOfWork;
             _redisCacheService = redisCacheService;
             _mapper = mapper;
             _responseHandler = responseHandler;
@@ -42,28 +39,39 @@ namespace SmartCare.Application.CQRs.Rate.Handlers
         {
             var Dto = request.Dto;
             var userId = request.userId;
-            var user = await _clientRepository.GetByIdAsync(userId, true);
+
+            var user = await _unitOfWork.Clients.GetByIdAsync(userId, true);
             if (user == null)
             {
                 return _responseHandler.Failed<RateResponseDto>(SystemMessages.USER_NOT_FOUND);
             }
-            var product = await _productRepository.GetByIdAsync(Dto.ProductId);
+
+            var product = await _unitOfWork.Products.GetByIdAsync(Dto.ProductId);
             if (product == null)
             {
                 return _responseHandler.Failed<RateResponseDto>(SystemMessages.PRODUCT_NOT_FOUND);
             }
-            if (await _rateRepository.IsProductRatedByUserAsync(userId, Dto.ProductId))
+
+            if (await _unitOfWork.Rates.IsProductRatedByUserAsync(userId, Dto.ProductId))
             {
                 return _responseHandler.Failed<RateResponseDto>(SystemMessages.RATE_ALREADY_EXISTS);
             }
+
             var rate = _mapper.Map<SmartCare.Domain.Entities.Rate>(Dto);
             rate.ClientId = userId;
-            var savedRate = await _rateRepository.AddAsync(rate);
+
+            var savedRate = await _unitOfWork.Rates.AddAsync(rate);
             user.RatesCount++;
-            await _clientRepository.UpdateAsync(user);
-            await _rateRepository.UpdateAverageRateForProductAsync(Dto.ProductId);
+
+            // Save all changes atomically through UnitOfWork
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            // Update average rate for product (this might be a separate operation that doesn't need to be in the same transaction)
+            await _unitOfWork.Rates.UpdateAverageRateForProductAsync(Dto.ProductId);
+
             var rateDto = _mapper.Map<RateResponseDto>(savedRate);
 
+            // Clear cache keys
             string product_detailsKey = $"product_admin_{Dto.ProductId}";
             string product_NameEnKey = $"product_name_{product.NameEn.ToLower().Replace(" ", "_")}";
             string rates_ByIdKey = $"rate_{Dto.ProductId}";
@@ -75,8 +83,6 @@ namespace SmartCare.Application.CQRs.Rate.Handlers
             await _redisCacheService.RemoveKeyAsync(rates_ByIdKey, Rate_tag);
             await _redisCacheService.RemoveKeyAsync(rates_ForUserKey, Rate_tag);
             await _redisCacheService.RemoveKeyAsync(rates_ForProductKey, Rate_tag);
-
-
 
             return _responseHandler.Success(rateDto);
         }

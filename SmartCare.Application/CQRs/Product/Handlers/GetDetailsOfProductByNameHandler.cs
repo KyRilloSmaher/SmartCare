@@ -8,11 +8,8 @@ using SmartCare.Application.IServices;
 using SmartCare.Domain.Constants;
 using SmartCare.Domain.IRepositories;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using static Azure.Core.HttpHeader;
 
 namespace SmartCare.Application.CQRs.Product.Handlers
 {
@@ -20,28 +17,31 @@ namespace SmartCare.Application.CQRs.Product.Handlers
     {
         #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly IProductRepository _productRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IImageUploaderService _imageUploaderService;
         private readonly IRedisCacheService _redisCacheService;
         private readonly IMapper _mapper;
-        string tag = CacheConstants.Products;
-
-
+        private readonly string tag = CacheConstants.Products;
         #endregion
 
-        public GetDetailsOfProductByNameHandler(IResponseHandler responseHandler, IProductRepository productRepository, IImageUploaderService imageUploaderService, IRedisCacheService redisCacheService, IMapper mapper)
+        public GetDetailsOfProductByNameHandler(
+            IResponseHandler responseHandler,
+            IUnitOfWork unitOfWork,
+            IImageUploaderService imageUploaderService,
+            IRedisCacheService redisCacheService,
+            IMapper mapper)
         {
             _responseHandler = responseHandler;
-            _productRepository = productRepository;
+            _unitOfWork = unitOfWork;
             _imageUploaderService = imageUploaderService;
             _redisCacheService = redisCacheService;
             _mapper = mapper;
         }
 
-
         public async Task<Response<ProductResponseDtoForClient>> Handle(GetDetailsOfProductByNameQuery request, CancellationToken cancellationToken)
         {
             var NameEn = request.NameEn;
+
             if (string.IsNullOrWhiteSpace(NameEn))
                 return _responseHandler.Failed<ProductResponseDtoForClient>("Product name must be provided.");
 
@@ -50,11 +50,12 @@ namespace SmartCare.Application.CQRs.Product.Handlers
             try
             {
                 var cachedProduct = await _redisCacheService.GetDataAsync<ProductResponseDtoForClient>(cacheKey, tag);
-                if (cachedProduct != null) return _responseHandler.Success(cachedProduct);
+                if (cachedProduct != null)
+                    return _responseHandler.Success(cachedProduct);
             }
             catch (Exception) { /* Continue to DB */ }
 
-            var product = await _productRepository.SearchProductByNameAsync(NameEn);
+            var product = await _unitOfWork.Products.SearchProductByNameAsync(NameEn);
             if (product == null)
                 return _responseHandler.Failed<ProductResponseDtoForClient>("Product not found.");
 

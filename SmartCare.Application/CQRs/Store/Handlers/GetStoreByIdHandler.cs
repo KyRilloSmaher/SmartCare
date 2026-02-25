@@ -8,39 +8,40 @@ using SmartCare.Application.IServices;
 using SmartCare.Domain.Constants;
 using SmartCare.Domain.IRepositories;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Store.Handlers
 {
     public class GetStoreByIdHandler : IRequestHandler<GetStoreByIdAsyncQuery, Response<StoreResponseDto>>
     {
-        #region Feilds
-        private readonly IStoreRepository _storeRepository;
+        #region Fields
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IRedisCacheService _redisCacheService;
         private readonly IMapper _mapper;
         private readonly IMapService _mapService;
         private readonly IResponseHandler _responseHandler;
-        string tag = CacheConstants.Stories;
-
-
+        private readonly string tag = CacheConstants.Stories;
         #endregion
 
-        public GetStoreByIdHandler(IStoreRepository storeRepository, IRedisCacheService redisCacheService, IMapper mapper, IMapService mapService, IResponseHandler responseHandler)
+        public GetStoreByIdHandler(
+            IUnitOfWork unitOfWork,
+            IRedisCacheService redisCacheService,
+            IMapper mapper,
+            IMapService mapService,
+            IResponseHandler responseHandler)
         {
-            _storeRepository = storeRepository;
+            _unitOfWork = unitOfWork;
             _redisCacheService = redisCacheService;
             _mapper = mapper;
             _mapService = mapService;
             _responseHandler = responseHandler;
         }
 
-
         public async Task<Response<StoreResponseDto>> Handle(GetStoreByIdAsyncQuery request, CancellationToken cancellationToken)
         {
             var Id = request.Id;
+
             if (Id == Guid.Empty)
                 return _responseHandler.BadRequest<StoreResponseDto>(SystemMessages.INVALID_INPUT);
 
@@ -49,11 +50,12 @@ namespace SmartCare.Application.CQRs.Store.Handlers
             try
             {
                 var cachedStore = await _redisCacheService.GetDataAsync<StoreResponseDto>(cacheKey, tag);
-                if (cachedStore != null) return _responseHandler.Success(cachedStore);
+                if (cachedStore != null)
+                    return _responseHandler.Success(cachedStore);
             }
             catch (Exception) { }
 
-            var store = await _storeRepository.GetByIdAsync(Id);
+            var store = await _unitOfWork.Stores.GetByIdAsync(Id);
             if (store == null)
                 return _responseHandler.NotFound<StoreResponseDto>(SystemMessages.NOT_FOUND);
 

@@ -11,14 +11,8 @@ namespace SmartCare.Domain.IRepositories
 {
     public interface IClientRepository : IGenericRepository<Client>
     {
-        // Transaction Management
-        Task BeginTransactionAsync();
 
-        Task CommitTransactionAsync();
-        Task RollbackTransactionAsync();
-
-        Task<Client?> GetByIdAsync(string ClientId, bool trackChanges = false);
-
+        Task<Client?> GetByIdAsync(string clientId, bool asTracking = false);
         Task<bool> IsClientPhoneNumberUniqueAsync(string phone);
 
         Task<IEnumerable<Client>> SearchClientsAsync(string searchTerm);

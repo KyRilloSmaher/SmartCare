@@ -7,6 +7,7 @@ using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Application.IServices;
 using SmartCare.Domain.Constants;
 using SmartCare.Domain.Entities;
+using SmartCare.Domain.IRepositories;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,7 +19,7 @@ namespace SmartCare.Application.CQRs.Client.Handlers
         #region Fields
         private readonly IResponseHandler _responseHandler;
         private readonly IRedisCacheService _redisCacheService;
-        private readonly UserManager<ApplictionUser> _userManager;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private const string tag = CacheConstants.Client;
         #endregion
@@ -26,12 +27,12 @@ namespace SmartCare.Application.CQRs.Client.Handlers
         public GetClientByEmailHandler(
             IResponseHandler responseHandler,
             IRedisCacheService redisCacheService,
-            UserManager<ApplictionUser> userManager,
+            IUnitOfWork unitOfWork,
             IMapper mapper)
         {
             _responseHandler = responseHandler;
             _redisCacheService = redisCacheService;
-            _userManager = userManager;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
 
@@ -52,8 +53,8 @@ namespace SmartCare.Application.CQRs.Client.Handlers
             }
             catch { /* ignore cache failures */ }
 
-            // Fetch user from Identity
-            var user = await _userManager.FindByEmailAsync(email);
+            // Fetch user from Identity using UnitOfWork
+            var user = await _unitOfWork.UserManager.FindByEmailAsync(email);
             if (user == null)
                 return _responseHandler.NotFound<ClientResponseDto?>(SystemMessages.USER_NOT_FOUND);
 

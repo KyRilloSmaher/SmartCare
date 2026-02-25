@@ -19,9 +19,8 @@ namespace SmartCare.Application.CQRs.Client.Handlers
         #region Fields
         private readonly IResponseHandler _responseHandler;
         private readonly IBackgroundJobService _backgroundJobService;
-        private readonly UserManager<ApplictionUser> _userManager;
         private readonly IRedisCacheService _redisCacheService;
-        private readonly IRateRepository _rateRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IImageUploaderService _imageUploaderService;
         private readonly IMapper _mapper;
         private readonly string tag = CacheConstants.Client;
@@ -30,19 +29,17 @@ namespace SmartCare.Application.CQRs.Client.Handlers
         public ChangeClientProfileImageHandler(
             IResponseHandler responseHandler,
             IBackgroundJobService backgroundJobService,
-            UserManager<ApplictionUser> userManager,
             IRedisCacheService redisCacheService,
-            IRateRepository rateRepository,
             IImageUploaderService imageUploaderService,
-            IMapper mapper)
+            IMapper mapper,
+            IUnitOfWork unitOfWork)
         {
             _responseHandler = responseHandler;
             _backgroundJobService = backgroundJobService;
-            _userManager = userManager;
             _redisCacheService = redisCacheService;
-            _rateRepository = rateRepository;
             _imageUploaderService = imageUploaderService;
             _mapper = mapper;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<Response<string>> Handle(ChangeClientProfileImageAsyncCommand request, CancellationToken cancellationToken)
@@ -54,7 +51,7 @@ namespace SmartCare.Application.CQRs.Client.Handlers
                 return _responseHandler.BadRequest<string>(SystemMessages.USER_NOT_FOUND);
 
             // Fetch user via Identity
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await _unitOfWork.UserManager.FindByIdAsync(userId);
             if (user == null)
                 return _responseHandler.NotFound<string>(SystemMessages.USER_NOT_FOUND);
 
@@ -71,9 +68,12 @@ namespace SmartCare.Application.CQRs.Client.Handlers
 
             // Update user profile image
             user.ProfileImageUrl = uploadResult.Url.ToString();
-            var updateResult = await _userManager.UpdateAsync(user);
+            var updateResult = await _unitOfWork.UserManager.UpdateAsync(user);
             if (!updateResult.Succeeded)
                 return _responseHandler.Failed<string>(string.Join(", ", updateResult.Errors));
+
+            // Save changes through UnitOfWork
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             // Remove cache
             string cacheKey = $"client_id_{userId}";

@@ -7,8 +7,6 @@ using Microsoft.IdentityModel.Tokens;
 using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Application.IServices;
-using SmartCare.Application.Mappers;
-using SmartCare.InfraStructure.Services;
 using SmartCare.Domain.Entities;
 using SmartCare.Domain.Helpers;
 using SmartCare.Domain.IRepositories;
@@ -25,6 +23,7 @@ using SmartCare.Infrastructure.Repositories;
 using SmartCare.Application.commens;
 using SmartCare.Application.Mappings;
 using SmartCare.Infrastructure.Data;
+using SmartCare.InfraStructure.Services;
 
 namespace SmartCare.InfraStructure.Extensions
 {
@@ -35,7 +34,7 @@ namespace SmartCare.InfraStructure.Extensions
             // ---------- Repositories ----------
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddScoped<IClientRepository, ClientRepository>();
-            services.AddScoped<IAddressRepository, AdressRepository>();
+            services.AddScoped<IAddressRepository, AddressRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<ICompanyRepository, CompanyRepository>();
             services.AddScoped<IStoreRepository, StoreRepository>();
@@ -70,24 +69,24 @@ namespace SmartCare.InfraStructure.Extensions
 
 
             // ---------- Application Services ----------
-            services.AddScoped<IAuthenticationService, AuthenticationService>();
-            services.AddScoped<IAddressService, AddressService>();
-            services.AddScoped<ICategoryService, CategoryService>();
-            services.AddScoped<ICompanyService, CompanyService>();
-            services.AddScoped<IClientService, ClientService>();
+            //services.AddScoped<IAuthenticationService, AuthenticationService>();
+            //services.AddScoped<IAddressService, AddressService>();
+            //services.AddScoped<ICategoryService, CategoryService>();
+            //services.AddScoped<ICompanyService, CompanyService>();
+            //services.AddScoped<IClientService, ClientService>();
             services.AddScoped<ITokenService, TokenService>();
-            services.AddScoped<IStoreService, StoreService>();
-            services.AddScoped<IRateService, RateService>();
-            services.AddScoped<IFavouriteService, FavouriteService>();
-            services.AddScoped<ICartService, CartService > ();
+            //services.AddScoped<IStoreService, StoreService>();
+            //services.AddScoped<IRateService, RateService>();
+            //services.AddScoped<IFavouriteService, FavouriteService>();
+            //services.AddScoped<ICartService, CartService > ();
             services.AddScoped<IBackgroundJobService, HangfireBackgroundJobService>();
             services.AddScoped<IResponseHandler, ResponseHandler>();
-            services.AddScoped<IProductService, ProductService>();
+           // services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IBackgroundJobService, HangfireBackgroundJobService>();
             services.AddScoped<IResponseHandler, ResponseHandler>();
-            services.AddScoped<IPaymentService, PaymentService>();
-            services.AddScoped<IOrderService, OrderService>();
-            services.AddScoped<IinventoryService, InventoryService>();
+            //services.AddScoped<IPaymentService, PaymentService>();
+            //services.AddScoped<IOrderService, OrderService>();
+            //services.AddScoped<IinventoryService, InventoryService>();
             services.AddScoped<ISqlLockManager, SqlLockManager>();
 
             // ---------- External Services ----------

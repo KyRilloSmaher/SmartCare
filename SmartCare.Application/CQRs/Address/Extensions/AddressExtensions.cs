@@ -32,7 +32,7 @@ namespace SmartCare.Application.CQRs.Address.Extensions
             if (currentPrimary != null && currentPrimary.Id != newPrimary.Id)
             {
                 currentPrimary.IsPrimary = false;
-                await addressRepository.UpdateAsync(currentPrimary);
+                
             }
 
             newPrimary.IsPrimary = true;

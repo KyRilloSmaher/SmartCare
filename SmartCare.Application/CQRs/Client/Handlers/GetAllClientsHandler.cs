@@ -9,8 +9,7 @@ using SmartCare.Domain.Constants;
 using SmartCare.Domain.IRepositories;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Client.Handlers
@@ -20,32 +19,28 @@ namespace SmartCare.Application.CQRs.Client.Handlers
         #region Fields
         private readonly IResponseHandler _responseHandler;
         private readonly IBackgroundJobService _backgroundJobService;
-        private readonly IClientRepository _clientRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IRedisCacheService _redisCacheService;
-        private readonly IRateRepository _rateRepository;
         private readonly IImageUploaderService _imageUploaderService;
         private readonly IMapper _mapper;
-        string tag = CacheConstants.Client;
+        private readonly string tag = CacheConstants.Client;
 
         public GetAllClientsHandler(
             IResponseHandler responseHandler,
             IBackgroundJobService backgroundJobService,
-            IClientRepository clientRepository,
+            IUnitOfWork unitOfWork,
             IRedisCacheService redisCacheService,
-            IRateRepository rateRepository,
             IImageUploaderService imageUploaderService,
             IMapper mapper)
         {
             _responseHandler = responseHandler;
             _backgroundJobService = backgroundJobService;
-            _clientRepository = clientRepository;
+            _unitOfWork = unitOfWork;
             _redisCacheService = redisCacheService;
-            _rateRepository = rateRepository;
             _imageUploaderService = imageUploaderService;
             _mapper = mapper;
         }
         #endregion
-
 
         public async Task<Response<IEnumerable<ClientResponseDto>>> Handle(GetAllClientsAsyncQuery request, CancellationToken cancellationToken)
         {
@@ -54,11 +49,12 @@ namespace SmartCare.Application.CQRs.Client.Handlers
             try
             {
                 var cachedClients = await _redisCacheService.GetDataAsync<IEnumerable<ClientResponseDto>>(cacheKey, tag);
-                if (cachedClients != null) return _responseHandler.Success(cachedClients);
+                if (cachedClients != null)
+                    return _responseHandler.Success(cachedClients);
             }
             catch (Exception) { }
 
-            var clients = await _clientRepository.GetAllAsync();
+            var clients = await _unitOfWork.Clients.GetAllAsync();
             var clientDtos = _mapper.Map<IEnumerable<ClientResponseDto>>(clients);
 
             await _redisCacheService.SetDataAsync(cacheKey, clientDtos, tag, Time.Default);

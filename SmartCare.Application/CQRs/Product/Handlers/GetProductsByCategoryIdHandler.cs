@@ -9,9 +9,7 @@ using SmartCare.Application.IServices;
 using SmartCare.Domain.Constants;
 using SmartCare.Domain.IRepositories;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Product.Handlers
@@ -20,19 +18,22 @@ namespace SmartCare.Application.CQRs.Product.Handlers
     {
         #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly IProductRepository _productRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IImageUploaderService _imageUploaderService;
         private readonly IRedisCacheService _redisCacheService;
         private readonly IMapper _mapper;
-        string tag = CacheConstants.Products;
-
-
+        private readonly string tag = CacheConstants.Products;
         #endregion
 
-        public GetProductsByCategoryIdHandler(IResponseHandler responseHandler, IProductRepository productRepository, IImageUploaderService imageUploaderService, IRedisCacheService redisCacheService, IMapper mapper)
+        public GetProductsByCategoryIdHandler(
+            IResponseHandler responseHandler,
+            IUnitOfWork unitOfWork,
+            IImageUploaderService imageUploaderService,
+            IRedisCacheService redisCacheService,
+            IMapper mapper)
         {
             _responseHandler = responseHandler;
-            _productRepository = productRepository;
+            _unitOfWork = unitOfWork;
             _imageUploaderService = imageUploaderService;
             _redisCacheService = redisCacheService;
             _mapper = mapper;
@@ -43,11 +44,11 @@ namespace SmartCare.Application.CQRs.Product.Handlers
             var pageNumber = request.pageNumber;
             var pageSize = request.pageSize;
             var CategoryId = request.CategoryId;
+
             if (pageNumber <= 0 || pageSize <= 0)
                 return _responseHandler.BadRequest<PaginatedResult<ProductResponseDtoForClient>>(SystemMessages.INVALID_PAGINATION_PARAMETERS);
 
             string cacheKey = $"products_category_{CategoryId}_p{pageNumber}_s{pageSize}";
-
 
             try
             {
@@ -60,10 +61,10 @@ namespace SmartCare.Application.CQRs.Product.Handlers
             }
             catch (Exception)
             {
-
+                // Ignore cache errors
             }
 
-            var query = _productRepository.GetProductsByCategoryId(CategoryId);
+            var query = _unitOfWork.Products.GetProductsByCategoryId(CategoryId);
             if (query == null)
                 return _responseHandler.Failed<PaginatedResult<ProductResponseDtoForClient>>(SystemMessages.NOT_FOUND);
 
