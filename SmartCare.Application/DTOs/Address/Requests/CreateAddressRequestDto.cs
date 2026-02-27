@@ -8,7 +8,7 @@ namespace SmartCare.Application.DTOs.Address.Requests
 {
     public class CreateAddressRequestDto
     {
-        public string address { get; set; }
+        public string AddressLine { get; set; }
         public string Label { get; set; }
         public string AdditionalInfo { get; set; }
         public float Latitude { get; set; }

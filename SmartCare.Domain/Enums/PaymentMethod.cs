@@ -9,6 +9,7 @@ namespace SmartCare.Domain.Enums
     public enum PaymentMethod
     {
         Stripe,
+        Paymob,
         Cash
     }
 }

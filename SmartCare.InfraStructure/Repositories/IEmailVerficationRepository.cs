@@ -24,7 +24,7 @@ namespace SmartCare.InfraStructure.Repositories
                 Token = code,
                 CreatedAt = DateTime.UtcNow,
                 ExpiresAt = DateTime.UtcNow.Add(validFor),
-                IsUsed = false
+                
             };
 
             await _dbSet.AddAsync(verification);
@@ -33,10 +33,7 @@ namespace SmartCare.InfraStructure.Repositories
         public async Task<EmailVerification?> GetValidVerificationAsync(string email, string code)
         {
             return await _dbSet
-                .FirstOrDefaultAsync(v => v.Email == email &&
-                                         v.Token == code &&
-                                         !v.IsUsed &&
-                                         v.ExpiresAt > DateTime.UtcNow);
+                .FirstOrDefaultAsync(v => v.Email == email &&v.Token == code &&!v.IsUsed && v.ExpiresAt > DateTime.UtcNow);
         }
 
         public async Task<EmailVerification?> GetLatestByEmailAsync(string email)
@@ -55,36 +52,7 @@ namespace SmartCare.InfraStructure.Repositories
                               v.ExpiresAt > DateTime.UtcNow);
         }
 
-        public Task MarkAsUsedAsync(int verificationId)
-        {
-            return Task.Run(async () =>
-            {
-                var verification = await _dbSet.FindAsync(verificationId);
-                if (verification != null)
-                {
-                    verification.IsUsed = true;
-                    verification.UsedAt = DateTime.UtcNow;
-                    _dbSet.Update(verification);
-                }
-            });
-        }
 
-        public async Task<bool> MarkAsUsedAsync(string email, string token)
-        {
-            var verification = await _dbSet
-                .Where(v => v.Email == email && v.Token == token && !v.IsUsed)
-                .FirstOrDefaultAsync();
-
-            if (verification != null)
-            {
-                verification.IsUsed = true;
-                verification.UsedAt = DateTime.UtcNow;
-                _dbSet.Update(verification);
-                return true;
-            }
-
-            return false;
-        }
 
         public async Task RemoveExpiredAsync()
         {

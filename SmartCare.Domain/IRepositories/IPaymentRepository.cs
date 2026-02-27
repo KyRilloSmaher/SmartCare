@@ -11,12 +11,12 @@ namespace SmartCare.Domain.IRepositories
 {
     public interface IPaymentRepository : IGenericRepository<Payment>
     {
-         Task<Payment?> GetByPaymentIntentIdAsync(string paymentIntentId);
+         Task<Payment?> GetByPaymentProviderReferenceIdAsync(string paymentIntentId);
 
-        Task<Payment?> GetByOrderIdAsync(Guid orderId, bool trackChanges = false);
+        Task<Payment?> GetPendingPaymentByOrderIdAsync(Guid orderId, bool trackChanges = false);
 
-         Task UpdatePaymentStatusAsync(Guid paymentId, PaymentStatus status, string paymentIntentId);
          IQueryable<Payment> GetPaymentsQueryable(bool trackChanges = false);
-    
-}
+
+        Task<IEnumerable<Payment>> GetPaymentsByOrderIdAsync(Guid orderId, bool trackChanges = false);
+    }
 }

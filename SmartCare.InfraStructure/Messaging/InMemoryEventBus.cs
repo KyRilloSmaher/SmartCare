@@ -1,4 +1,5 @@
-﻿using SmartCare.Application.Messaging;
+﻿using Microsoft.Extensions.Logging;
+using SmartCare.Application.Messaging;
 using System.Collections.Concurrent;
 
 namespace SmartCare.InfraStructure.Messaging
@@ -8,6 +9,12 @@ namespace SmartCare.InfraStructure.Messaging
     public class InMemoryEventBus : IEventBus
     {
         private readonly ConcurrentBag<Func<object, Task>> _handlers = new();
+        private readonly ILogger<InMemoryEventBus> _logger;
+
+        public InMemoryEventBus(ILogger<InMemoryEventBus> logger)
+        {
+            _logger = logger;
+        }
 
         public void Subscribe<TEvent>(Func<TEvent, Task> handler)
         {
@@ -20,19 +27,21 @@ namespace SmartCare.InfraStructure.Messaging
 
         public async Task PublishAsync<TEvent>(TEvent @event)
         {
-            Console.WriteLine("-------------------------PUBLISH  ASYNC ---------------------");
+            _logger.LogDebug("-------------------------PUBLISH Event ASYNC ---------------------");
             foreach (var handler in _handlers)
             {
                 try
                 {
-                    Console.WriteLine("-------------------------handler is not Null  ASYNC ---------------------");
+                    _logger.LogDebug($"-------------------------{nameof(handler.GetType)}is Activeted Now ---------------------");
                     await handler(@event);
-                    Console.WriteLine($"Event handler ");
+                    _logger.LogDebug($"-------------------------Event handler {nameof(handler.GetType)} is Finished Successfully : ) -------------------------");
                 }
                 catch (Exception ex)
                 {
                     // Log or handle handler exceptions safely
-                    Console.WriteLine($"Event handler error: {ex.Message}");
+                    _logger.LogError($"-------------------------Event handler {nameof(handler.GetType)} Failed : ( -------------------------");
+                    _logger.LogError($" Error : {ex.Message}");
+                    _logger.LogError("--------------------------------------------------");
                 }
             }
         }

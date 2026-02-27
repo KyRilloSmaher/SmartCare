@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using SmartCare.API.Helpers;
 using SmartCare.Application.CQRs.Authentication.Commands.Auth;
@@ -66,23 +67,38 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Auth
             _urlHelper = urlHelper;
             _logger = logger;
         }
+
+
         public async Task<Response<bool>> Handle(SignUpAsyncCommand request, CancellationToken cancellationToken)
         {
             string? uploadedImageUrl = null;
             var dto = request.dto;
 
+            _logger.LogInformation("Starting signup process for email: {Email}", dto.Email);
+
             // Validation checks
             var isEmailExists = await _unitOfWork.UserManager.FindByEmailAsync(dto.Email);
             if (isEmailExists != null)
+            {
+                _logger.LogWarning("Signup failed - Email already exists: {Email}", dto.Email);
                 return _responseHandler.Failed<bool>(SystemMessages.EMAIL_ALREADY_EXISTS);
+            }
 
             var isUserNameExists = await _unitOfWork.UserManager.FindByNameAsync(dto.UserName);
             if (isUserNameExists != null)
+            {
+                _logger.LogWarning("Signup failed - Username already exists: {UserName}", dto.UserName);
                 return _responseHandler.Failed<bool>(SystemMessages.USERNAME_ALREADY_EXISTS);
+            }
 
             var isPhoneNumberExists = await _unitOfWork.Clients.IsClientPhoneNumberUniqueAsync(dto.PhoneNumber);
             if (!isPhoneNumberExists)
+            {
+                _logger.LogWarning("Signup failed - Phone already exists: {Phone}", dto.PhoneNumber);
                 return _responseHandler.Failed<bool>(SystemMessages.PHONE_ALREADY_EXISTS);
+            }
+
+            await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
             try
             {
@@ -90,30 +106,38 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Auth
                 if (dto.ProfileImage is not null)
                 {
                     var uploadResult = await _imageUploaderService.UploadImageAsync(dto.ProfileImage, ImageFolder.UserProfiles);
+
                     if (uploadResult.Error != null)
+                    {
+                        _logger.LogWarning("Image upload failed for email: {Email}", dto.Email);
+                        await _unitOfWork.RollbackTransactionAsync(cancellationToken);
                         return _responseHandler.Failed<bool>(SystemMessages.FILE_UPLOAD_FAILED);
+                    }
+
                     uploadedImageUrl = uploadResult.Url.ToString();
                 }
 
-                // Map DTO to ApplictionUser
+                // Map user
                 var user = _mapper.Map<ApplictionUser>(dto);
                 user.ProfileImageUrl = uploadedImageUrl;
-                user.UserName = dto.UserName;
-                user.Email = dto.Email;
-                user.PhoneNumber = dto.PhoneNumber;
                 user.EmailConfirmed = false;
-                // Initialize Client
+
                 user.Client = _mapper.Map<SmartCare.Domain.Entities.Client>(dto);
                 user.Client.Addresses = new List<SmartCare.Domain.Entities.Address>
-        {
-            _mapper.Map<SmartCare.Domain.Entities.Address>(dto.Address)
-        };
-                user.Client.User = user;
-                // Create user in Identity
+                {
+                    _mapper.Map<SmartCare.Domain.Entities.Address>(dto.Address)
+                };
+
+                // Create Identity user
                 var createResult = await _unitOfWork.UserManager.CreateAsync(user, dto.Password);
                 if (!createResult.Succeeded)
                 {
-                    // Clean up uploaded image
+                    _logger.LogWarning("User creation failed for {Email}: {Errors}",
+                        dto.Email,
+                        string.Join(", ", createResult.Errors.Select(e => e.Description)));
+
+                    await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+
                     if (!string.IsNullOrEmpty(uploadedImageUrl))
                         await _imageUploaderService.DeleteImageByUrlAsync(uploadedImageUrl);
 
@@ -123,53 +147,63 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Auth
                 }
 
                 // Add role
-                await _unitOfWork.UserManager.AddToRoleAsync(user, "CLIENT");
+                var roleResult = await _unitOfWork.UserManager.AddToRoleAsync(user, "CLIENT");
+                if (!roleResult.Succeeded)
+                {
+                    _logger.LogWarning("Role assignment failed for {Email}", dto.Email);
+                    await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                    return _responseHandler.Failed<bool>(SystemMessages.FAILED);
+                }
 
-                // Generate email confirmation token
+                // Generate confirmation token
                 var token = await _unitOfWork.UserManager.GenerateEmailConfirmationTokenAsync(user);
-                var encodedToken = WebUtility.UrlEncode(token);
+                var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
                 var httpRequest = _httpContextAccessor.HttpContext!.Request;
                 var baseUrl = $"{httpRequest.Scheme}://{httpRequest.Host}";
-                var confirmEmailUrl = $"{baseUrl}/{ApplicationRouting.Authentication.ConfirmEmail}?email={user.Email}&token={encodedToken}";
+                var confirmEmailUrl =
+                    $"{baseUrl}/{ApplicationRouting.Authentication.ConfirmEmail}?email={user.Email}&token={encodedToken}";
 
-                // Store email verification
+                // Domain operations
                 await _unitOfWork.EmailVerifications.AddVerificationAsync(
-                    email: user.Email,
-                    code: token,
-                    validFor: TimeSpan.FromHours(24)
+                    user.Email,
+                    token,
+                    TimeSpan.FromHours(24)
                 );
 
-
-                // Save client changes
-                await _unitOfWork.Clients.AddAsync(user.Client);
-
-                // Save all changes atomically in one transaction
+               // await _unitOfWork.Clients.AddAsync(user.Client);
+                // Save domain changes
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-                // Send confirmation email (after successful save)
+                await _unitOfWork.CommitTransactionAsync(cancellationToken);
+
+                _logger.LogInformation("Signup transaction committed successfully for {Email}", dto.Email);
+
+                // Send email after commit
                 await _emailService.SendConfirmationEmailAsync(user.Email, confirmEmailUrl);
 
                 return _responseHandler.Success(true, SystemMessages.SUCCESS);
             }
             catch (Exception ex)
             {
-                // Clean up uploaded image on failure
+                _logger.LogError(ex, "Error during signup transaction for {Email}", dto.Email);
+
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+
                 if (!string.IsNullOrEmpty(uploadedImageUrl))
                 {
                     try
                     {
                         await _imageUploaderService.DeleteImageByUrlAsync(uploadedImageUrl);
                     }
-                    catch
+                    catch (Exception imgEx)
                     {
-                        // Log but don't throw
+                        _logger.LogError(imgEx, "Failed to cleanup image after signup failure for {Email}", dto.Email);
                     }
                 }
 
-                // Log exception
                 return _responseHandler.Failed<bool>(SystemMessages.FAILED);
             }
         }
-    }
+     }
 }

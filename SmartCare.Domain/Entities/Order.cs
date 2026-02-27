@@ -18,13 +18,10 @@ namespace SmartCare.Domain.Entities
         public OrderStatus Status { get; set; } = OrderStatus.Pending;
 
         //Payment tracking
-        public string? PaymentIntentId { get; set; }
-        public int PaymentVersion { get; set; } = 1;
-
+        public Guid PaymenId { get; set; }
         public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
         public bool IsDeleted { get; set; }
-
         public Payment? Payment { get; set; }
         public Client Client { get; set; }
         public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();

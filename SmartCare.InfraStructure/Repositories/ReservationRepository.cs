@@ -58,42 +58,40 @@ namespace SmartCare.InfraStructure.Repositories
 
         #region Business Logic Methods
 
-        public async Task<Reservation> CreateReservationAsync(Guid orderItemId, Guid productId, Guid inventoryId, int quantity,
-            ReservationStatus status = ReservationStatus.ReservedUntilPickup)
+        public async Task<Reservation?> CreateReservationAsync(Guid orderItemId, Guid productId, Guid inventoryId, int quantity,ReservationStatus status = ReservationStatus.ReservedUntilPickup)
         {
             var inventory = await _context.Inventories
                 .FirstOrDefaultAsync(i => i.Id == inventoryId);
 
-            if (inventory == null || inventory.StockQuantity - inventory.ReservedQuantity < quantity)
-                throw new InvalidOperationException("Not enough stock to reserve");
-
-            inventory.ReservedQuantity += quantity;
-
-            var reservation = new Reservation
+           if (inventory is not null && inventory.Reserve(quantity))
             {
-                Id = Guid.NewGuid(),
-                ProductId = productId,
-                InventoryId = inventoryId,
-                QuantityReserved = quantity,
-                ReservedAt = DateTime.UtcNow,
-                Status = status,
-                ExpiredAt = status == ReservationStatus.ReservedUntilPickup
+                var reservation = new Reservation
+                {
+                    Id = Guid.NewGuid(),
+                    ProductId = productId,
+                    InventoryId = inventoryId,
+                    QuantityReserved = quantity,
+                    ReservedAt = DateTime.UtcNow,
+                    Status = status,
+                    ExpiredAt = status == ReservationStatus.ReservedUntilPickup
                     ? DateTime.UtcNow.AddDays(_defaultReservationDayForPickUp)
                     : DateTime.UtcNow.AddHours(_defaultReservationDayForOnlinepayment),
-                OrderItemId = orderItemId
-            };
+                    OrderItemId = orderItemId
+                };
+                await _context.Reservations.AddAsync(reservation);
+                return reservation;
+            }
 
-            await _context.Reservations.AddAsync(reservation);
-            return reservation;
+
+            return null;
         }
 
-        public async Task<bool> CancelReservationAsync(Guid reservationId, Guid inventoryId,
-            ReservationStatus status = ReservationStatus.Realesed)
+        public async Task<bool> CancelReservationAsync(Guid reservationId, Guid inventoryId, ReservationStatus status = ReservationStatus.Realesed)
         {
             var reservation = await _context.Reservations
                 .FirstOrDefaultAsync(r => r.Id == reservationId);
 
-            if (reservation == null)
+            if (reservation is null)
                 return false;
 
             if (reservation.Status == ReservationStatus.Realesed ||
@@ -103,14 +101,13 @@ namespace SmartCare.InfraStructure.Repositories
             var inventory = await _context.Inventories
                 .FirstOrDefaultAsync(i => i.Id == inventoryId);
 
-            if (inventory != null)
+            if (inventory is not  null)
             {
-                inventory.ReservedQuantity = Math.Max(0, inventory.ReservedQuantity - reservation.QuantityReserved);
+                inventory.Release(reservation.QuantityReserved);
+               
             }
-
             reservation.Status = status;
             reservation.ExpiredAt = DateTime.UtcNow;
-
             return true;
         }
 
