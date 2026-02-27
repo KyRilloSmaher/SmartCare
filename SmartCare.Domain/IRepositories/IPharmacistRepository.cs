@@ -11,14 +11,9 @@ namespace SmartCare.Domain.IRepositories
 {
     public interface IPharmacistRepository : IGenericRepository<Pharmacist>
     {
-        //Task<Pharmacist> GetByEmailAsync(string email);
-        //Task<Pharmacist> SearchByNameAsync(string name);
-        //Task<Pharmacist> GetByLicenseNumberAsync(string licenseNumber);
-        //Task<IEnumerable<Pharmacist>> GetByBranchIdAsync(Guid branchId);
-        //Task<string> GenerateEmailConfirmationTokenAsync(Pharmacist pharmacist);
-        //Task RollbackTransactionAsync();
-        //Task<bool> AddToRoleAsync(Pharmacist pharmacist, string role);
-        //Task<IdentityResult> CreatepharmacistAsync(Pharmacist pharmacist, string password);
-        //Task<bool> IspharmacistPhoneNumberUniqueAsync(string phone);
+        Task<bool> IsPharmacistPhoneNumberUniqueAsync(string phone);
+        Task<Pharmacist> GetByLicenseNumberAsync(string licenseNumber);
+        Task<IEnumerable<Pharmacist>> GetByBranchIdAsync(Guid branchId);
+        Task RollbackTransactionAsync();
     }
 }
