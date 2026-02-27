@@ -78,7 +78,7 @@ namespace SmartCare.API.Controllers
         /// <summary>
         /// Login and retrieve access + refresh tokens.
         /// </summary>
-        [HttpPost(ApplicationRouting.Authentication.Login)]
+        [HttpPost(ApplicationRouting.Authentication.pharmacistLogin)]
         [ProducesResponseType(typeof(Response<TokenResponseDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> PharmacistLoginAsync([FromBody] LoginRequestDto dto)
         {
