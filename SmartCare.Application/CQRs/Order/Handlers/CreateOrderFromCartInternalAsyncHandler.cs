@@ -79,7 +79,7 @@ namespace SmartCare.Application.CQRs.Order.Handlers
             if (cart == null || cart.ClientId != clientId)
                 return _responseHandler.BadRequest<T?>(SystemMessages.CART_NOT_FOUND);
 
-            var cartItems = await _unitOfWork.Carts.GetCartItemsAsync(cart.Id);
+            var cartItems = cart.Items;
             if (!cartItems.Any())
                 return _responseHandler.BadRequest<T?>(SystemMessages.CART_EMPTY);
 
@@ -155,7 +155,7 @@ namespace SmartCare.Application.CQRs.Order.Handlers
                 await _unitOfWork.Orders.AddAsync(order);
 
                 // =====================================================
-                // 6. Create order items FIRST
+                // 6. Create order items
                 // =====================================================
                 var orderItems = OrderExtensions.BuildOrderItems(order.Id, cartItems);
                 await _unitOfWork.Orders.AddOrderItemsAsync(orderItems);

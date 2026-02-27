@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using SmartCare.Application.CQRs.Authentication.Commands.Email;
 using SmartCare.Application.Handlers.ResponseHandler;
@@ -8,6 +9,8 @@ using SmartCare.Domain.Constants;
 using SmartCare.Domain.Entities;
 using SmartCare.Domain.IRepositories;
 using System;
+using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -58,8 +61,9 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Email
                 }
 
                 // Get valid verification from EmailVerifications table
-                var verification = await _unitOfWork.EmailVerifications.GetValidVerificationAsync(dto.Email, dto.Token);
+                var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(dto.Token));
 
+                var verification = await _unitOfWork.EmailVerifications.GetValidVerificationAsync(dto.Email, decodedToken);
                 if (verification == null)
                 {
                     _logger.LogWarning("Invalid or expired verification token for email: {Email}", dto.Email);
@@ -67,7 +71,7 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Email
                 }
 
                     // Confirm email using Identity
-                    var result = await _unitOfWork.UserManager.ConfirmEmailAsync(user, dto.Token);
+                    var result = await _unitOfWork.UserManager.ConfirmEmailAsync(user, decodedToken);
 
                     if (!result.Succeeded)
                     {
@@ -79,6 +83,7 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Email
                     }
                     // Update user
                     user.EmailConfirmed = true;
+                    verification.markUsed();
                     await _unitOfWork.UserManager.UpdateAsync(user);
                     // Create A Cart For Client
                     await _unitOfWork.Carts.CreateCartAsync(user.Id);

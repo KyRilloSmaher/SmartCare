@@ -14,7 +14,7 @@ namespace SmartCare.Application.Validators.Address
         {
             RuleFor(x => x.Id)
                 .NotEmpty().WithMessage("Address ID is required.");
-            RuleFor(x => x.address)
+            RuleFor(x => x.AddressLine)
                 .NotEmpty().WithMessage("Address is required.")
                 .MaximumLength(200);
 

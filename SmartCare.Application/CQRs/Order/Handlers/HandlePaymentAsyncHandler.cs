@@ -2,7 +2,7 @@
 using MediatR;
 using SmartCare.Application.commens;
 using SmartCare.Application.CQRs.Order.Commands;
-using SmartCare.Application.ExternalServiceInterfaces;
+using SmartCare.Application.ExternalServiceInterfaces.Payments;
 using SmartCare.Domain.Enums;
 using SmartCare.Domain.IRepositories;
 using System;
@@ -29,67 +29,67 @@ namespace SmartCare.Application.CQRs.Order.Handlers
 
         public async Task<Unit> Handle(HandlePaymentAsyncCommand request, CancellationToken cancellationToken)
         {
-            var order = request.order;
-            var payment = order.Payment;
+            //var order = request.order;
+            //var payment = order.Payment;
 
-            // No payment yet → create new
-            if (payment == null)
-            {
-                //    var newPayment = new Payment
-                //    {
-                //        OrderId = order.Id,
-                //        Amount = order.TotalPrice,
-                //        Status = PaymentStatus.Pending,
-                //        Version = 1,
-                //        Method = PaymentMethod.Cash,
-                //        CreatedAt = DateTime.UtcNow
-                //    };
+            //// No payment yet → create new
+            //if (payment == null)
+            //{
+            //    //    var newPayment = new Payment
+            //    //    {
+            //    //        OrderId = order.Id,
+            //    //        Amount = order.TotalPrice,
+            //    //        Status = PaymentStatus.Pending,
+            //    //        Version = 1,
+            //    //        Method = PaymentMethod.Cash,
+            //    //        CreatedAt = DateTime.UtcNow
+            //    //    };
 
-                //    await _unitOfWork.Payments.AddAsync(newPayment);
-                //    await _unitOfWork.SaveChangesAsync(cancellationToken);
+            //    //    await _unitOfWork.Payments.AddAsync(newPayment);
+            //    //    await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-                //    order.PaymentIntentId = null;
-                //    order.PaymentVersion = newPayment.Version;
-                return Unit.Value;
-            }
+            //    //    order.PaymentIntentId = null;
+            //    //    order.PaymentVersion = newPayment.Version;
+            //    return Unit.Value;
+            //}
 
-            // Pending → update amount + intent
-            if (payment.Status == PaymentStatus.Pending)
-            {
-                payment.Amount = order.TotalPrice;
-                payment.Version += 1;
-                payment.UpdatedAt = DateTime.UtcNow;
+            //// Pending → update amount + intent
+            //if (payment.Status == PaymentStatus.Pending)
+            //{
+            //    payment.Amount = order.TotalPrice;
+            //    payment.Version += 1;
+            //    payment.UpdatedAt = DateTime.UtcNow;
 
-                if (!string.IsNullOrEmpty(payment.PaymentIntentId))
-                {
-                    await _paymentGateway
-                        .UpdatePaymentIntentAmountAsync(
-                            payment.PaymentIntentId,
-                            order.TotalPrice);
+            //    if (!string.IsNullOrEmpty(payment.PaymentIntentId))
+            //    {
+            //        await _paymentGateway
+            //            .UpdatePaymentIntentAmountAsync(
+            //                payment.PaymentIntentId,
+            //                order.TotalPrice);
 
-                    order.PaymentIntentId = payment.PaymentIntentId;
-                    order.PaymentVersion = payment.Version;
-                }
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
-                return Unit.Value;
-            }
+            //        order.PaymentIntentId = payment.PaymentIntentId;
+            //        order.PaymentVersion = payment.Version;
+            //    }
+            //    await _unitOfWork.SaveChangesAsync(cancellationToken);
+            //    return Unit.Value;
+            //}
 
-            // Paid / Failed → create new payment version
-            var replacement = new paymentEntity
-            {
-                OrderId = order.Id,
-                Amount = order.TotalPrice,
-                Status = PaymentStatus.Pending,
-                Version = payment.Version + 1,
-                Method = Domain.Enums.PaymentMethod.Cash,
-                CreatedAt = DateTime.UtcNow
-            };
+            //// Paid / Failed → create new payment version
+            //var replacement = new paymentEntity
+            //{
+            //    OrderId = order.Id,
+            //    Amount = order.TotalPrice,
+            //    Status = PaymentStatus.Pending,
+            //    Version = payment.Version + 1,
+            //    Method = Domain.Enums.PaymentMethod.Cash,
+            //    CreatedAt = DateTime.UtcNow
+            //};
 
-            await _unitOfWork.Payments.AddAsync(replacement);
+            //await _unitOfWork.Payments.AddAsync(replacement);
 
-            order.PaymentIntentId = null;
-            order.PaymentVersion = replacement.Version;
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            //order.PaymentIntentId = null;
+            //order.PaymentVersion = replacement.Version;
+            //await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return Unit.Value;
         }

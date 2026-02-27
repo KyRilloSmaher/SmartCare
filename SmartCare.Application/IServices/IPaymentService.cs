@@ -1,4 +1,4 @@
-﻿using SmartCare.Application.DTOs.payment;
+﻿
 using SmartCare.Application.DTOs.Payment;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Domain.Entities;
@@ -25,8 +25,8 @@ namespace SmartCare.Application.IServices
 
 
         Task HandleWebhookEventAsync(Event stripeEvent);
-        Task<Response<PaymentIntentResponse>> CreateOrUpdatePaymentAsync(Guid orderId);
-        Task<Response<PaymentResult>> PayOfflineAsync(string orderCode);
+        Task<Response<PaymentResponseDTO>> CreateOrUpdatePaymentAsync(Guid orderId);
+        Task<Response<PaymentResponseDTO>> PayOfflineAsync(string orderCode);
         Task<Response<bool>> MarkOrderPaymentAsCash(Guid OrderId);
         Task<Payment?> GetPaymentByOrderIdAsync(Guid orderId);
     }

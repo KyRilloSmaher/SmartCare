@@ -11,7 +11,7 @@ namespace SmartCare.Domain.IRepositories
         /// <summary>
         /// Creates a reservation for a product in a specific inventory 
         /// </summary>
-        Task<Reservation> CreateReservationAsync(
+        Task<Reservation?> CreateReservationAsync(
             Guid OrderItemId,
             Guid productId,
             Guid inventoryId,

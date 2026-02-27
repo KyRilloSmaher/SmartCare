@@ -30,7 +30,9 @@ namespace SmartCare.InfraStructure.Configurations
                 .IsRequired()
                 .HasDefaultValue(Domain.Enums.PaymentStatus.Pending);
 
-            builder.Property(x => x.PaymentIntentId)
+            builder.Property(x => x.ClientPaymentToken)
+                .IsRequired(false);
+            builder.Property(x => x.ProviderReferenceId)
                 .IsRequired(false);
 
             //builder.Property(x => x.SessionId)
@@ -49,7 +51,7 @@ namespace SmartCare.InfraStructure.Configurations
                 .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasIndex(p => p.OrderId).IsUnique();
-            builder.HasIndex(p => p.PaymentIntentId);
+            builder.HasIndex(p => p.ProviderReferenceId);
         }
     }
 

@@ -14,8 +14,6 @@ namespace SmartCare.Domain.IRepositories
         Task<EmailVerification?> GetValidVerificationAsync(string email, string code);
         Task<EmailVerification?> GetLatestByEmailAsync(string email);
         Task<bool> HasValidVerificationAsync(string email);
-        Task MarkAsUsedAsync(int verificationId);
-        Task<bool> MarkAsUsedAsync(string email, string token);
         Task RemoveExpiredAsync();
         IQueryable<EmailVerification> GetQueryable();
     }

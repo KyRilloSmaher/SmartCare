@@ -12,7 +12,7 @@ namespace SmartCare.Application.Validators.Address
     {
         public CreateAddressRequestDtoValidator()
         {
-            RuleFor(x => x.address)
+            RuleFor(x => x.AddressLine)
                 .NotEmpty().WithMessage("Address is required.")
                 .MaximumLength(200);
 

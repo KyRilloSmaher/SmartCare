@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using SmartCare.API.Helpers;
 using SmartCare.Application.CQRs.Authentication.Commands.Email;
@@ -11,6 +12,7 @@ using SmartCare.Domain.Entities;
 using SmartCare.Domain.IRepositories;
 using System;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -64,23 +66,33 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Email
                     _logger.LogInformation("Email already confirmed for user: {UserId}", user.Id);
                     return _responseHandler.Failed<bool>(SystemMessages.EMAIL_ALREADY_VERIFIED);
                 }
+                string token = null ;
+                var ExistingVerifaction = await _unitOfWork.EmailVerifications.GetLatestByEmailAsync(dto.Email);
+                if (ExistingVerifaction is not null && !ExistingVerifaction.IsUsed)
+                {
+                    token = ExistingVerifaction?.Token;
+                    
+                }
+                else
+                {
 
-                    // Generate new email confirmation token
-                    var token = await _unitOfWork.UserManager.GenerateEmailConfirmationTokenAsync(user);
-                    var encodedToken = WebUtility.UrlEncode(token);
-
-                    // Build confirmation URL
-                    var requestScheme = _httpContextAccessor.HttpContext!.Request.Scheme;
-                    var requestHost = _httpContextAccessor.HttpContext.Request.Host;
-                    var baseUrl = $"{requestScheme}://{requestHost}";
-                    var confirmEmailUrl = $"{baseUrl}/{ApplicationRouting.Authentication.ConfirmEmail}?email={user.Email}&token={encodedToken}";
-
-                    // Store verification in EmailVerifications table (not in user entity)
+                    token = await _unitOfWork.UserManager.GenerateEmailConfirmationTokenAsync(user);
+                    // Store verification in EmailVerifications table
                     await _unitOfWork.EmailVerifications.AddVerificationAsync(
                         email: user.Email,
                         code: token,
                         validFor: TimeSpan.FromHours(24)
                     );
+                }
+                
+                // Generate new email confirmation token
+                var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+
+                // Build confirmation URL
+                    var requestScheme = _httpContextAccessor.HttpContext!.Request.Scheme;
+                    var requestHost = _httpContextAccessor.HttpContext.Request.Host;
+                    var baseUrl = $"{requestScheme}://{requestHost}";
+                    var confirmEmailUrl = $"{baseUrl}/{ApplicationRouting.Authentication.ConfirmEmail}?email={user.Email}&token={encodedToken}";
                     await _unitOfWork.SaveChangesAsync(cancellationToken);
 
                     // Send confirmation email

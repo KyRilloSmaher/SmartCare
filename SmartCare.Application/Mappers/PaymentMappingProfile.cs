@@ -22,7 +22,7 @@ namespace SmartCare.Application.Mappers
                // .ForMember(dest => dest.SessionId, opt => opt.MapFrom(src => src.Id));
 
             // Map from PaymentSessionRequest to Stripe session request (optional)
-            CreateMap<PaymentSessionRequest, CreateCheckoutSessionRequest>();
+            CreateMap<Payment, PaymentResponseDTO>();
         }
     }
 }

@@ -1,29 +1,31 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Hangfire;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using SmartCare.Application.commens;
 using SmartCare.Application.ExternalServiceInterfaces;
+using SmartCare.Application.ExternalServiceInterfaces.Payments;
 using SmartCare.Application.Handlers.ResponseHandler;
+using SmartCare.Application.Handlers.ResponsesHandler;
 using SmartCare.Application.IServices;
+using SmartCare.Application.Mappings;
 using SmartCare.Domain.Entities;
 using SmartCare.Domain.Helpers;
-using SmartCare.Domain.IRepositories;
 using SmartCare.Domain.Interfaces.IServices;
+using SmartCare.Domain.IRepositories;
+using SmartCare.Infrastructure.Data;
+using SmartCare.Infrastructure.Repositories;
 using SmartCare.InfraStructure.BackgroundJobImplemantations;
 using SmartCare.InfraStructure.DbContexts;
 using SmartCare.InfraStructure.ExternalServices;
+using SmartCare.InfraStructure.ExternalServices.Payments;
 using SmartCare.InfraStructure.Repositories;
+using SmartCare.InfraStructure.Services;
 using System.Security.Claims;
 using System.Text;
-using Hangfire;
-using SmartCare.Application.Handlers.ResponsesHandler;
-using SmartCare.Infrastructure.Repositories;
-using SmartCare.Application.commens;
-using SmartCare.Application.Mappings;
-using SmartCare.Infrastructure.Data;
-using SmartCare.InfraStructure.Services;
 
 namespace SmartCare.InfraStructure.Extensions
 {
@@ -49,6 +51,7 @@ namespace SmartCare.InfraStructure.Extensions
             services.AddScoped<IEmailVerificationRepository, EmailVerificationRepository>();
             services.AddScoped<IPaymentRepository, PaymentRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IPaymentGatewayFactory, PaymentGatewayFactory>();
             // ---------- Identity ----------
             services.AddIdentity<ApplictionUser, IdentityRole>(options =>
             {

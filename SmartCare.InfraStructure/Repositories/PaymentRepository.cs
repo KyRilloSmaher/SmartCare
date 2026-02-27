@@ -15,14 +15,14 @@ namespace SmartCare.InfraStructure.Repositories
             _context = context;
         }
 
-        public async Task<Payment?> GetByPaymentIntentIdAsync(string paymentIntentId)
+        public async Task<Payment?> GetByPaymentProviderReferenceIdAsync(string paymentIntentId)
         {
             return await _context.Payments
                 .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.PaymentIntentId == paymentIntentId);
+                .FirstOrDefaultAsync(p => p.ProviderReferenceId == paymentIntentId);
         }
 
-        public async Task<Payment?> GetByOrderIdAsync(Guid orderId, bool trackChanges = false)
+        public async Task<Payment?> GetPendingPaymentByOrderIdAsync(Guid orderId, bool trackChanges = false)
         {
             var query = _context.Payments.Where(p => p.OrderId == orderId);
 
@@ -30,20 +30,14 @@ namespace SmartCare.InfraStructure.Repositories
                 ? await query.FirstOrDefaultAsync()
                 : await query.AsNoTracking().FirstOrDefaultAsync();
         }
-
-        public Task UpdatePaymentStatusAsync(Guid paymentId, PaymentStatus status, string paymentIntentId)
+        public async Task<IEnumerable<Payment>> GetPaymentsByOrderIdAsync(Guid orderId, bool trackChanges = false)
         {
-            return Task.Run(async () =>
-            {
-                var payment = await _context.Payments.FindAsync(paymentId);
-                if (payment != null)
-                {
-                    payment.Status = status;
-                    payment.PaymentIntentId = paymentIntentId;
-                }
-            });
-        }
+            var query = _context.Payments.Where(p => p.OrderId == orderId);
 
+            return trackChanges
+                ? await query.ToListAsync()
+                : await query.AsNoTracking().ToListAsync();
+        }
         public IQueryable<Payment> GetPaymentsQueryable(bool trackChanges = false)
         {
             var query = _context.Payments.AsQueryable();

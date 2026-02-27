@@ -216,10 +216,7 @@ namespace SmartCare.InfraStructure.Repositories
                 if (inventory.StockQuantity < quantity)
                     throw new InvalidOperationException("Stock quantity is insufficient.");
 
-                inventory.StockQuantity -= quantity;
-                if (pickUp)
-                    inventory.ReservedQuantity -= quantity;
-
+                inventory.Confirm(quantity);
                 return true;
             });
         }
