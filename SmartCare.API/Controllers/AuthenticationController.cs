@@ -59,7 +59,6 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> PharmacistSignUpAsync([FromForm] pharmacistSignUpRequestDto dto)
         {
-            //var result = await _authenticationService.SignUpAsync(dto);
             var result = await _mediator.Send(new pharmacistSignUpAsyncCommand(dto));
             return ControllersHelperMethods.FinalResponse(result);
         }
@@ -73,6 +72,18 @@ namespace SmartCare.API.Controllers
         {
             //var result = await _authenticationService.LoginAsync(dto);
             var result = await _mediator.Send(new  LoginAsyncCommand(dto));
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+
+        /// <summary>
+        /// Login and retrieve access + refresh tokens.
+        /// </summary>
+        [HttpPost(ApplicationRouting.Authentication.Login)]
+        [ProducesResponseType(typeof(Response<TokenResponseDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> PharmacistLoginAsync([FromBody] LoginRequestDto dto)
+        {
+            //var result = await _authenticationService.LoginAsync(dto);
+            var result = await _mediator.Send(new PharmacistLoginCommand(dto));
             return ControllersHelperMethods.FinalResponse(result);
         }
         /// <summary>
