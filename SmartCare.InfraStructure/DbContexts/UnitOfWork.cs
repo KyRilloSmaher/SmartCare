@@ -35,6 +35,7 @@ namespace SmartCare.Infrastructure.Data
         public IReservationRepository Reservations { get; }
         public IInventoryRepository Inventories { get; }
         public IPaymentRepository Payments { get; }
+        public IPharmacistRepository Pharmacists { get; }
         public IEmailVerificationRepository EmailVerifications { get; }
 
         // Identity Management
@@ -68,6 +69,7 @@ namespace SmartCare.Infrastructure.Data
             IReservationRepository reservationRepository,
             IInventoryRepository inventoryRepository,
             IPaymentRepository paymentRepository,
+            IPharmacistRepository pharmacistRepository,
             IEmailVerificationRepository emailVerificationRepository,
             UserManager<ApplictionUser> userManager,
             RoleManager<IdentityRole> roleManager)
@@ -89,6 +91,7 @@ namespace SmartCare.Infrastructure.Data
             Reservations = reservationRepository ?? throw new ArgumentNullException(nameof(reservationRepository));
             Inventories = inventoryRepository ?? throw new ArgumentNullException(nameof(inventoryRepository));
             Payments = paymentRepository ?? throw new ArgumentNullException(nameof(paymentRepository));
+            Pharmacists = pharmacistRepository ?? throw new ArgumentNullException(nameof(pharmacistRepository));
             EmailVerifications = emailVerificationRepository ?? throw new ArgumentNullException(nameof(emailVerificationRepository));
 
             // Initialize Identity managers
