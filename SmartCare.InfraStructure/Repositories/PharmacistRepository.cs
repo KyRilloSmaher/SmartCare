@@ -34,6 +34,12 @@ namespace SmartCare.InfraStructure.Repositories
             return await _context.Pharmacists.FirstOrDefaultAsync(p => p.LicenseNumber == licenseNumber);
         }
 
+        public async Task<Pharmacist?> GetByUserIdAsync(string userId)
+        {
+            return await _context.Pharmacists
+                .FirstOrDefaultAsync(p => p.Id == userId);
+        }
+
         public async Task<bool> IsPharmacistPhoneNumberUniqueAsync(string phone)
         {
             return !await _context.Users.AnyAsync(u => u.PhoneNumber == phone);
