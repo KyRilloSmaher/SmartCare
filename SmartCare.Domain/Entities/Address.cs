@@ -86,6 +86,10 @@ namespace SmartCare.Domain.Entities
             IsDeleted = false;
         }
 
+        public Address()
+        {
+        }
+
         #endregion
 
         #region Methods
