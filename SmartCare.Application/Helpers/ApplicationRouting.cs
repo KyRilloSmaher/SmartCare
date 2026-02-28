@@ -16,6 +16,7 @@
             private const string Prefix = Rule + "auth/";
 
             public const string Login = Prefix + "login";
+            public const string pharmacistLogin = Prefix + "Pharmacist-Login";
             public const string SignUp = Prefix + "sign-up";
             public const string pharmacistSignUp = Prefix + "Pharmacist-SignUp";
             public const string ConfirmEmail = Prefix + "confirm-email";

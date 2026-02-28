@@ -3,11 +3,13 @@ using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Logging;
 using SmartCare.API.Helpers;
 using SmartCare.Application.CQRs.Authentication.Commands.Auth;
 using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Domain.Constants;
+using SmartCare.Domain.Entities;
 using SmartCare.Domain.Enums;
 using SmartCare.Domain.Helpers;
 using SmartCare.Domain.Interfaces.IServices;
@@ -25,8 +27,7 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Auth
     {
         #region Fields
         private readonly IResponseHandler _responseHandler;
-        private readonly IPharmacistRepository _pharmacistRepository;
-        private readonly IStoreRepository _storeRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly ITokenService _tokenService;
         private readonly IEmailService _emailService;
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -35,14 +36,14 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Auth
         private readonly JwtSettings _jwtSettings;
         private readonly IMapper _mapper;
         private readonly IUrlHelper _urlHelper;
-
+        private readonly ILogger<SignUpHandler> _logger;
 
         #endregion
-        public PhramacistSignupHandler(IResponseHandler responseHandler, IPharmacistRepository pharmacistRepository, IStoreRepository storeRepository, ITokenService tokenService, IEmailService emailService, IHttpContextAccessor httpContextAccessor, IImageUploaderService imageUploaderService, LinkGenerator linkGenerator, JwtSettings jwtSettings, IMapper mapper, IUrlHelper urlHelper)
+
+        public PhramacistSignupHandler(IResponseHandler responseHandler, IUnitOfWork unitOfWork, ITokenService tokenService, IEmailService emailService, IHttpContextAccessor httpContextAccessor, IImageUploaderService imageUploaderService, LinkGenerator linkGenerator, JwtSettings jwtSettings, IMapper mapper, IUrlHelper urlHelper, ILogger<SignUpHandler> logger)
         {
             _responseHandler = responseHandler;
-            _pharmacistRepository = pharmacistRepository;
-            _storeRepository = storeRepository;
+            _unitOfWork = unitOfWork;
             _tokenService = tokenService;
             _emailService = emailService;
             _httpContextAccessor = httpContextAccessor;
@@ -51,83 +52,113 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Auth
             _jwtSettings = jwtSettings;
             _mapper = mapper;
             _urlHelper = urlHelper;
+            _logger = logger;
         }
+
 
 
         public async Task<Response<bool>> Handle(pharmacistSignUpAsyncCommand request, CancellationToken cancellationToken)
         {
-            //string? uploadedImageUrl = null;
-            //var dto = request.dto;
+            string? uploadedImageUrl = null;
+            var dto = request.dto;
 
-            //var isEmailExists = await _pharmacistRepository.GetByEmailAsync(dto.Email);
-            //if (isEmailExists != null)
-            //    return _responseHandler.Failed<bool>(SystemMessages.EMAIL_ALREADY_EXISTS);
+            // Validation checks
+            var isBranchIdExists = await _unitOfWork.Stores.GetByIdAsync(dto.StoreId);
+            if (isBranchIdExists == null)
+                return _responseHandler.Failed<bool>(SystemMessages.STORE_NOT_FOUND);
 
-            //var isUserNameExists = await _pharmacistRepository.SearchByNameAsync(dto.userName);
-            //if (isUserNameExists != null)
-            //    return _responseHandler.Failed<bool>(SystemMessages.USERNAME_ALREADY_EXISTS);
+            var isEmailExists = await _unitOfWork.UserManager.FindByEmailAsync(dto.Email);
+            if (isEmailExists != null)
+                return _responseHandler.Failed<bool>(SystemMessages.EMAIL_ALREADY_EXISTS);
 
-            //var isBranchExists = await _storeRepository.GetStoreByIdAsync(dto.StoreId);
-            //if (isBranchExists == null)
-            //    return _responseHandler.Failed<bool>(SystemMessages.STORE_NOT_FOUND);
+            var isUserNameExists = await _unitOfWork.UserManager.FindByNameAsync(dto.userName);
+            if (isUserNameExists != null)
+                return _responseHandler.Failed<bool>(SystemMessages.USERNAME_ALREADY_EXISTS);
 
-            //var isPhoneNumberUnique = await _pharmacistRepository.IspharmacistPhoneNumberUniqueAsync(dto.PhoneNumber);
-            //if (!isPhoneNumberUnique)
-            //    return _responseHandler.Failed<bool>(SystemMessages.PHONE_ALREADY_EXISTS);
+            var isPhoneNumberExists = await _unitOfWork.Pharmacists.IsPharmacistPhoneNumberUniqueAsync(dto.PhoneNumber);
+            if (!isPhoneNumberExists)
+                return _responseHandler.Failed<bool>(SystemMessages.PHONE_ALREADY_EXISTS);
 
-            //try
-            //{
-            //    if (dto.ProfileImage is not null)
-            //    {
-            //        var uploadResult = await _imageUploaderService.UploadImageAsync(dto.ProfileImage, ImageFolder.UserProfiles);
-            //        if (uploadResult.Error != null)
-            //            return _responseHandler.Failed<bool>(SystemMessages.FILE_UPLOAD_FAILED);
+            if (dto.ProfileImage is not null)
+             {
+                var uploadResult = await _imageUploaderService.UploadImageAsync(dto.ProfileImage, ImageFolder.UserProfiles);
+                if (uploadResult.Error != null)
+                   return _responseHandler.Failed<bool>(SystemMessages.FILE_UPLOAD_FAILED);
+                uploadedImageUrl = uploadResult.Url.ToString();
+              }
 
-            //        uploadedImageUrl = uploadResult.Url.ToString();
-            //    }
 
-            //    await _pharmacistRepository.BeginTransactionAsync();
 
-            //    var pharmacist = _mapper.Map<SmartCare.Domain.Entities.Pharmacist>(dto);
-            //    pharmacist.ProfileImageUrl = uploadedImageUrl;
+            try
+            {
 
-            //    var createResult = await _pharmacistRepository.CreatepharmacistAsync(pharmacist, dto.Password);
+                // Map DTO to ApplictionUser
+                var user = _mapper.Map<ApplictionUser>(dto);
+                user.ProfileImageUrl = uploadedImageUrl ?? string.Empty;
+                user.EmailConfirmed = false;
 
-            //    if (!createResult.Succeeded)
-            //    {
-            //        await _pharmacistRepository.RollbackTransactionAsync();
-            //        if (!string.IsNullOrEmpty(uploadedImageUrl))
-            //            await _imageUploaderService.DeleteImageByUrlAsync(uploadedImageUrl);
+                // Initialize Pharmacist
+                user.Pharmacist = _mapper.Map<SmartCare.Domain.Entities.Pharmacist>(dto);
+              
+                user.Pharmacist.User = user;
+                // Create user in Identity
+                var createResult = await _unitOfWork.UserManager.CreateAsync(user, dto.Password);
+                if (!createResult.Succeeded)
+                {
+                    // Clean up uploaded image
+                    if (!string.IsNullOrEmpty(uploadedImageUrl))
+                        await _imageUploaderService.DeleteImageByUrlAsync(uploadedImageUrl);
 
-            //        return _responseHandler.Failed<bool>(string.Join(", ", createResult.Errors.Select(e => e.Description)));
-            //    }
+                    return _responseHandler.Failed<bool>(
+                        string.Join(", ", createResult.Errors.Select(e => e.Description))
+                    );
+                }
 
-            //    await _pharmacistRepository.AddToRoleAsync(pharmacist, "Pharmacist");
+                // Add role
+                await _unitOfWork.UserManager.AddToRoleAsync(user, "PHARMACIST");
 
-            //    var token = await _pharmacistRepository.GenerateEmailConfirmationTokenAsync(pharmacist);
-            //    var encodedToken = WebUtility.UrlEncode(token);
-            //    var httprequest = _httpContextAccessor.HttpContext!.Request;
-            //    var baseUrl = $"{httprequest.Scheme}://{httprequest.Host}";
-            //    var confirmEmailUrl = $"{baseUrl}/{ApplicationRouting.Authentication.ConfirmEmail}?email={pharmacist.Email}&token={encodedToken}";
+                // Generate email confirmation token
+                var token = await _unitOfWork.UserManager.GenerateEmailConfirmationTokenAsync(user);
+                var encodedToken = WebUtility.UrlEncode(token);
 
-            //    pharmacist.EmailConfirmationLink = confirmEmailUrl;
-            //    pharmacist.VerificationURLExpiresAt = DateTime.UtcNow.AddHours(24);
+                var httpRequest = _httpContextAccessor.HttpContext!.Request;
+                var baseUrl = $"{httpRequest.Scheme}://{httpRequest.Host}";
+                var confirmEmailUrl = $"{baseUrl}/{ApplicationRouting.Authentication.ConfirmEmail}?email={user.Email}&token={encodedToken}";
 
-            //    await _emailService.SendConfirmationEmailAsync(pharmacist.Email, confirmEmailUrl);
+                // Store email verification
+                await _unitOfWork.EmailVerifications.AddVerificationAsync(
+                    email: user.Email,
+                    code: token,
+                    validFor: TimeSpan.FromHours(24)
+                );
 
-            //    await _pharmacistRepository.CommitTransactionAsync();
 
-            //    return _responseHandler.Success(true, SystemMessages.SUCCESS);
-            //}
-            //catch (Exception ex)
-            //{
-            //    await _pharmacistRepository.RollbackTransactionAsync();
+                // Save all changes atomically in one transaction
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            //    if (!string.IsNullOrEmpty(uploadedImageUrl))
-            //        await _imageUploaderService.DeleteImageByUrlAsync(uploadedImageUrl);
+                // Send confirmation email (after successful save)
+                await _emailService.SendConfirmationEmailAsync(user.Email, confirmEmailUrl);
 
-              return _responseHandler.Failed<bool>(SystemMessages.FAILED);
-            //}
+                return _responseHandler.Success(true, SystemMessages.SUCCESS);
+                  }
+            catch (Exception ex)
+            {
+                // Clean up uploaded image on failure
+                if (!string.IsNullOrEmpty(uploadedImageUrl))
+                {
+                    try
+                    {
+                        await _imageUploaderService.DeleteImageByUrlAsync(uploadedImageUrl);
+                    }
+                    catch
+                    {
+                        // Log but don't throw
+                    }
+                }
+
+                // Log exception
+                return _responseHandler.Failed<bool>(SystemMessages.FAILED);
+            }
 
         }
     }

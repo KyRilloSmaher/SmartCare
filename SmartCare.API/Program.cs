@@ -27,6 +27,7 @@ using SmartCare.InfraStructure.Messaging;
 using SmartCare.InfraStructure.Seed;
 using SmartCare.InfraStructure.Services;
 using StackExchange.Redis;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -70,6 +71,13 @@ builder.Services.AddHttpClient();
                      }
                    });
     });
+
+// To Convert Enum From 0,1,.. To string In Swagger
+//builder.Services.AddControllers().AddJsonOptions(options =>
+//{
+//    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+//});
+         
 #endregion
 
 #region Connection To SQL SERVER

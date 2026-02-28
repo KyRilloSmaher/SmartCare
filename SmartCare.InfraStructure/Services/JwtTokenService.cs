@@ -68,6 +68,11 @@ namespace SmartCare.InfraStructure.Services
                                     new Claim("security_stamp", securityStamp ?? "")
                                 };
 
+            if (user.Pharmacist != null) 
+            { 
+                authClaims.Add(new Claim("StoreId",user.Pharmacist.StoreId.ToString()));
+            }
+            
             // Add role claims
             foreach (var role in userRoles)
             {

@@ -20,6 +20,7 @@ namespace SmartCare.Domain.IRepositories
         IReservationRepository Reservations { get; }
         IInventoryRepository Inventories { get; }
         IPaymentRepository Payments { get; }
+        IPharmacistRepository Pharmacists { get; }
         IEmailVerificationRepository EmailVerifications { get; }
 
         // Identity Management
