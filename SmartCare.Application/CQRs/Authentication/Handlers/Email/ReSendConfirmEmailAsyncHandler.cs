@@ -1,6 +1,5 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using SmartCare.API.Helpers;
@@ -8,13 +7,8 @@ using SmartCare.Application.CQRs.Authentication.Commands.Email;
 using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Domain.Constants;
-using SmartCare.Domain.Entities;
 using SmartCare.Domain.IRepositories;
-using System;
-using System.Net;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace SmartCare.Application.CQRs.Authentication.Handlers.Email
 {

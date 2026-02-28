@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Polly.Retry;
 using SmartCare.Application.commens;
-using SmartCare.Application.CQRs.Cart.Queries;
 using SmartCare.Application.DTOs.Cart.Responses;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Application.IServices;
@@ -18,20 +17,20 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.CQRs.Cart.Handlers
+namespace SmartCare.Application.CQRs.Cart.Queries.GetCartItems
 {
-    public class GetCartItemsHandler : IRequestHandler<GetCartItemsAsyncQuery, Response<IEnumerable<CartItemResponseDto>>>
+    public class GetCartItemsQueryHandler : IRequestHandler<GetCartItemsQuery, Response<IEnumerable<CartItemResponseDto>>>
     {
         #region Fields
 
         private readonly IResponseHandler _responseHandler;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly ILogger<GetCartItemsHandler> _logger;
+        private readonly ILogger<GetCartItemsQueryHandler> _logger;
 
 
         #endregion
-        public GetCartItemsHandler(IResponseHandler responseHandler, IMapper mapper, ILogger<GetCartItemsHandler> logger, IUnitOfWork unitOfWork)
+        public GetCartItemsQueryHandler(IResponseHandler responseHandler, IMapper mapper, ILogger<GetCartItemsQueryHandler> logger, IUnitOfWork unitOfWork)
         {
             _responseHandler = responseHandler;
             _mapper = mapper;
@@ -40,7 +39,7 @@ namespace SmartCare.Application.CQRs.Cart.Handlers
         }
 
 
-        public async Task<Response<IEnumerable<CartItemResponseDto>>> Handle(GetCartItemsAsyncQuery request, CancellationToken cancellationToken)
+        public async Task<Response<IEnumerable<CartItemResponseDto>>> Handle(GetCartItemsQuery request, CancellationToken cancellationToken)
         {
             var cartId = request.cartId;
             _logger.LogDebug("GetCartItemsAsync called for CartId={CartId}", cartId);

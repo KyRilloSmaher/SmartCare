@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using SmartCare.Application.DTOs.Cart.Requests;
 using SmartCare.Application.DTOs.Cart.Responses;
 using SmartCare.Application.Handlers.ResponseHandler;
 using System;
@@ -8,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.CQRs.Cart.Commands
+namespace SmartCare.Application.Features.Carts.Queries.GetUserActiveCart
 {
-    public record UpdateCartItemQuantityAsyncCommand(UpdateCartItemRequestDto dto) : IRequest<Response<CartItemResponseDto?>>;
+    public record GetUserActiveCartQuery(string userId) : IRequest<Response<CartResponseDto>>;
 }

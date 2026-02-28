@@ -15,7 +15,7 @@ namespace SmartCare.InfraStructure.Services
             _eventBus = eventBus;
         }
 
-        public async Task PublishReservationExpired(Guid cartId, Guid productId, int quantity, string userid)
+        public async Task PublishProductRemovedFromCart(Guid cartId, Guid productId, int quantity, string userid)
         {
             var evt = new ReservationExpiredEvent(cartId, productId, quantity,
                 "Your reservation has expired and the item was removed from your cart." , userid);

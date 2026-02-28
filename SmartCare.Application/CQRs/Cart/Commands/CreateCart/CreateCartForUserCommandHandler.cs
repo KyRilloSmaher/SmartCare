@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Polly.Retry;
 using SmartCare.Application.commens;
-using SmartCare.Application.CQRs.Cart.Commands;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Application.IServices;
 using SmartCare.Application.Messaging;
@@ -16,26 +15,26 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.CQRs.Cart.Handlers
+namespace SmartCare.Application.Features.Carts.Commands.CreateCart
 {
-    public class CreateCartForUserHandler : IRequestHandler<CreateCartForUserAsyncCommand, Response<Guid>>
+    public class CreateCartForUserCommandHandler : IRequestHandler<CreateCartForUserCommand, Response<Guid>>
     {
         #region Fields
 
         private readonly IResponseHandler _responseHandler;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ILogger<CreateCartForUserHandler> _logger;
+        private readonly ILogger<CreateCartForUserCommandHandler> _logger;
 
         #endregion
 
-        public CreateCartForUserHandler(IResponseHandler responseHandler, IUnitOfWork unitOfWork, ILogger<CreateCartForUserHandler> logger)
+        public CreateCartForUserCommandHandler(IResponseHandler responseHandler, IUnitOfWork unitOfWork, ILogger<CreateCartForUserCommandHandler> logger)
         {
             _responseHandler = responseHandler;
             _unitOfWork = unitOfWork;
             _logger = logger;
         }
 
-        public async Task<Response<Guid>> Handle(CreateCartForUserAsyncCommand request, CancellationToken cancellationToken)
+        public async Task<Response<Guid>> Handle(CreateCartForUserCommand request, CancellationToken cancellationToken)
         {
             var userId = request.userId;
             if (string.IsNullOrWhiteSpace(userId))

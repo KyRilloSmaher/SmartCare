@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Polly.Retry;
 using SmartCare.Application.commens;
-using SmartCare.Application.CQRs.Cart.Queries;
 using SmartCare.Application.DTOs.Cart.Responses;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Application.IServices;
@@ -17,20 +16,20 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.CQRs.Cart.Handlers
+namespace SmartCare.Application.CQRs.Cart.Queries.GetCartById
 {
-    public class GetCartByIdHandler : IRequestHandler<GetCartByIdAsyncQuery , Response<CartResponseDto?>>
+    public class GetCartByIdQueryHandler : IRequestHandler<GetCartByIdQuery , Response<CartResponseDto?>>
     {
         #region Fields
 
         private readonly IResponseHandler _responseHandler; 
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly ILogger<GetCartByIdHandler> _logger;
+        private readonly ILogger<GetCartByIdQueryHandler> _logger;
 
 
         #endregion
-        public GetCartByIdHandler(IResponseHandler responseHandler, IMapper mapper, ILogger<GetCartByIdHandler> logger, IUnitOfWork unitOfWork)
+        public GetCartByIdQueryHandler(IResponseHandler responseHandler, IMapper mapper, ILogger<GetCartByIdQueryHandler> logger, IUnitOfWork unitOfWork)
         {
             _responseHandler = responseHandler;
             _mapper = mapper;
@@ -39,16 +38,17 @@ namespace SmartCare.Application.CQRs.Cart.Handlers
         }
 
 
-        public async Task<Response<CartResponseDto?>> Handle(GetCartByIdAsyncQuery request, CancellationToken cancellationToken)
+        public async Task<Response<CartResponseDto?>> Handle(GetCartByIdQuery request, CancellationToken cancellationToken)
         {
             var cartId = request.cartId;
             if (cartId == Guid.Empty)
                 return _responseHandler.BadRequest<CartResponseDto?>(SystemMessages.BAD_REQUEST);
 
-            var cart = await _unitOfWork.Carts.GetByIdAsync(cartId);
+            var cart = await _unitOfWork.Carts.GetByIdAsync(cartId,true);
             if (cart == null)
                 return _responseHandler.NotFound<CartResponseDto?>(SystemMessages.NOT_FOUND);
-
+            cart.ReCalculateTotalPrice();
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             var dto = _mapper.Map<CartResponseDto?>(cart);
             return _responseHandler.Success(dto);
         }

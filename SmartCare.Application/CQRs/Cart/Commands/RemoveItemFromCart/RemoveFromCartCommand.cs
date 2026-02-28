@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.CQRs.Cart.Commands
+namespace SmartCare.Application.Features.Carts.Commands.RemoveItemFromCart
 {
-    public record RemoveFromCartAsyncCommand(RemoveFromCartRequestDto dto) : IRequest<Response<bool>>;
+    public record RemoveFromCartCommand(RemoveFromCartRequestDto dto) : IRequest<Response<bool>>;
 }

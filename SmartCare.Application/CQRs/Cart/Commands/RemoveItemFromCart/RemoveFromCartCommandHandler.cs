@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Polly.Retry;
 using SmartCare.Application.commens;
-using SmartCare.Application.CQRs.Cart.Commands;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Application.IServices;
 using SmartCare.Application.Messaging;
@@ -17,25 +16,25 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.CQRs.Cart.Handlers
+namespace SmartCare.Application.Features.Carts.Commands.RemoveItemFromCart
 {
-    public class RemoveFromCartHandler : IRequestHandler<RemoveFromCartAsyncCommand, Response<bool>>
+    public class RemoveFromCartCommandHandler : IRequestHandler<RemoveFromCartCommand, Response<bool>>
     {
         #region Fields
 
         private readonly IResponseHandler _responseHandler;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ILogger<RemoveFromCartHandler> _logger;
+        private readonly ILogger<RemoveFromCartCommandHandler> _logger;
 
         #endregion
-        public RemoveFromCartHandler(IResponseHandler responseHandler, ILogger<RemoveFromCartHandler> logger, IUnitOfWork unitOfWork)
+        public RemoveFromCartCommandHandler(IResponseHandler responseHandler, ILogger<RemoveFromCartCommandHandler> logger, IUnitOfWork unitOfWork)
         {
             _responseHandler = responseHandler;
             _logger = logger;
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Response<bool>> Handle(RemoveFromCartAsyncCommand request, CancellationToken cancellationToken)
+        public async Task<Response<bool>> Handle(RemoveFromCartCommand request, CancellationToken cancellationToken)
         {
             var dto = request.dto;
             var cart = await _unitOfWork.Carts.EnsureCartExistsAsync(dto.CartId);

@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Polly.Retry;
 using SmartCare.Application.commens;
-using SmartCare.Application.CQRs.Cart.Commands;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Application.IServices;
 using SmartCare.Application.Messaging;
@@ -17,23 +16,23 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.CQRs.Cart.Handlers
+namespace SmartCare.Application.Features.Carts.Commands.ClearCart
 {
-    public class ClearCartHandler : IRequestHandler<ClearCartAsyncCommand, Response<bool>>
+    public class ClearCartCommandHandler : IRequestHandler<ClearCartCommand, Response<bool>>
     {
         #region Fields
 
         private readonly IResponseHandler _responseHandler;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ILogger<ClearCartHandler> _logger;
+        private readonly ILogger<ClearCartCommandHandler> _logger;
 
 
 
         #endregion
-        public ClearCartHandler(
+        public ClearCartCommandHandler(
             IResponseHandler responseHandler,
            
-            ILogger<ClearCartHandler> logger,
+            ILogger<ClearCartCommandHandler> logger,
             IUnitOfWork unitOfWork)
         {
             _responseHandler = responseHandler;
@@ -42,7 +41,7 @@ namespace SmartCare.Application.CQRs.Cart.Handlers
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Response<bool>> Handle(ClearCartAsyncCommand request, CancellationToken cancellationToken)
+        public async Task<Response<bool>> Handle(ClearCartCommand request, CancellationToken cancellationToken)
         {
             var cart = await _unitOfWork.Carts.EnsureCartExistsAsync(request.cartId);
             if (cart == null)

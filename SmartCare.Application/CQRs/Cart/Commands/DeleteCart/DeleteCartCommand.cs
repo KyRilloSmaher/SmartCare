@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.CQRs.Cart.Commands
+namespace SmartCare.Application.Features.Carts.Commands.DeleteCart
 {
-    public record ClearCartAsyncCommand(Guid cartId) : IRequest<Response<bool>>;
+    public record DeleteCartCommand(Guid cartId) : IRequest<Response<bool>>;
 }

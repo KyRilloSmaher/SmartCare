@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.CQRs.Cart.Commands
+namespace SmartCare.Application.Features.Carts.Commands.AddToCart
 {
-    public record AddToCartAsyncCommand(AddToCartRequestDto dto) : IRequest<Response<CartItemResponseDto?>>;
+    public record AddToCartCommand(AddToCartRequestDto dto) : IRequest<Response<CartItemResponseDto?>>;
 }

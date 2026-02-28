@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.CQRs.Cart.Commands
+namespace SmartCare.Application.Features.Carts.Commands.CreateCart
 {
-    public record DeleteCartAsyncCommand(Guid cartId) : IRequest<Response<bool>>;
+    public record CreateCartForUserCommand(string userId) : IRequest<Response<Guid>>;
 }

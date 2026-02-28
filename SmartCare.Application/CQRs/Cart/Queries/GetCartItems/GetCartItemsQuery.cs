@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.CQRs.Cart.Queries
+namespace SmartCare.Application.CQRs.Cart.Queries.GetCartItems
 {
-    public record GetCartItemsAsyncQuery(Guid cartId) : IRequest<Response<IEnumerable<CartItemResponseDto>>>;
+    public record GetCartItemsQuery(Guid cartId) : IRequest<Response<IEnumerable<CartItemResponseDto>>>;
 }
