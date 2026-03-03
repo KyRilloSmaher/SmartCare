@@ -2,10 +2,14 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartCare.API.Helpers;
-using SmartCare.Application.CQRs.Order.Commands;
 using SmartCare.Application.CQRs.Order.Queries;
 using SmartCare.Application.DTOs.Orders.Requests;
 using SmartCare.Application.DTOs.Orders.Responses;
+using SmartCare.Application.Features.Orders.Commands.CreateOnlineOrder;
+using SmartCare.Application.Features.Orders.Commands.CreatePickUpOrder;
+using SmartCare.Application.Features.Orders.Commands.DeleteOrder;
+using SmartCare.Application.Features.Orders.Commands.UpdateOrder;
+using SmartCare.Application.Features.Orders.Commands.UpdateOrderStatus;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Application.IServices;
 using SmartCare.Domain.Enums;
@@ -17,18 +21,12 @@ namespace SmartCare.API.Controllers
     [Authorize]
     public class OrderController : ControllerBase
     {
-        //private readonly IOrderService _orderService;
         private readonly IMediator _mediator;
 
         public OrderController(IMediator mediator)
         {
             _mediator = mediator;
         }
-
-        //public OrderController(IOrderService orderService)
-        //{
-        //    _orderService = orderService;
-        //}
 
         /// <summary>
         /// Get Order with details by Id
@@ -204,7 +202,7 @@ namespace SmartCare.API.Controllers
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
             //var result = await _orderService.CreatePickupOrderFromCartAsync(userId,dto);
-            var result = await _mediator.Send(new CreatePickupOrderFromCartAsyncCommand(userId, dto));
+            var result = await _mediator.Send(new CreatePickupOrderFromCartCommand(userId, dto));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -217,7 +215,7 @@ namespace SmartCare.API.Controllers
         public async Task<IActionResult> UpdateOrderStatusAsync(Guid id, OrderStatus newStatus)
         {
             //var result = await _orderService.UpdateOrderStatusAsync(id, newStatus);
-            var result = await _mediator.Send(new UpdateOrderStatusAsyncCommand(id, newStatus));
+            var result = await _mediator.Send(new UpdateOrderStatusCommand(id, newStatus));
             return ControllersHelperMethods.FinalResponse(result);
         }
         /// <summary>
@@ -229,7 +227,7 @@ namespace SmartCare.API.Controllers
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
             //var result = await _orderService.UpdateOrderAsync(userId, dto);
-            var result = await _mediator.Send(new UpdateOrderAsyncCommand(userId, dto));
+            var result = await _mediator.Send(new UpdateOrderCommand(userId, dto));
             return ControllersHelperMethods.FinalResponse(result);
         }
         /// <summary>
@@ -241,7 +239,7 @@ namespace SmartCare.API.Controllers
         public async Task<IActionResult> DeleteOrderAsync(Guid id)
         {
             //var result = await _orderService.DeleteOrderAsync(id);
-            var result = await _mediator.Send(new DeleteOrderAsyncCommand(id));
+            var result = await _mediator.Send(new DeleteOrderCommand(id));
             return ControllersHelperMethods.FinalResponse(result);
         }
     }

@@ -29,7 +29,10 @@ namespace SmartCare.Domain.Entities
             return true;
         }
 
-        public void Release(int qty)=> Math.Max(0,ReservedQuantity - qty);
+        public void Release(int qty)
+        {
+           ReservedQuantity = Math.Max(0, ReservedQuantity - qty);
+        }
         public void Confirm(int qty)
         {
             ReservedQuantity -= qty;

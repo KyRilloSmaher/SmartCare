@@ -3,6 +3,8 @@ using SmartCare.Domain.Entities;
 using SmartCare.Domain.IRepositories;
 using SmartCare.Domain.Projection_Models;
 using SmartCare.InfraStructure.DbContexts;
+using System.Linq;
+using System.Linq.Expressions;
 
 namespace SmartCare.InfraStructure.Repositories
 {
@@ -32,7 +34,16 @@ namespace SmartCare.InfraStructure.Repositories
                 ? await query.FirstOrDefaultAsync()
                 : await query.AsNoTracking().FirstOrDefaultAsync();
         }
+        public async Task<List<Product>> FilterListAsync(
+    Expression<Func<Product, bool>>? searchPredicate = null)
+        {
+            IQueryable<Product> query = _context.Products;
 
+            if (searchPredicate != null)
+                query = query.Where(searchPredicate);
+
+            return await query.ToListAsync();
+        }
         public IQueryable<Product> GetAllProductsQuerable(bool includeDeleted = false)
         {
             var query = _context.Products
@@ -46,7 +57,16 @@ namespace SmartCare.InfraStructure.Repositories
 
             return query.AsNoTracking();
         }
+        public async Task<bool> CalculateProductAvailabilty(Guid productId)
+        {
+            var product = await _context.Products.FirstOrDefaultAsync(p => p.ProductId == productId);
+            if (product is null)
+                throw new InvalidOperationException("Try To Change Availablity Of Non Existing product");
 
+            var isAvailble = await _context.Inventories.AnyAsync(inv => inv.ProductId == productId && Math.Min(0, inv.StockQuantity - inv.ReservedQuantity) > 0);
+            product.IsAvailable = isAvailble;
+            return isAvailble;
+        }
         public IQueryable<Product> FilterProductsAsync(FilterProductsDTo filter)
         {
             IQueryable<Product> query = _context.Products

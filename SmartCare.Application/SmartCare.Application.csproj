@@ -28,7 +28,6 @@
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
 	<ItemGroup>
-	  <Folder Include="CQRs\Payments\Handlers\" />
 	  <Folder Include="DTOs\Favorites\Requets\" />
 	  <Folder Include="DTOs\Product\Requests\" />
 	  <Folder Include="NewFolder\" />

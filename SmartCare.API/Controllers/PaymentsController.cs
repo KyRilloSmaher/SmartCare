@@ -43,7 +43,7 @@ namespace SmartCare.API.Controllers
         public async Task<IActionResult> CreatePaymentIntent([FromRoute]PaymentMethod Provider,[FromRoute]Guid orderId)
         {
             //var result = await _paymentService.CreateOrUpdatePaymentAsync(orderId);
-            var result = await _mediator.Send(new RequestpaymentSessionCommand(Provider,orderId));
+            var result = await _mediator.Send(new RequestpaymentSessionCommandHandler(Provider,orderId));
             return ControllersHelperMethods.FinalResponse(result);
         }
         /// <summary>

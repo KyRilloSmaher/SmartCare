@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SmartCare.Domain.IRepositories
 {
-    public interface IReservationRepository
+    public interface IReservationRepository : IGenericRepository<Reservation>
     {
         /// <summary>
         /// Creates a reservation for a product in a specific inventory 
@@ -16,6 +16,7 @@ namespace SmartCare.Domain.IRepositories
             Guid productId,
             Guid inventoryId,
             int quantity,
+            DateTime ExpiredAt,
             ReservationStatus status = ReservationStatus.ReservedUntilPickup);
 
         /// <summary>
@@ -48,5 +49,7 @@ namespace SmartCare.Domain.IRepositories
         /// Get total reserved quantity for a product
         /// </summary>
         Task<int> GetTotalReservedQuantityForProductAsync(Guid productId);
+
+        Task<bool> Delete(Guid Id);
     }
 }

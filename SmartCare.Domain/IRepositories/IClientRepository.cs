@@ -14,7 +14,7 @@ namespace SmartCare.Domain.IRepositories
 
         Task<Client?> GetByIdAsync(string clientId, bool asTracking = false);
         Task<bool> IsClientPhoneNumberUniqueAsync(string phone);
-
         Task<IEnumerable<Client>> SearchClientsAsync(string searchTerm);
+        Task<ICollection<Guid>> GetClientPurchasesHistoryAsync(string clientId);
     }
 }

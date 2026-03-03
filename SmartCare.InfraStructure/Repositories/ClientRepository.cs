@@ -2,6 +2,7 @@
 using SmartCare.Domain.Entities;
 using SmartCare.Domain.IRepositories;
 using SmartCare.InfraStructure.DbContexts;
+using System.Collections.Immutable;
 namespace SmartCare.InfraStructure.Repositories
 {
     public class ClientRepository : GenericRepository<Client>, IClientRepository
@@ -69,6 +70,13 @@ namespace SmartCare.InfraStructure.Repositories
                 .Include(u => u.User);
 
             return trackChanges ? query : query.AsNoTracking();
+        }
+
+        public async Task<ICollection<Guid>> GetClientPurchasesHistoryAsync(string clientId)
+        {
+            var ordersByClient = _context.Orders.Where(u => u.ClientId == clientId).Select(o=>o.Id);
+            var productIds = _context.OrderItems.Where(oi=>ordersByClient.Contains(oi.OrderId)).Select(oi=>oi.ProductId);
+            return productIds.ToImmutableList();
         }
 
         #endregion

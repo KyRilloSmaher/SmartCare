@@ -117,6 +117,7 @@ namespace SmartCare.InfraStructure.Repositories
         public async Task AddCartItemAsync(CartItem cartItem)
         {
             await _context.CartItems.AddAsync(cartItem);
+            cartItem.Cart.ReCalculateTotalPrice();
         }
 
         public Task RemoveCartItemAsync(CartItem cartItem)
@@ -132,6 +133,8 @@ namespace SmartCare.InfraStructure.Repositories
                 .ToListAsync();
 
             _context.CartItems.RemoveRange(items);
+            var cart = await _context.Carts.FirstOrDefaultAsync(c=>c.Id == cartId);
+            cart.TotalPrice = 0;
             return true;
         }
 

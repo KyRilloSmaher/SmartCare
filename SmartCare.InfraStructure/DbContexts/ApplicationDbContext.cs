@@ -32,7 +32,7 @@ namespace SmartCare.InfraStructure.DbContexts
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<OnlineOrder> OnlineOrders { get; set; }
-        public DbSet<FromStoreOrder> FromStoreOrders { get; set; }
+        public DbSet<PickUpOrder> FromStoreOrders { get; set; }
         public DbSet<Payment> Payments { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<ProductImage> ProductImages { get; set; }
@@ -45,7 +45,7 @@ namespace SmartCare.InfraStructure.DbContexts
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<Order>().ToTable("Orders");
             modelBuilder.Entity<OnlineOrder>().ToTable("OnlineOrders");
-            modelBuilder.Entity<FromStoreOrder>().ToTable("FromStoreOrders");
+            modelBuilder.Entity<PickUpOrder>().ToTable("FromStoreOrders");
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         }
     }

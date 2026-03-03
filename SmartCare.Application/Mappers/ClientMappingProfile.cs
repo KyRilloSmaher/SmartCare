@@ -14,12 +14,13 @@ public class SignUpProfile : Profile
             .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
             .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.FirstName))
             .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName))
-            .ForMember(dest => dest.BirthDate, opt => opt.MapFrom(src => src.BirthDate))
+
             .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.Gender))
             .ForMember(dest => dest.Client, opt => opt.MapFrom(src => src)); // Map DTO to Client
 
         CreateMap<SignUpRequest, Client>()
             .ForMember(dest => dest.AccountType, opt => opt.MapFrom(src => src.AccountType))
+            .ForMember(dest => dest.BirthDate, opt => opt.MapFrom(src => src.BirthDate))
             .ForMember(dest => dest.Addresses, opt => opt.Ignore()) // We'll map manually
             .ForMember(dest => dest.User, opt => opt.Ignore()); // Will set after creation
 

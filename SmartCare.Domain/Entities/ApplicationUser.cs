@@ -11,7 +11,6 @@ namespace SmartCare.Domain.Entities
         public string LastName { get; set; } = string.Empty;
         public Gender Gender { get; set; }
         public string ProfileImageUrl { get; set; } = string.Empty;
-        public DateOnly BirthDate { get; set; }
         // Password reset fields
         public string? OTP { get; set; }
         public DateTime? OTPExpiryTime { get; set; }

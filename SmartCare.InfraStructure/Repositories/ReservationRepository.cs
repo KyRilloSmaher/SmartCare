@@ -23,6 +23,11 @@ namespace SmartCare.InfraStructure.Repositories
 
         #region Query Methods
 
+        public async Task<bool> Delete(Guid Id)
+        {
+          _context.Reservations.Where(i => i.Id == Id).ExecuteDelete();
+            return true;
+        }
         public IQueryable<Reservation> GetReservationsQueryable(bool trackChanges = false)
         {
             var query = _context.Reservations
@@ -58,7 +63,9 @@ namespace SmartCare.InfraStructure.Repositories
 
         #region Business Logic Methods
 
-        public async Task<Reservation?> CreateReservationAsync(Guid orderItemId, Guid productId, Guid inventoryId, int quantity,ReservationStatus status = ReservationStatus.ReservedUntilPickup)
+        public async Task<Reservation?> CreateReservationAsync(
+            Guid orderItemId, Guid productId, Guid inventoryId, int quantity,DateTime ExpiredAt,
+            ReservationStatus status = ReservationStatus.ReservedUntilPickup)
         {
             var inventory = await _context.Inventories
                 .FirstOrDefaultAsync(i => i.Id == inventoryId);
@@ -73,9 +80,7 @@ namespace SmartCare.InfraStructure.Repositories
                     QuantityReserved = quantity,
                     ReservedAt = DateTime.UtcNow,
                     Status = status,
-                    ExpiredAt = status == ReservationStatus.ReservedUntilPickup
-                    ? DateTime.UtcNow.AddDays(_defaultReservationDayForPickUp)
-                    : DateTime.UtcNow.AddHours(_defaultReservationDayForOnlinepayment),
+                    ExpiredAt = ExpiredAt,
                     OrderItemId = orderItemId
                 };
                 await _context.Reservations.AddAsync(reservation);

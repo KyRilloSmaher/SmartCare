@@ -12,6 +12,7 @@ namespace SmartCare.Domain.Entities
     {
         public string Id { get; set; }
         public AccountType AccountType { get; set; }
+        public DateOnly BirthDate { get; set; }
         public int RatesCount { get; set; } = 0;
         public int OrdersCount { get; set; } = 0;
         public int FavoritesCount { get; set; } = 0;

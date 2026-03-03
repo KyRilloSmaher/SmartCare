@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using SmartCare.Application.commens;
 using SmartCare.Application.ExternalServiceInterfaces;
+using SmartCare.Application.ExternalServiceInterfaces.AI;
 using SmartCare.Application.ExternalServiceInterfaces.Payments;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Application.Handlers.ResponsesHandler;
@@ -26,6 +27,9 @@ using SmartCare.InfraStructure.Repositories;
 using SmartCare.InfraStructure.Services;
 using System.Security.Claims;
 using System.Text;
+using Polly.Extensions.Http;
+using Microsoft.Extensions.Logging;
+using Polly;
 
 namespace SmartCare.InfraStructure.Extensions
 {
@@ -96,8 +100,46 @@ namespace SmartCare.InfraStructure.Extensions
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IImageUploaderService, ImageUploaderService>();
             services.AddScoped<IMapService, MapService>();
-            services.AddScoped<IPaymentGetway, StripeService>();                
+            services.AddScoped<IPaymentGetway, StripeService>();
+            services.AddScoped<IPaymentGetway, PaymobService>();
+            services.Configure<PaymobSettings>(configuration.GetSection("Paymob"));
+            services.AddHttpClient<PaymobService>();
+            // AI Services
+            var baseUrl = configuration["AiCore:BaseUrl"]?? throw new InvalidOperationException("AiCore:BaseUrl is missing from appsettings.");
 
+            services
+                .AddHttpClient<IAiServices, AiCoreService>(client =>
+                {
+                    client.BaseAddress = new Uri(baseUrl);
+                    client.Timeout = TimeSpan.FromSeconds(
+                        configuration.GetValue("AiCore:TimeoutSeconds", 30));
+                    client.DefaultRequestHeaders.Add("Accept", "application/json");
+                })
+                // Retry 3x: waits 2s → 4s → 8s
+                .AddPolicyHandler((sp, _) =>
+                {
+                    var logger = sp.GetRequiredService<ILogger<AiCoreService>>();
+                    return HttpPolicyExtensions
+                        .HandleTransientHttpError()
+                        .WaitAndRetryAsync(3,
+                            attempt => TimeSpan.FromSeconds(Math.Pow(2, attempt)),
+                            (outcome, delay, attempt, _) => logger.LogWarning(
+                                "AiCore retry {Attempt}/3 after {Delay}s — {Reason}",
+                                attempt, delay.TotalSeconds,
+                                outcome.Exception?.Message ?? outcome.Result.ReasonPhrase));
+                })
+                // Circuit breaker: opens after 5 failures, resets after 30s
+                .AddPolicyHandler((sp, _) =>
+                {
+                    var logger = sp.GetRequiredService<ILogger<AiCoreService>>();
+                    return HttpPolicyExtensions
+                        .HandleTransientHttpError()
+                        .CircuitBreakerAsync(5, TimeSpan.FromSeconds(30),
+                            onBreak: (o, d) => logger.LogError(
+                                                      "AiCore circuit OPEN for {D}s", d.TotalSeconds),
+                            onReset: () => logger.LogInformation("AiCore circuit CLOSED"),
+                            onHalfOpen: () => logger.LogInformation("AiCore circuit HALF-OPEN"));
+                });
             // ---------- Configurations ----------
             services.Configure<StripeSettings>(configuration.GetSection("StripeSettings"));
             services.Configure<CloudinarySettings>(configuration.GetSection("cloudinary"));

@@ -33,7 +33,7 @@ namespace SmartCare.Domain.Entities
         /// <summary>
         /// Gets the current status of the  transaction.
         /// </summary>
-        public PaymentStatus Status { get; private set; }
+        public PaymentStatus Status { get;  set; }
 
         /// <summary>
         /// Gets the name of the payment provider associated with the transaction.

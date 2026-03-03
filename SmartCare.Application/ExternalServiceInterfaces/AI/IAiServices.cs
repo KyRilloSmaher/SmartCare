@@ -1,0 +1,32 @@
+﻿using SmartCare.Application.ExternalServiceInterfaces.AI.Response;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace SmartCare.Application.ExternalServiceInterfaces.AI
+{
+    public interface IAiServices
+    {
+        Task<SemanticSearchResult> SemanticSearchAsync(
+       string query,
+       int topK = 10,
+       bool withVectors = false,
+       CancellationToken ct = default);
+
+        Task<SimilarProductsResult> GetSimilarProductsAsync(
+            Guid productId,
+            int topK = 10,
+            double? scoreThreshold = null,
+            bool excludeSelf = true,
+            CancellationToken ct = default);
+
+        Task<ContradictionResult> CheckContradictionsAsync(
+            Guid productId,
+            List<Guid> candidateIds,
+            double contradictionThreshold = -0.25,
+            bool excludeSelf = true,
+            CancellationToken ct = default);
+    }
+}

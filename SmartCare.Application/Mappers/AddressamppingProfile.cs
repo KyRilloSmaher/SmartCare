@@ -21,15 +21,18 @@ namespace SmartCare.Application.Mappers
 
         void CreateAddressRequestToAddress()
         {
-            CreateMap<CreateAddressRequestDto, Address>();
+            CreateMap<CreateAddressRequestDto, Address>()
+                .ForMember(dest=>dest.AddressLine , opt=>opt.MapFrom(src=>src.address));
         }
         void UpdateAddressRequestToAddress()
         {
-            CreateMap<UpdateAddressRequestDto, Address>();
+            CreateMap<UpdateAddressRequestDto, Address>()
+                 .ForMember(dest => dest.AddressLine, opt => opt.MapFrom(src => src.address));
         }
         void AddressToAddressResponseDto()
         {
-            CreateMap<Address, AddressResponseDto>();
+            CreateMap<Address, AddressResponseDto>()
+                .ForMember(dest => dest.address, opt => opt.MapFrom(src => src.AddressLine));
         }
     }
 }

@@ -13,7 +13,7 @@ using SmartCare.Application.IServices;
 namespace SmartCare.API.Controllers
 {
     [ApiController]
-    [Authorize]
+
     public class StoreController : ControllerBase
     {
         //private readonly IStoreService _storeService;
@@ -46,6 +46,7 @@ namespace SmartCare.API.Controllers
         /// </summary>
         [HttpGet(ApplicationRouting.Store.GetNearest)]
         [ProducesResponseType(typeof(Response<StoreResponseDto>), StatusCodes.Status200OK)]
+        [Authorize]
         public async Task<IActionResult> GetNearestStoreAsync([FromQuery] AddressValuesDto dto)
         {
             //var store = await _storeService.GetNearestStoreAsync(dto);

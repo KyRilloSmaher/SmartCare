@@ -20,7 +20,7 @@ namespace SmartCare.Application.Mappers
             // BASE mapping with derived includes
             CreateMap<Order, OrderResponseDto>()
                 .Include<OnlineOrder, OrderResponseDto>()
-                .Include<FromStoreOrder, OrderResponseDto>()
+                .Include<PickUpOrder, OrderResponseDto>()
                 //.ForMember(dest => dest.PaymentId, opt => opt.MapFrom(src => src.PaymentIntentId))
                 .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.TotalPrice))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
@@ -41,7 +41,7 @@ namespace SmartCare.Application.Mappers
                 .ReverseMap();
 
             // CHILD: Store Order
-            CreateMap<FromStoreOrder, OrderResponseDto>()
+            CreateMap<PickUpOrder, OrderResponseDto>()
                 //.ForMember(dest => dest.PaymentId, opt => opt.MapFrom(src => src.PaymentIntentId))
                 .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.TotalPrice))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
@@ -50,7 +50,7 @@ namespace SmartCare.Application.Mappers
                 .ForMember(dest => dest.OrderItems, opt => opt.MapFrom(src => src.Items))
                 .ForMember(dest => dest.Store, opt => opt.MapFrom(src => src.Store))
                 .ReverseMap();
-            CreateMap<FromStoreOrder, PickUpOrderResponseDto>()
+            CreateMap<PickUpOrder, PickUpOrderResponseDto>()
                 //.ForMember(dest => dest.PaymentId, opt => opt.MapFrom(src => src.PaymentIntentId))
                 .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.TotalPrice))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))

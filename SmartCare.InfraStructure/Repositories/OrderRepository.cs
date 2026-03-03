@@ -22,7 +22,7 @@ namespace SmartCare.Infrastructure.Repositories
         {
             var query = _context.Orders
                 .Include(o => (o as OnlineOrder).Address)
-                .Include(o => (o as FromStoreOrder).Store)
+                .Include(o => (o as PickUpOrder).Store)
                 .Include(o => o.Items)
                     .ThenInclude(i => i.Product)
                         .ThenInclude(p => p.Images)
@@ -50,16 +50,16 @@ namespace SmartCare.Infrastructure.Repositories
             return await BaseOrderQuery().ToListAsync();
         }
 
-        public async Task<Order?> GetOrderWithDetailsByIdAsync(Guid orderId)
+        public async Task<Order?> GetOrderWithDetailsByIdAsync(Guid orderId, bool asTrack = true)
         {
-            return await BaseOrderQuery()
+            return await BaseOrderQuery(asTrack)
                 .FirstOrDefaultAsync(o => o.Id == orderId);
         }
 
         public async Task<Order?> GetOrderByPickUpCode(string pickupCodeHash)
         {
             return await _context.Orders
-                .OfType<FromStoreOrder>()
+                .OfType<PickUpOrder>()
                 .Include(o => o.Store)
                 .Include(o => o.Items)
                     .ThenInclude(i => i.Product)
@@ -75,7 +75,7 @@ namespace SmartCare.Infrastructure.Repositories
 
             if (storeId.HasValue)
             {
-                query = query.OfType<FromStoreOrder>()
+                query = query.OfType<PickUpOrder>()
                              .Where(o => o.StoreId == storeId.Value);
             }
 
@@ -89,7 +89,7 @@ namespace SmartCare.Infrastructure.Repositories
 
             if (storeId.HasValue)
             {
-                query = query.OfType<FromStoreOrder>()
+                query = query.OfType<PickUpOrder>()
                              .Where(o => o.StoreId == storeId.Value);
             }
 
@@ -109,7 +109,7 @@ namespace SmartCare.Infrastructure.Repositories
 
             if (storeId.HasValue)
             {
-                query = (IOrderedQueryable<Order>)query.OfType<FromStoreOrder>()
+                query = (IOrderedQueryable<Order>)query.OfType<PickUpOrder>()
                              .Where(o => o.StoreId == storeId.Value);
             }
 
@@ -123,7 +123,7 @@ namespace SmartCare.Infrastructure.Repositories
 
             if (storeId.HasValue)
             {
-                query = query.OfType<FromStoreOrder>()
+                query = query.OfType<PickUpOrder>()
                              .Include(o => o.Store)
                              .Where(o => o.StoreId == storeId.Value);
             }
@@ -137,7 +137,7 @@ namespace SmartCare.Infrastructure.Repositories
 
             if (storeId.HasValue)
             {
-                query = query.OfType<FromStoreOrder>()
+                query = query.OfType<PickUpOrder>()
                              .Where(o => o.StoreId == storeId.Value);
             }
 
@@ -150,7 +150,7 @@ namespace SmartCare.Infrastructure.Repositories
 
             if (storeId.HasValue)
             {
-                query = query.OfType<FromStoreOrder>()
+                query = query.OfType<PickUpOrder>()
                              .Where(o => o.StoreId == storeId.Value);
             }
 
@@ -163,7 +163,7 @@ namespace SmartCare.Infrastructure.Repositories
 
             if (storeId.HasValue)
             {
-                query = query.OfType<FromStoreOrder>()
+                query = query.OfType<PickUpOrder>()
                              .Include(o => o.Store)
                              .Where(o => o.StoreId == storeId.Value);
             }
@@ -188,10 +188,10 @@ namespace SmartCare.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<FromStoreOrder>> GetFromStoreOrdersAsync(Guid? storeId = null)
+        public async Task<IEnumerable<PickUpOrder>> GetFromStoreOrdersAsync(Guid? storeId = null)
         {
             var query = _context.Orders
-                .OfType<FromStoreOrder>()
+                .OfType<PickUpOrder>()
                 .Include(o => o.Store)
                 .Include(o => o.Items)
                     .ThenInclude(i => i.Product)
@@ -210,7 +210,7 @@ namespace SmartCare.Infrastructure.Repositories
                 .FirstOrDefaultAsync(o => o.Id == orderId);
         }
 
-        public async Task<FromStoreOrder?> GetOfflineOrderAsync(Guid orderId)
+        public async Task<PickUpOrder?> GetOfflineOrderAsync(Guid orderId)
         {
             return await _context.FromStoreOrders
                 .FirstOrDefaultAsync(o => o.Id == orderId);
@@ -289,7 +289,7 @@ namespace SmartCare.Infrastructure.Repositories
             return Task.CompletedTask;
         }
 
-        public Task RemoveOfflineOrder(FromStoreOrder offlineOrder)
+        public Task RemoveOfflineOrder(PickUpOrder offlineOrder)
         {
             _context.FromStoreOrders.Remove(offlineOrder);
             return Task.CompletedTask;
@@ -300,7 +300,7 @@ namespace SmartCare.Infrastructure.Repositories
             await _context.OnlineOrders.AddAsync(onlineOrder);
         }
 
-        public async Task AddInOfflineOrderAsync(FromStoreOrder fromStoreOrder)
+        public async Task AddInOfflineOrderAsync(PickUpOrder fromStoreOrder)
         {
             await _context.FromStoreOrders.AddAsync(fromStoreOrder);
         }
@@ -313,7 +313,7 @@ namespace SmartCare.Infrastructure.Repositories
 
         }
 
-        void IOrderRepository.RemoveOfflineOrder(FromStoreOrder offlineOrder)
+        void IOrderRepository.RemoveOfflineOrder(PickUpOrder offlineOrder)
         {
             _context.FromStoreOrders.Remove(offlineOrder);
 
