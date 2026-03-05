@@ -165,9 +165,17 @@ namespace SmartCare.InfraStructure.Migrations
                     b.Property<string>("AdditionalInfo")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("AddressLine")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
                     b.Property<string>("ClientId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsPrimary")
                         .HasColumnType("bit");
@@ -182,11 +190,6 @@ namespace SmartCare.InfraStructure.Migrations
                     b.Property<float>("Longitude")
                         .HasColumnType("real");
 
-                    b.Property<string>("address")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("ClientId");
@@ -198,6 +201,7 @@ namespace SmartCare.InfraStructure.Migrations
                     b.ToTable("UserAddress", (string)null);
                 });
 
+<<<<<<< HEAD
             modelBuilder.Entity("SmartCare.Domain.Entities.AuditLog", b =>
                 {
                     b.Property<int>("Id")
@@ -264,10 +268,16 @@ namespace SmartCare.InfraStructure.Migrations
 
                     b.Property<string>("UserId")
                         .HasMaxLength(450)
+=======
+            modelBuilder.Entity("SmartCare.Domain.Entities.Admin", b =>
+                {
+                    b.Property<string>("Id")
+>>>>>>> 923f973e367ef4ffc1892f700b70f80352b1a3e8
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
+<<<<<<< HEAD
                     b.HasIndex("Action");
 
                     b.HasIndex("ClassName");
@@ -283,6 +293,117 @@ namespace SmartCare.InfraStructure.Migrations
                     b.HasIndex("TableName", "Timestamp");
 
                     b.ToTable("AuditLogs", (string)null);
+=======
+                    b.ToTable("Admins");
+                });
+
+            modelBuilder.Entity("SmartCare.Domain.Entities.ApplictionUser", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Gender")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("OTP")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("OTPAttempts")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("OTPExpiryTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ProfileImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("RefreshToken")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("RefreshTokenExpiryTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("ResetPasswordConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedEmail")
+                        .HasDatabaseName("EmailIndex");
+
+                    b.HasIndex("NormalizedUserName")
+                        .IsUnique()
+                        .HasDatabaseName("UserNameIndex")
+                        .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.HasIndex("OTP")
+                        .IsUnique()
+                        .HasFilter("[OTP] IS NOT NULL");
+
+                    b.ToTable("AspNetUsers", (string)null);
+>>>>>>> 923f973e367ef4ffc1892f700b70f80352b1a3e8
                 });
 
             modelBuilder.Entity("SmartCare.Domain.Entities.Cart", b =>
@@ -384,125 +505,24 @@ namespace SmartCare.InfraStructure.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("AccessFailedCount")
-                        .HasColumnType("int");
-
                     b.Property<int>("AccountType")
                         .HasColumnType("int");
 
                     b.Property<DateOnly>("BirthDate")
                         .HasColumnType("date");
 
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("EmailConfirmationLink")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("EmailConfirmed")
-                        .HasColumnType("bit");
-
                     b.Property<int>("FavoritesCount")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Gender")
                         .HasColumnType("int");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("LockoutEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTimeOffset?>("LockoutEnd")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("NormalizedEmail")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("NormalizedUserName")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("OTP")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
                     b.Property<int>("OrdersCount")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
-
-                    b.Property<string>("PasswordHash")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("PhoneNumberConfirmed")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("ProfileImageUrl")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasColumnType("int");
 
                     b.Property<int>("RatesCount")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
-
-                    b.Property<string>("RefreshToken")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<DateTime?>("RefreshTokenExpiryTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("SecurityStamp")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("TwoFactorEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("UserName")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<DateTime>("VerificationURLExpiresAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("NormalizedEmail")
-                        .HasDatabaseName("EmailIndex");
-
-                    b.HasIndex("NormalizedUserName")
-                        .IsUnique()
-                        .HasDatabaseName("UserNameIndex")
-                        .HasFilter("[NormalizedUserName] IS NOT NULL");
-
-                    b.HasIndex("OTP")
-                        .IsUnique()
-                        .HasFilter("[OTP] IS NOT NULL");
-
-                    b.ToTable("AspNetUsers", (string)null);
+                    b.ToTable("Clients");
                 });
 
             modelBuilder.Entity("SmartCare.Domain.Entities.Company", b =>
@@ -537,6 +557,39 @@ namespace SmartCare.InfraStructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Company", (string)null);
+                });
+
+            modelBuilder.Entity("SmartCare.Domain.Entities.EmailVerification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UsedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EmailVerifications");
                 });
 
             modelBuilder.Entity("SmartCare.Domain.Entities.Favorite", b =>
@@ -608,11 +661,8 @@ namespace SmartCare.InfraStructure.Migrations
                     b.Property<int>("OrderType")
                         .HasColumnType("int");
 
-                    b.Property<string>("PaymentIntentId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("PaymentVersion")
-                        .HasColumnType("int");
+                    b.Property<Guid>("PaymenId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Status")
                         .ValueGeneratedOnAdd()
@@ -621,6 +671,9 @@ namespace SmartCare.InfraStructure.Migrations
 
                     b.Property<decimal>("TotalPrice")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -675,19 +728,19 @@ namespace SmartCare.InfraStructure.Migrations
 
             modelBuilder.Entity("SmartCare.Domain.Entities.Payment", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("Amount")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("ClientSecret")
-                        .IsRequired()
+                    b.Property<string>("ClientPaymentToken")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -695,12 +748,12 @@ namespace SmartCare.InfraStructure.Migrations
                     b.Property<int>("Method")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasDefaultValue(1);
+                        .HasDefaultValue(2);
 
                     b.Property<Guid>("OrderId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("PaymentIntentId")
+                    b.Property<string>("ProviderReferenceId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("Status")
@@ -708,7 +761,7 @@ namespace SmartCare.InfraStructure.Migrations
                         .HasColumnType("int")
                         .HasDefaultValue(0);
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("Version")
@@ -721,9 +774,37 @@ namespace SmartCare.InfraStructure.Migrations
                     b.HasIndex("OrderId")
                         .IsUnique();
 
-                    b.HasIndex("PaymentIntentId");
+                    b.HasIndex("ProviderReferenceId");
 
                     b.ToTable("Payment", (string)null);
+                });
+
+            modelBuilder.Entity("SmartCare.Domain.Entities.Pharmacist", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("LicenseNumber")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LicenseNumber")
+                        .IsUnique();
+
+                    b.HasIndex("StoreId");
+
+                    b.ToTable("Pharmacists");
                 });
 
             modelBuilder.Entity("SmartCare.Domain.Entities.Product", b =>
@@ -918,9 +999,13 @@ namespace SmartCare.InfraStructure.Migrations
 
                     b.HasIndex("ExpiredAt");
 
+                    b.HasIndex("InventoryId");
+
                     b.HasIndex("OrderItemId")
                         .IsUnique()
                         .HasFilter("[OrderItemId] IS NOT NULL");
+
+                    b.HasIndex("ProductId");
 
                     b.HasIndex("ReservedAt");
 
@@ -976,7 +1061,19 @@ namespace SmartCare.InfraStructure.Migrations
                     b.ToTable("Store", (string)null);
                 });
 
-            modelBuilder.Entity("SmartCare.Domain.Entities.FromStoreOrder", b =>
+            modelBuilder.Entity("SmartCare.Domain.Entities.OnlineOrder", b =>
+                {
+                    b.HasBaseType("SmartCare.Domain.Entities.Order");
+
+                    b.Property<Guid>("ShippingAddressId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasIndex("ShippingAddressId");
+
+                    b.ToTable("OnlineOrders", (string)null);
+                });
+
+            modelBuilder.Entity("SmartCare.Domain.Entities.PickUpOrder", b =>
                 {
                     b.HasBaseType("SmartCare.Domain.Entities.Order");
 
@@ -993,18 +1090,6 @@ namespace SmartCare.InfraStructure.Migrations
                     b.ToTable("FromStoreOrders", (string)null);
                 });
 
-            modelBuilder.Entity("SmartCare.Domain.Entities.OnlineOrder", b =>
-                {
-                    b.HasBaseType("SmartCare.Domain.Entities.Order");
-
-                    b.Property<Guid>("ShippingAddressId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasIndex("ShippingAddressId");
-
-                    b.ToTable("OnlineOrders", (string)null);
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -1016,7 +1101,7 @@ namespace SmartCare.InfraStructure.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("SmartCare.Domain.Entities.Client", null)
+                    b.HasOne("SmartCare.Domain.Entities.ApplictionUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1025,7 +1110,7 @@ namespace SmartCare.InfraStructure.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("SmartCare.Domain.Entities.Client", null)
+                    b.HasOne("SmartCare.Domain.Entities.ApplictionUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1040,7 +1125,7 @@ namespace SmartCare.InfraStructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SmartCare.Domain.Entities.Client", null)
+                    b.HasOne("SmartCare.Domain.Entities.ApplictionUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1049,7 +1134,7 @@ namespace SmartCare.InfraStructure.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("SmartCare.Domain.Entities.Client", null)
+                    b.HasOne("SmartCare.Domain.Entities.ApplictionUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1058,13 +1143,22 @@ namespace SmartCare.InfraStructure.Migrations
 
             modelBuilder.Entity("SmartCare.Domain.Entities.Address", b =>
                 {
-                    b.HasOne("SmartCare.Domain.Entities.Client", "Client")
+                    b.HasOne("SmartCare.Domain.Entities.Client", null)
                         .WithMany("Addresses")
                         .HasForeignKey("ClientId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
 
-                    b.Navigation("Client");
+            modelBuilder.Entity("SmartCare.Domain.Entities.Admin", b =>
+                {
+                    b.HasOne("SmartCare.Domain.Entities.ApplictionUser", "User")
+                        .WithOne("Admin")
+                        .HasForeignKey("SmartCare.Domain.Entities.Admin", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SmartCare.Domain.Entities.Cart", b =>
@@ -1103,6 +1197,17 @@ namespace SmartCare.InfraStructure.Migrations
                     b.Navigation("Inventory");
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("SmartCare.Domain.Entities.Client", b =>
+                {
+                    b.HasOne("SmartCare.Domain.Entities.ApplictionUser", "User")
+                        .WithOne("Client")
+                        .HasForeignKey("SmartCare.Domain.Entities.Client", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SmartCare.Domain.Entities.Favorite", b =>
@@ -1147,8 +1252,7 @@ namespace SmartCare.InfraStructure.Migrations
                 {
                     b.HasOne("SmartCare.Domain.Entities.Client", "Client")
                         .WithMany("Orders")
-                        .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("ClientId");
 
                     b.Navigation("Client");
                 });
@@ -1189,6 +1293,25 @@ namespace SmartCare.InfraStructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("SmartCare.Domain.Entities.Pharmacist", b =>
+                {
+                    b.HasOne("SmartCare.Domain.Entities.ApplictionUser", "User")
+                        .WithOne("Pharmacist")
+                        .HasForeignKey("SmartCare.Domain.Entities.Pharmacist", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SmartCare.Domain.Entities.Store", "Store")
+                        .WithMany("pharmacists")
+                        .HasForeignKey("StoreId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Store");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SmartCare.Domain.Entities.Product", b =>
@@ -1241,18 +1364,51 @@ namespace SmartCare.InfraStructure.Migrations
 
             modelBuilder.Entity("SmartCare.Domain.Entities.Reservation", b =>
                 {
+                    b.HasOne("SmartCare.Domain.Entities.Inventory", "inventory")
+                        .WithMany()
+                        .HasForeignKey("InventoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("SmartCare.Domain.Entities.OrderItem", "OrderItem")
                         .WithOne("Reservation")
                         .HasForeignKey("SmartCare.Domain.Entities.Reservation", "OrderItemId");
 
+                    b.HasOne("SmartCare.Domain.Entities.Product", "product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("OrderItem");
+
+                    b.Navigation("inventory");
+
+                    b.Navigation("product");
                 });
 
-            modelBuilder.Entity("SmartCare.Domain.Entities.FromStoreOrder", b =>
+            modelBuilder.Entity("SmartCare.Domain.Entities.OnlineOrder", b =>
                 {
                     b.HasOne("SmartCare.Domain.Entities.Order", null)
                         .WithOne()
-                        .HasForeignKey("SmartCare.Domain.Entities.FromStoreOrder", "Id")
+                        .HasForeignKey("SmartCare.Domain.Entities.OnlineOrder", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SmartCare.Domain.Entities.Address", "Address")
+                        .WithMany()
+                        .HasForeignKey("ShippingAddressId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Address");
+                });
+
+            modelBuilder.Entity("SmartCare.Domain.Entities.PickUpOrder", b =>
+                {
+                    b.HasOne("SmartCare.Domain.Entities.Order", null)
+                        .WithOne()
+                        .HasForeignKey("SmartCare.Domain.Entities.PickUpOrder", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1265,26 +1421,13 @@ namespace SmartCare.InfraStructure.Migrations
                     b.Navigation("Store");
                 });
 
-            modelBuilder.Entity("SmartCare.Domain.Entities.OnlineOrder", b =>
+            modelBuilder.Entity("SmartCare.Domain.Entities.ApplictionUser", b =>
                 {
-                    b.HasOne("SmartCare.Domain.Entities.Order", null)
-                        .WithOne()
-                        .HasForeignKey("SmartCare.Domain.Entities.OnlineOrder", "Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("Admin");
 
-                    b.HasOne("SmartCare.Domain.Entities.Address", "Address")
-                        .WithMany("Orders")
-                        .HasForeignKey("ShippingAddressId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                    b.Navigation("Client");
 
-                    b.Navigation("Address");
-                });
-
-            modelBuilder.Entity("SmartCare.Domain.Entities.Address", b =>
-                {
-                    b.Navigation("Orders");
+                    b.Navigation("Pharmacist");
                 });
 
             modelBuilder.Entity("SmartCare.Domain.Entities.Cart", b =>
@@ -1355,6 +1498,8 @@ namespace SmartCare.InfraStructure.Migrations
                     b.Navigation("Inventories");
 
                     b.Navigation("Orders");
+
+                    b.Navigation("pharmacists");
                 });
 #pragma warning restore 612, 618
         }

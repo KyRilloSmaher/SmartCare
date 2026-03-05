@@ -10,7 +10,7 @@ namespace SmartCare.Domain.IRepositories
     public interface ICompanyRepository :IGenericRepository<Company>
     {
         Task<IEnumerable<Company>> GetAllCompaniesAsync();
-        IQueryable<Company> GetAllCompaniesQuerable();
+        IQueryable<Company> GetAllCompaniesQuerable(bool includeDeleted = false);
         Task<IEnumerable<Company>> GetAllCompaniesForAdminAsync();
         Task<IEnumerable<Company>> SearchCompaniesByNameAsync(string name);
     }

@@ -1,16 +1,10 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using SmartCare.Domain.Entities;
 using SmartCare.Domain.IRepositories;
 using SmartCare.Domain.Projection_Models;
 using SmartCare.InfraStructure.DbContexts;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
-//using static SmartCare.API.Helpers.ApplicationRouting;
 
 namespace SmartCare.InfraStructure.Repositories
 {
@@ -19,6 +13,7 @@ namespace SmartCare.InfraStructure.Repositories
         #region Fields
         private readonly ApplicationDBContext _context;
         #endregion
+
         #region Constructor
         public ProductRepository(ApplicationDBContext context) : base(context)
         {
@@ -26,83 +21,101 @@ namespace SmartCare.InfraStructure.Repositories
         }
         #endregion
 
-        #region Methods
+        #region Query Methods
 
-        public async override Task<Product?> GetByIdAsync(Guid id, bool asTracking = false)
+        public override async Task<Product?> GetByIdAsync(Guid id, bool asTracking = false)
         {
-            var entity = await _dbContext.Products
-                                            .Include(p => p.Images)
-                                            .Include(p=>p.Company)
-                                            .FirstOrDefaultAsync(p=>p.ProductId == id);
-            if (entity == null) return null;
+            var query = _context.Products
+                .Include(p => p.Images)
+                .Include(p => p.Company)
+                .Where(p => p.ProductId == id);
 
-            if (!asTracking)
-                _dbContext.Entry(entity).State = EntityState.Detached;
-
-            return entity;
-
+            return asTracking
+                ? await query.FirstOrDefaultAsync()
+                : await query.AsNoTracking().FirstOrDefaultAsync();
         }
-        public IQueryable<Product> FilterProductsAsync(FilterProductsDTo filterProductsDTo)
+        public async Task<List<Product>> FilterListAsync(
+    Expression<Func<Product, bool>>? searchPredicate = null)
         {
             IQueryable<Product> query = _context.Products;
 
+            if (searchPredicate != null)
+                query = query.Where(searchPredicate);
 
-            if (filterProductsDTo.FromRate.HasValue)
-            {
-                query = query.Where(p => p.AverageRating >= filterProductsDTo.FromRate.Value);
-            }
+            return await query.ToListAsync();
+        }
+        public IQueryable<Product> GetAllProductsQuerable(bool includeDeleted = false)
+        {
+            var query = _context.Products
+                .Include(p => p.Images)
+                .Include(p => p.Company)
+                .Include(p => p.Category)
+                .AsQueryable();
 
-            if (filterProductsDTo.ToRate.HasValue)
-            {
-                query = query.Where(p => p.AverageRating <= filterProductsDTo.ToRate.Value);
-            }
+            if (!includeDeleted)
+                query = query.Where(p => !p.IsDeleted);
 
-            if (filterProductsDTo.FromPrice.HasValue)
-            {
-                query = query.Where(p => p.Price >= filterProductsDTo.FromPrice.Value);
-            }
+            return query.AsNoTracking();
+        }
+        public async Task<bool> CalculateProductAvailabilty(Guid productId)
+        {
+            var product = await _context.Products.FirstOrDefaultAsync(p => p.ProductId == productId);
+            if (product is null)
+                throw new InvalidOperationException("Try To Change Availablity Of Non Existing product");
 
-            if (filterProductsDTo.ToPrice.HasValue)
-            {
-                query = query.Where(p => p.Price <= filterProductsDTo.ToPrice.Value);
-            }
+            var isAvailble = await _context.Inventories.AnyAsync(inv => inv.ProductId == productId && Math.Min(0, inv.StockQuantity - inv.ReservedQuantity) > 0);
+            product.IsAvailable = isAvailble;
+            return isAvailble;
+        }
+        public IQueryable<Product> FilterProductsAsync(FilterProductsDTo filter)
+        {
+            IQueryable<Product> query = _context.Products
+                .Include(p => p.Images)
+                .Include(p => p.Company)
+                .Include(p => p.Category)
+                .Where(p => !p.IsDeleted);
+
+            if (filter.FromRate.HasValue)
+                query = query.Where(p => p.AverageRating >= filter.FromRate.Value);
+
+            if (filter.ToRate.HasValue)
+                query = query.Where(p => p.AverageRating <= filter.ToRate.Value);
+
+            if (filter.FromPrice.HasValue)
+                query = query.Where(p => p.Price >= filter.FromPrice.Value);
+
+            if (filter.ToPrice.HasValue)
+                query = query.Where(p => p.Price <= filter.ToPrice.Value);
 
             // Order By
-            if (filterProductsDTo.OrderByName.HasValue)
-            {
-                query = filterProductsDTo.OrderByName.Value? query.OrderBy(f => f.NameEn) : query.OrderByDescending(f => f.NameEn);
-            }
-            else if (filterProductsDTo.OrderByPrice.HasValue)
-            {
-                query = filterProductsDTo.OrderByPrice.Value ? query.OrderBy(f => f.Price) : query.OrderByDescending(f => f.Price);
-            }
-            else if (filterProductsDTo.OrderByRate.HasValue)
-            {
-                query = filterProductsDTo.OrderByRate.Value ? query.OrderBy(f => f.AverageRating) : query.OrderByDescending(f => f.AverageRating);
-            }
-            return query.AsQueryable();
+            if (filter.OrderByName.HasValue)
+                query = filter.OrderByName.Value
+                    ? query.OrderBy(f => f.NameEn)
+                    : query.OrderByDescending(f => f.NameEn);
+            else if (filter.OrderByPrice.HasValue)
+                query = filter.OrderByPrice.Value
+                    ? query.OrderBy(f => f.Price)
+                    : query.OrderByDescending(f => f.Price);
+            else if (filter.OrderByRate.HasValue)
+                query = filter.OrderByRate.Value
+                    ? query.OrderBy(f => f.AverageRating)
+                    : query.OrderByDescending(f => f.AverageRating);
 
+            return query.AsNoTracking();
         }
 
-        public async Task<Product> SearchProductByNameAsync(string nameEn)
+        public async Task<Product?> SearchProductByNameAsync(string nameEn)
         {
             if (string.IsNullOrWhiteSpace(nameEn))
                 return null;
 
             var trimmedName = nameEn.Trim().ToLower();
 
-            var result = await _context.Products
-                      .Include(p => p.Images)
-                     .Where(p => p.NameEn.ToLower().Contains(trimmedName))
-                     .FirstOrDefaultAsync();
-
-            if (result == null)
-                Console.WriteLine("[GetProductByNameEn] No matching product found.");
-
-            return result;
-
-
-
+            return await _context.Products
+                .Include(p => p.Images)
+                .Where(p => p.NameEn.ToLower().Contains(trimmedName))
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
         }
 
         public IQueryable<Product> SearchProductsByDescriptionAsync(string partialDescription)
@@ -112,69 +125,67 @@ namespace SmartCare.InfraStructure.Repositories
 
             string trimmedDescription = partialDescription.Trim().ToLower();
 
-            return _context.Products.Where(
-                p => p.Description != null && p.Description.Trim().ToLower().Contains(trimmedDescription)
-            );
-
-        }
-
-        public  IQueryable<Product> SearchProductsByCompanyName(string CompanyName)
-        {
-            if (string.IsNullOrWhiteSpace(CompanyName))
-                return _context.Products.Where(p => false);
-            string trimmedCompanyName = CompanyName.Trim().ToLower();
-            var Products = _context.Products
-                .Include(p => p.Company)
-                .Where(p => p.Company.Name.Trim().ToLower().Contains(trimmedCompanyName)).AsQueryable();
-            return Products;
-        }
-
-        public IQueryable<Product> GetProductsByCompanyId(Guid CompanyId)
-        {
-            if (CompanyId == Guid.Empty)
-                return Enumerable.Empty<Product>().AsQueryable();
-            var Products =  _context.Products.Where(p => p.CompanyId == CompanyId).AsQueryable();
-            return Products;
-        }
-
-        public  IQueryable<Product> SearchProductsByCategoryName(string CategoryName)
-        {
-            if (string.IsNullOrWhiteSpace(CategoryName))
-                return _context.Products.Where(p => false);
-            string trimmedCategoryName = CategoryName.Trim().ToLower();
-            var Products = _context.Products
-                .Include(p => p.Category)
-                .Where(p => p.Category != null && p.Category.Name.Trim().ToLower().Contains(trimmedCategoryName)).AsQueryable();
-            return Products;
-        }
-
-        public IQueryable<Product> GetProductsByCategoryId(Guid CategoryId)
-        {
-            if(CategoryId == Guid.Empty)
-                return Enumerable.Empty<Product>().AsQueryable();
-            var Products = _context.Products.Where(p => p.CategoryId == CategoryId).AsQueryable();
-            return Products;
-        }
-
-        public async override Task<bool> DeleteAsync(Product product)
-        {
-            product.IsDeleted = true;
-            _context.Products.Update(product);
-            await _context.SaveChangesAsync();
-            return true;
-        }
-
-        public IQueryable<Domain.Entities.Product> GetAllProductsQuerable()
-        {
             return _context.Products
-                .Where(c => !c.IsDeleted)
+                .Include(p => p.Images)
+                .Where(p => p.Description != null &&
+                           p.Description.Trim().ToLower().Contains(trimmedDescription))
                 .AsNoTracking();
         }
 
+        public IQueryable<Product> SearchProductsByCompanyName(string companyName)
+        {
+            if (string.IsNullOrWhiteSpace(companyName))
+                return Enumerable.Empty<Product>().AsQueryable();
+
+            string trimmedCompanyName = companyName.Trim().ToLower();
+
+            return _context.Products
+                .Include(p => p.Company)
+                .Include(p => p.Images)
+                .Where(p => p.Company.Name.Trim().ToLower().Contains(trimmedCompanyName))
+                .AsNoTracking();
+        }
+
+        public IQueryable<Product> GetProductsByCompanyId(Guid companyId)
+        {
+            if (companyId == Guid.Empty)
+                return Enumerable.Empty<Product>().AsQueryable();
+
+            return _context.Products
+                .Include(p => p.Images)
+                .Where(p => p.CompanyId == companyId)
+                .AsNoTracking();
+        }
+
+        public IQueryable<Product> SearchProductsByCategoryName(string categoryName)
+        {
+            if (string.IsNullOrWhiteSpace(categoryName))
+                return Enumerable.Empty<Product>().AsQueryable();
+
+            string trimmedCategoryName = categoryName.Trim().ToLower();
+
+            return _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.Images)
+                .Where(p => p.Category != null &&
+                           p.Category.Name.Trim().ToLower().Contains(trimmedCategoryName))
+                .AsNoTracking();
+        }
+
+        public IQueryable<Product> GetProductsByCategoryId(Guid categoryId)
+        {
+            if (categoryId == Guid.Empty)
+                return Enumerable.Empty<Product>().AsQueryable();
+
+            return _context.Products
+                .Include(p => p.Images)
+                .Where(p => p.CategoryId == categoryId)
+                .AsNoTracking();
+        }
 
         public IQueryable<Product> GetMostSelling()
         {
-            var mostSellingProducts = _context.OrderItems
+            return _context.OrderItems
                 .GroupBy(oi => oi.ProductId)
                 .Select(g => new
                 {
@@ -188,14 +199,12 @@ namespace SmartCare.InfraStructure.Repositories
                     product => product.ProductId,
                     (sales, product) => product
                 )
-                .AsQueryable();
-
-            return mostSellingProducts;
+                .AsNoTracking();
         }
 
         public IQueryable<Product> GetMorePopular()
         {
-            var mostPopularProducts = _context.OrderItems
+            return _context.OrderItems
                 .GroupBy(oi => oi.ProductId)
                 .Select(g => new
                 {
@@ -209,12 +218,16 @@ namespace SmartCare.InfraStructure.Repositories
                     product => product.ProductId,
                     (popularity, product) => product
                 )
-                .AsQueryable();
-
-            return mostPopularProducts ;
+                .AsNoTracking();
         }
 
+        public override Task DeleteAsync(Product product)
+        {
+            product.IsDeleted = true;
+            return UpdateAsync(product);
+        }
 
+       
         #endregion
     }
 }

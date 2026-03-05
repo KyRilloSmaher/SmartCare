@@ -13,7 +13,11 @@ namespace SmartCare.Domain.IRepositories
     {
         Task<IEnumerable<Order>> GetOrdersByCustomerIdAsync(string clientId);
         Task<IEnumerable<Order>> GetOrdersWithDetailsAsync();
+<<<<<<< HEAD
         Task<Order?> GetOrderWithDetailsByIdAsync(Guid orderId , bool track = true);
+=======
+        Task<Order?> GetOrderWithDetailsByIdAsync(Guid orderId , bool asTrack = true);
+>>>>>>> 923f973e367ef4ffc1892f700b70f80352b1a3e8
         Task<Order?> GetOrderByPickUpCode(string code);
         Task<IEnumerable<Order>> GetOrdersByStatusAsync(OrderStatus status, Guid? storeId = null);
         Task<IEnumerable<Order>> GetOrdersByDateRangeAsync(DateTime startDate, DateTime endDate, Guid? storeId = null);
@@ -25,14 +29,14 @@ namespace SmartCare.Domain.IRepositories
         Task<int> GetTotalOrdersCountAsync(Guid? storeId = null);
         Task<bool> AddOrderItemsAsync(IEnumerable<OrderItem> orderItems);
         Task<IEnumerable<OnlineOrder>> GetOnlineOrdersAsync();
-        Task<IEnumerable<FromStoreOrder>> GetFromStoreOrdersAsync(Guid? storeId = null);
+        Task<IEnumerable<PickUpOrder>> GetFromStoreOrdersAsync(Guid? storeId = null);
         Task UpdateOrderItemsAsync(IEnumerable<OrderItem> orderItems);
         Task<OnlineOrder?> GetOnlineOrderAsync(Guid orderId);
-        Task<FromStoreOrder?> GetOfflineOrderAsync(Guid orderId);
+        Task<PickUpOrder?> GetOfflineOrderAsync(Guid orderId);
         void RemoveOnlineOrder(OnlineOrder onlineOrder);
-        void RemoveOfflineOrder(FromStoreOrder offlineOrder);
+        void RemoveOfflineOrder(PickUpOrder offlineOrder);
         Task AddInOnlineOrderAsync(OnlineOrder onlineOrder);
-        Task AddInOfflineOrderAsync(FromStoreOrder fromStoreOrder);
+        Task AddInOfflineOrderAsync(PickUpOrder fromStoreOrder);
         Task SwitchOrderTypeAsync( Order order,OrderType newType,Guid? shippingAddressId,Guid? storeId);
         Task UpdatePickupCodeHashAsync(Guid orderId, string pickupCodeHash);
         Task UpdatePaymentIntentIdAsync(Order order , string paymentIntentId);

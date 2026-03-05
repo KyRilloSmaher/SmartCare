@@ -16,15 +16,26 @@ namespace SmartCare.Infrastructure.Repositories
             _context = context;
         }
 
+<<<<<<< HEAD
         #region === Base Query Helper ===
         private IQueryable<Order> BaseOrderQuery(bool tracking = true)
         {
             var query = _dbContext.Orders
+=======
+        #region Query Methods
+
+        private IQueryable<Order> BaseOrderQuery(bool trackChanges = false)
+        {
+            var query = _context.Orders
+                .Include(o => (o as OnlineOrder).Address)
+                .Include(o => (o as PickUpOrder).Store)
+>>>>>>> 923f973e367ef4ffc1892f700b70f80352b1a3e8
                 .Include(o => o.Items)
                 .ThenInclude(i=>i.Product)
                 .ThenInclude(p => p.Images)
                 .Include(o => o.Payment)
                 .Include(o => o.Client)
+<<<<<<< HEAD
                 .OrderByDescending(o=>o.CreatedAt)
                 .AsQueryable();
 
@@ -36,8 +47,17 @@ namespace SmartCare.Infrastructure.Repositories
 
 
         #endregion
+=======
+                .Include(o => o.Client.User);
+>>>>>>> 923f973e367ef4ffc1892f700b70f80352b1a3e8
 
-        #region Methods
+            return trackChanges ? query : query.AsNoTracking();
+        }
+
+        public IQueryable<Order> GetOrdersQueryable(bool trackChanges = false)
+        {
+            return BaseOrderQuery(trackChanges);
+        }
 
         public async Task<Order?> GetOrderWithDetailsByIdAsync(Guid id, bool tracking = true)
         {
@@ -84,6 +104,7 @@ namespace SmartCare.Infrastructure.Repositories
         }
 
 
+<<<<<<< HEAD
 
 
         public override async Task<bool> DeleteAsync(Order entity)
@@ -91,18 +112,25 @@ namespace SmartCare.Infrastructure.Repositories
             entity.IsDeleted = true;
             await _context.SaveChangesAsync();
             return true;
+=======
+        public async Task<Order?> GetOrderWithDetailsByIdAsync(Guid orderId, bool asTrack = true)
+        {
+            return await BaseOrderQuery(asTrack)
+                .FirstOrDefaultAsync(o => o.Id == orderId);
+>>>>>>> 923f973e367ef4ffc1892f700b70f80352b1a3e8
         }
+
         public async Task<Order?> GetOrderByPickUpCode(string pickupCodeHash)
         {
             return await _context.Orders
-                                    .OfType<FromStoreOrder>()
-                                    .Include(o => o.Store)
-                                    .Include(o => o.Items)
-                                        .ThenInclude(i => i.Product)
-                                            .ThenInclude(p => p.Images)
-                                    .Include(o => o.Payment)
-                                    .Include(o => o.Client)
-                                    .FirstOrDefaultAsync(o => o.PickupCodeHash == pickupCodeHash);
+                .OfType<PickUpOrder>()
+                .Include(o => o.Store)
+                .Include(o => o.Items)
+                    .ThenInclude(i => i.Product)
+                        .ThenInclude(p => p.Images)
+                .Include(o => o.Payment)
+                .Include(o => o.Client)
+                .FirstOrDefaultAsync(o => o.PickupCodeHash == pickupCodeHash);
         }
 
         public async Task<IEnumerable<Order>> GetOrdersByStatusAsync(OrderStatus status, Guid? storeId = null)
@@ -111,7 +139,7 @@ namespace SmartCare.Infrastructure.Repositories
 
             if (storeId.HasValue)
             {
-                query = query.OfType<FromStoreOrder>()
+                query = query.OfType<PickUpOrder>()
                              .Where(o => o.StoreId == storeId.Value);
             }
 
@@ -125,7 +153,7 @@ namespace SmartCare.Infrastructure.Repositories
 
             if (storeId.HasValue)
             {
-                query = query.OfType<FromStoreOrder>()
+                query = query.OfType<PickUpOrder>()
                              .Where(o => o.StoreId == storeId.Value);
             }
 
@@ -145,7 +173,7 @@ namespace SmartCare.Infrastructure.Repositories
 
             if (storeId.HasValue)
             {
-                query = (IOrderedQueryable<Order>)query.OfType<FromStoreOrder>()
+                query = (IOrderedQueryable<Order>)query.OfType<PickUpOrder>()
                              .Where(o => o.StoreId == storeId.Value);
             }
 
@@ -159,7 +187,7 @@ namespace SmartCare.Infrastructure.Repositories
 
             if (storeId.HasValue)
             {
-                query = query.OfType<FromStoreOrder>()
+                query = query.OfType<PickUpOrder>()
                              .Include(o => o.Store)
                              .Where(o => o.StoreId == storeId.Value);
             }
@@ -173,7 +201,7 @@ namespace SmartCare.Infrastructure.Repositories
 
             if (storeId.HasValue)
             {
-                query = query.OfType<FromStoreOrder>()
+                query = query.OfType<PickUpOrder>()
                              .Where(o => o.StoreId == storeId.Value);
             }
 
@@ -186,7 +214,7 @@ namespace SmartCare.Infrastructure.Repositories
 
             if (storeId.HasValue)
             {
-                query = query.OfType<FromStoreOrder>()
+                query = query.OfType<PickUpOrder>()
                              .Where(o => o.StoreId == storeId.Value);
             }
 
@@ -199,25 +227,18 @@ namespace SmartCare.Infrastructure.Repositories
 
             if (storeId.HasValue)
             {
-                query = query.OfType<FromStoreOrder>()
-                              .Include(o => o.Store)
+                query = query.OfType<PickUpOrder>()
+                             .Include(o => o.Store)
                              .Where(o => o.StoreId == storeId.Value);
             }
 
-            var result = await query.GroupBy(o => o.Status)
-                                    .Select(g => new { g.Key, Count = g.Count() })
-                                    .ToListAsync();
+            var result = await query
+                .GroupBy(o => o.Status)
+                .Select(g => new { g.Key, Count = g.Count() })
+                .ToListAsync();
 
             return result.ToDictionary(x => x.Key, x => x.Count);
         }
-
-        public async Task<bool> AddOrderItemsAsync(IEnumerable<OrderItem> orderItems)
-        {
-            await _context.OrderItems.AddRangeAsync(orderItems);
-
-            return await _context.SaveChangesAsync() > 0;
-        }
-
 
         public async Task<IEnumerable<OnlineOrder>> GetOnlineOrdersAsync()
         {
@@ -227,13 +248,14 @@ namespace SmartCare.Infrastructure.Repositories
                 .Include(o => o.Items)
                     .ThenInclude(i => i.Product)
                         .ThenInclude(p => p.Images)
+                .AsNoTracking()
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<FromStoreOrder>> GetFromStoreOrdersAsync(Guid? storeId = null)
+        public async Task<IEnumerable<PickUpOrder>> GetFromStoreOrdersAsync(Guid? storeId = null)
         {
             var query = _context.Orders
-                .OfType<FromStoreOrder>()
+                .OfType<PickUpOrder>()
                 .Include(o => o.Store)
                 .Include(o => o.Items)
                     .ThenInclude(i => i.Product)
@@ -241,10 +263,9 @@ namespace SmartCare.Infrastructure.Repositories
                 .AsQueryable();
 
             if (storeId.HasValue)
-            {
                 query = query.Where(o => o.StoreId == storeId.Value);
-            }
 
+<<<<<<< HEAD
             return await query.ToListAsync();
         }
         public async Task UpdateOrderItemsAsync(IEnumerable<OrderItem> orderItems)
@@ -257,39 +278,55 @@ namespace SmartCare.Infrastructure.Repositories
             }
 
             await _dbContext.SaveChangesAsync();
+=======
+            return await query.AsNoTracking().ToListAsync();
+>>>>>>> 923f973e367ef4ffc1892f700b70f80352b1a3e8
         }
 
         public async Task<OnlineOrder?> GetOnlineOrderAsync(Guid orderId)
         {
-            return await _dbContext.OnlineOrders
+            return await _context.OnlineOrders
                 .FirstOrDefaultAsync(o => o.Id == orderId);
         }
 
-        public async Task<FromStoreOrder?> GetOfflineOrderAsync(Guid orderId)
+        public async Task<PickUpOrder?> GetOfflineOrderAsync(Guid orderId)
         {
-            return await _dbContext.FromStoreOrders
+            return await _context.FromStoreOrders
                 .FirstOrDefaultAsync(o => o.Id == orderId);
         }
 
-        public void RemoveOnlineOrder(OnlineOrder onlineOrder)
+        #endregion
+
+        #region Command Methods
+
+        public override Task DeleteAsync(Order entity)
         {
-            _dbContext.OnlineOrders.Remove(onlineOrder);
+            entity.IsDeleted = true;
+            return UpdateAsync(entity);
         }
 
-        public void RemoveOfflineOrder(FromStoreOrder offlineOrder)
+        public async Task<bool> AddOrderItemsAsync(IEnumerable<OrderItem> orderItems)
         {
-            _dbContext.FromStoreOrders.Remove(offlineOrder);
+            await _context.OrderItems.AddRangeAsync(orderItems);
+            return true;
         }
 
-        public async Task AddInOnlineOrderAsync(OnlineOrder onlineOrder)
+        public Task UpdateOrderItemsAsync(IEnumerable<OrderItem> orderItems)
         {
-            await _dbContext.OnlineOrders.AddAsync(onlineOrder);
+            foreach (var item in orderItems)
+            {
+                _context.Entry(item).Property(x => x.ReservationId).IsModified = true;
+            }
+            return Task.CompletedTask;
         }
 
+<<<<<<< HEAD
         public async Task AddInOfflineOrderAsync(FromStoreOrder fromStoreOrder)
         {
             await _dbContext.FromStoreOrders.AddAsync(fromStoreOrder);
         }
+=======
+>>>>>>> 923f973e367ef4ffc1892f700b70f80352b1a3e8
         public async Task SwitchOrderTypeAsync(Order order, OrderType newType, Guid? shippingAddressId, Guid? storeId)
         {
             if (order.OrderType == newType)
@@ -298,32 +335,31 @@ namespace SmartCare.Infrastructure.Repositories
             // Remove old derived row (DB ONLY)
             if (order.OrderType == OrderType.Online)
             {
-                await _dbContext.Database.ExecuteSqlRawAsync(
+                await _context.Database.ExecuteSqlRawAsync(
                     "DELETE FROM OnlineOrders WHERE Id = {0}", order.Id);
             }
             else if (order.OrderType == OrderType.InStore)
             {
-                await _dbContext.Database.ExecuteSqlRawAsync(
+                await _context.Database.ExecuteSqlRawAsync(
                     "DELETE FROM FromStoreOrders WHERE Id = {0}", order.Id);
             }
 
             // Insert new derived row
             if (newType == OrderType.Online)
             {
-                await _dbContext.Database.ExecuteSqlRawAsync(
+                await _context.Database.ExecuteSqlRawAsync(
                     "INSERT INTO OnlineOrders (Id, ShippingAddressId) VALUES ({0}, {1})",
                     order.Id, shippingAddressId);
             }
             else
             {
-                await _dbContext.Database.ExecuteSqlRawAsync(
+                await _context.Database.ExecuteSqlRawAsync(
                     "INSERT INTO FromStoreOrders (Id, StoreId) VALUES ({0}, {1})",
                     order.Id, storeId);
             }
 
             // Update base discriminator
             order.OrderType = newType;
-            //_dbContext.Orders.Update(order);
         }
         //public async Task SwitchOrderTypeAsync(Order order, OrderType newType, Guid? shippingAddressId, Guid? storeId)
         //{
@@ -418,6 +454,7 @@ namespace SmartCare.Infrastructure.Repositories
 
         public async Task UpdatePickupCodeHashAsync(Guid orderId, string pickupCodeHash)
         {
+<<<<<<< HEAD
             var order = await _context.Orders
                 .OfType<FromStoreOrder>()
                 .FirstOrDefaultAsync(o => o.Id == orderId);
@@ -450,7 +487,48 @@ namespace SmartCare.Infrastructure.Repositories
 
         public async Task<IEnumerable<Order>> GetOrdersWithDetailsAsync() =>  BaseOrderQuery();
 
+=======
+            await _context.Database.ExecuteSqlRawAsync(
+                "UPDATE FromStoreOrders SET PickupCodeHash = {0} WHERE Id = {1}",
+                pickupCodeHash, orderId);
+        }
 
+        public Task RemoveOnlineOrder(OnlineOrder onlineOrder)
+        {
+            _context.OnlineOrders.Remove(onlineOrder);
+            return Task.CompletedTask;
+        }
+>>>>>>> 923f973e367ef4ffc1892f700b70f80352b1a3e8
+
+        public Task RemoveOfflineOrder(PickUpOrder offlineOrder)
+        {
+            _context.FromStoreOrders.Remove(offlineOrder);
+            return Task.CompletedTask;
+        }
+
+        public async Task AddInOnlineOrderAsync(OnlineOrder onlineOrder)
+        {
+            await _context.OnlineOrders.AddAsync(onlineOrder);
+        }
+
+        public async Task AddInOfflineOrderAsync(PickUpOrder fromStoreOrder)
+        {
+            await _context.FromStoreOrders.AddAsync(fromStoreOrder);
+        }
+
+        
+
+        void IOrderRepository.RemoveOnlineOrder(OnlineOrder onlineOrder)
+        {
+            _context.OnlineOrders.Remove(onlineOrder);
+
+        }
+
+        void IOrderRepository.RemoveOfflineOrder(PickUpOrder offlineOrder)
+        {
+            _context.FromStoreOrders.Remove(offlineOrder);
+
+        }
 
 
         #endregion

@@ -12,5 +12,16 @@ namespace SmartCare.Domain.Entities
         public Guid ShippingAddressId { get; set; }
         [ForeignKey(nameof(ShippingAddressId))]
         public Address Address { get; set; }
+
+        public static OnlineOrder Create(string clientId , decimal totalPrice , Guid deliveryAddressId )
+        {
+            return new OnlineOrder
+            {
+                ClientId = clientId,
+                TotalPrice = totalPrice,
+                ShippingAddressId = deliveryAddressId,
+                OrderType = Enums.OrderType.Online
+            };
+        }
     }
 }

@@ -8,6 +8,6 @@ namespace SmartCare.Domain.Enums
 {
     public enum PaymentStatus
     {
-        Pending, Completed, Failed , Refunded
+        Pending, Completed, Failed , Refunded , Cancelled
     }
 }

@@ -16,7 +16,9 @@
             private const string Prefix = Rule + "auth/";
 
             public const string Login = Prefix + "login";
+            public const string pharmacistLogin = Prefix + "Pharmacist-Login";
             public const string SignUp = Prefix + "sign-up";
+            public const string pharmacistSignUp = Prefix + "Pharmacist-SignUp";
             public const string ConfirmEmail = Prefix + "confirm-email";
             public const string ResendConfirmationEmail = Prefix + "resend-confirmation-email";
             public const string ForgotPassword = Prefix + "forgot-password";
@@ -155,6 +157,9 @@
             public const string SearchByCompanyName = Prefix + "/CompanyName";
             public const string GetByCategoryId = Prefix + "/CategoryId";
             public const string SearchByCategoryName = Prefix + "/CategoryName";
+            public const string Search = Prefix+"/search";
+            public const string RecommendSimilars = Prefix + "/Similars"+SingleRoute;
+            public const string GetContradictions = Prefix + "/Id/contradions-with-user-History";
             public const string GetBestSeller = Prefix + "/BestSeller";
             public const string GetMorePopular = Prefix + "/MorePopular";
             public const string SearchByName = Prefix + "/Name";

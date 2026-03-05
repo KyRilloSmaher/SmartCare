@@ -10,7 +10,12 @@ using Microsoft.Extensions.Logging; // Add this
 
 namespace SmartCare.InfraStructure.DbContexts
 {
+<<<<<<< HEAD
     public class ApplicationDBContext : IdentityDbContext<Client>
+=======
+
+    public class ApplicationDBContext : IdentityDbContext<ApplictionUser>
+>>>>>>> 923f973e367ef4ffc1892f700b70f80352b1a3e8
     {
         public DbSet<AuditLog> AuditLogs { get; set; }
         private readonly ILogger<ApplicationDBContext> _logger; // Add logger
@@ -28,17 +33,20 @@ namespace SmartCare.InfraStructure.DbContexts
 
         // Your existing DbSet properties...
         public DbSet<Address> Addresses { get; set; }
+        public DbSet<EmailVerification> EmailVerifications { get; set; }
         public DbSet<Cart> Carts { get; set; }
         public DbSet<CartItem> CartItems { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Client> Clients { get; set; }
+        public DbSet<Admin> Admins { get; set; }
+        public DbSet<Pharmacist> Pharmacists { get; set; }
         public DbSet<Company> Companies { get; set; }
         public DbSet<Favorite> Favorites { get; set; }
         public DbSet<Inventory> Inventories { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<OnlineOrder> OnlineOrders { get; set; }
-        public DbSet<FromStoreOrder> FromStoreOrders { get; set; }
+        public DbSet<PickUpOrder> FromStoreOrders { get; set; }
         public DbSet<Payment> Payments { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<ProductImage> ProductImages { get; set; }
@@ -53,6 +61,7 @@ namespace SmartCare.InfraStructure.DbContexts
             // Configure TPT inheritance for Orders
             modelBuilder.Entity<Order>().ToTable("Orders");
             modelBuilder.Entity<OnlineOrder>().ToTable("OnlineOrders");
+<<<<<<< HEAD
             modelBuilder.Entity<FromStoreOrder>().ToTable("FromStoreOrders");
 
             // Configure AuditLog entity with method tracking
@@ -115,6 +124,9 @@ namespace SmartCare.InfraStructure.DbContexts
                 entity.HasIndex(e => e.Namespace);
             });
 
+=======
+            modelBuilder.Entity<PickUpOrder>().ToTable("FromStoreOrders");
+>>>>>>> 923f973e367ef4ffc1892f700b70f80352b1a3e8
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         }
 

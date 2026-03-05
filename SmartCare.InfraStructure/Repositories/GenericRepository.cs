@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 using SmartCare.Domain.IRepositories;
 using SmartCare.InfraStructure.DbContexts;
 using System.Linq.Expressions;
@@ -9,85 +8,76 @@ namespace SmartCare.InfraStructure.Repositories
     public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
         #region Fields
-        protected readonly ApplicationDBContext _dbContext;
-        private IDbContextTransaction? _currentTransaction;
+        protected readonly ApplicationDBContext _context;
+        protected readonly DbSet<T> _dbSet;
         #endregion
 
         #region Constructor
         public GenericRepository(ApplicationDBContext dbContext)
         {
-            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+            _context = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+            _dbSet = _context.Set<T>();
         }
         #endregion
 
         #region CRUD Operations
 
-        public async virtual Task<T> AddAsync(T entity)
+        public virtual async Task<T> AddAsync(T entity)
         {
-            await _dbContext.Set<T>().AddAsync(entity);
-            await _dbContext.SaveChangesAsync();
+            await _dbSet.AddAsync(entity);
             return entity;
         }
 
-        public async Task<T> Add(T entity)
+        public virtual async Task<ICollection<T>> AddRangeAsync(ICollection<T> entities)
         {
-            await _dbContext.Set<T>().AddAsync(entity);
-            return entity;
+            await _dbSet.AddRangeAsync(entities);
+            return entities;
         }
 
-        public async Task AddRangeAsync(ICollection<T> entities)
+        public virtual Task DeleteAsync(T entity)
         {
-            await _dbContext.Set<T>().AddRangeAsync(entities);
-            await _dbContext.SaveChangesAsync();
+            _dbSet.Remove(entity);
+            return Task.CompletedTask;
         }
 
-        public async Task<T> UpdateAsync(T entity)
+        public virtual Task DeleteRangeAsync(ICollection<T> entities)
         {
-            _dbContext.Set<T>().Update(entity);
-            await _dbContext.SaveChangesAsync();
-            return entity;
+            _dbSet.RemoveRange(entities);
+            return Task.CompletedTask;
         }
 
-        public async Task UpdateRangeAsync(ICollection<T> entities)
+        public virtual Task UpdateAsync(T entity)
         {
-            _dbContext.Set<T>().UpdateRange(entities);
-            await _dbContext.SaveChangesAsync();
+            _dbSet.Update(entity);
+            return Task.CompletedTask;
         }
 
-        public async virtual Task<bool> DeleteAsync(T entity)
+        public virtual Task UpdateRangeAsync(ICollection<T> entities)
         {
-            _dbContext.Set<T>().Remove(entity);
-            await _dbContext.SaveChangesAsync();
-            return true;
+            _dbSet.UpdateRange(entities);
+            return Task.CompletedTask;
         }
 
-        public async Task DeleteRangeAsync(ICollection<T> entities)
-        {
-            _dbContext.Set<T>().RemoveRange(entities);
-            await _dbContext.SaveChangesAsync();
-        }
-
-        public async virtual Task<IEnumerable<T>> GetAllAsync(bool asTracking = false)
+        public virtual async Task<IEnumerable<T>> GetAllAsync(bool asTracking = false)
         {
             return asTracking
-                ? await _dbContext.Set<T>().ToListAsync()
-                : await _dbContext.Set<T>().AsNoTracking().ToListAsync();
+                ? await _dbSet.ToListAsync()
+                : await _dbSet.AsNoTracking().ToListAsync();
         }
 
-        public async virtual Task<T?> GetByIdAsync(Guid id, bool asTracking = false)
+        public virtual IQueryable<T> GetQueryable(bool asTracking = false)
         {
-            var entity = await _dbContext.Set<T>().FindAsync(id);
-            if (entity == null) return null;
+            return asTracking ? _dbSet.AsQueryable() : _dbSet.AsNoTracking();
+        }
 
-            if (!asTracking)
-                _dbContext.Entry(entity).State = EntityState.Detached;
+        public virtual async Task<T?> GetByIdAsync(Guid id, bool asTracking = false)
+        {
+            var entity = await _dbSet.FindAsync(id);
+
+            if (entity != null && !asTracking)
+                _context.Entry(entity).State = EntityState.Detached;
 
             return entity;
-        }
-
-        public async Task SaveChangesAsync()
-        {
-            await _dbContext.SaveChangesAsync();
         }
 
         public virtual async Task<IQueryable<T>> FilterListAsync<TKey>(
@@ -95,7 +85,7 @@ namespace SmartCare.InfraStructure.Repositories
             Expression<Func<T, bool>>? searchPredicate = null,
             bool ascending = true)
         {
-            IQueryable<T> query = _dbContext.Set<T>();
+            IQueryable<T> query = _dbSet;
 
             if (searchPredicate is not null)
                 query = query.Where(searchPredicate);
@@ -105,50 +95,16 @@ namespace SmartCare.InfraStructure.Repositories
             return await Task.FromResult(query);
         }
 
-        #endregion
-
-        #region Transaction Handling
-
-        public async Task BeginTransactionAsync()
+        public virtual async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate)
         {
-            if (_currentTransaction != null)
-                return; // Already in transaction
-
-            _currentTransaction = await _dbContext.Database.BeginTransactionAsync();
+            return await _dbSet.AnyAsync(predicate);
         }
 
-        public async Task CommitTransactionAsync()
+        public virtual async Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null)
         {
-            if (_currentTransaction == null)
-                return;
-
-            try
-            {
-                // Ensure all pending changes are saved before committing
-                await _dbContext.SaveChangesAsync();
-                await _currentTransaction.CommitAsync();
-            }
-            finally
-            {
-                await _currentTransaction.DisposeAsync();
-                _currentTransaction = null;
-            }
-        }
-
-        public async Task RollBackAsync()
-        {
-            if (_currentTransaction == null)
-                return;
-
-            try
-            {
-                await _currentTransaction.RollbackAsync();
-            }
-            finally
-            {
-                await _currentTransaction.DisposeAsync();
-                _currentTransaction = null;
-            }
+            return predicate == null
+                ? await _dbSet.CountAsync()
+                : await _dbSet.CountAsync(predicate);
         }
 
         #endregion

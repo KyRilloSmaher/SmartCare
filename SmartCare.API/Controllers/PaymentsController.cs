@@ -1,9 +1,16 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartCare.API.Helpers;
-using SmartCare.Application.DTOs.Payment;
-using SmartCare.Application.IServices;
-using Stripe;
+using SmartCare.Application.CQRs.Payments.Commands.HandlePaymentFailedCommand;
+using SmartCare.Application.CQRs.Payments.Commands.HandlePaymentSucceededCommand;
+using SmartCare.Application.CQRs.Payments.Commands.MarkOrderPaymentAsCashCommand0;
+using SmartCare.Application.CQRs.Payments.Commands.PayOfflineCommand;
+using SmartCare.Application.CQRs.Payments.Commands.RequestpaymentSession;
+using SmartCare.Application.ExternalServiceInterfaces.Payments;
+
+using SmartCare.Domain.Enums;
+
 
 namespace SmartCare.API.Controllers
 {
@@ -11,19 +18,18 @@ namespace SmartCare.API.Controllers
     [Route("api/payments")]
     public sealed class PaymentsController : ControllerBase
     {
-        private readonly IPaymentService _paymentService;
+        private readonly IMediator _mediator;
         private readonly IConfiguration _configuration;
         private readonly ILogger<PaymentsController> _logger;
-
-        public PaymentsController(
-            IPaymentService paymentService,
-            IConfiguration configuration,
-            ILogger<PaymentsController> logger)
+        private readonly IPaymentGatewayFactory _paymentGatewayFactory;
+        public PaymentsController(IMediator mediator, IConfiguration configuration, ILogger<PaymentsController> logger, IPaymentGatewayFactory paymentGatewayFactory)
         {
-            _paymentService = paymentService;
+            _mediator = mediator;
             _configuration = configuration;
             _logger = logger;
+            _paymentGatewayFactory = paymentGatewayFactory;
         }
+
 
         // ------------------------------------------------------
         // ONLINE PAYMENT (PAYMENT INTENT)
@@ -31,13 +37,13 @@ namespace SmartCare.API.Controllers
 
         /// <summary>
         /// Creates or updates a PaymentIntent for an order.
-        /// Frontend uses returned client_secret with Stripe Elements.
         /// </summary>
-        [HttpPost("intent/{orderId:guid}")]
+        [HttpPost("{Provider}/Pruches/{orderId:guid}")]
         [Authorize]
-        public async Task<IActionResult> CreatePaymentIntent(Guid orderId)
+        public async Task<IActionResult> CreatePaymentIntent([FromRoute]PaymentMethod Provider,[FromRoute]Guid orderId)
         {
-            var result = await _paymentService.CreateOrUpdatePaymentAsync(orderId);
+            //var result = await _paymentService.CreateOrUpdatePaymentAsync(orderId);
+            var result = await _mediator.Send(new RequestpaymentSessionCommandHandler(Provider,orderId));
             return ControllersHelperMethods.FinalResponse(result);
         }
         /// <summary>
@@ -48,43 +54,67 @@ namespace SmartCare.API.Controllers
         [Authorize]
         public async Task<IActionResult> MarkAsCashPaymentAsync(Guid orderId)
         {
-            var result = await _paymentService.MarkOrderPaymentAsCash(orderId);
+            //var result = await _paymentService.MarkOrderPaymentAsCash(orderId);
+            var result = await _mediator.Send(new MarkOrderPaymentAsCashCommand(orderId));
             return ControllersHelperMethods.FinalResponse(result);
         }
         // ------------------------------------------------------
-        // STRIPE WEBHOOK (SOURCE OF TRUTH)
+        // Payment WEBHOOK (SOURCE OF TRUTH)
         // ------------------------------------------------------
-        [HttpPost("webhook")]
+        [HttpPost("{provider}-webhook")]
         [AllowAnonymous]
-        public async Task<IActionResult> StripeWebhookAsync()
+        public async Task<IActionResult> WebhookAsync(string provider)
         {
+<<<<<<< HEAD
             _logger.LogWarning("IInside WebHook");
             var json = await new StreamReader(Request.Body).ReadToEndAsync();
             var signature = Request.Headers["Stripe-Signature"];
             var secret = _configuration["StripeSettings:WebhookSecret"];
+=======
+            // Try parse provider dynamically
+            if (!Enum.TryParse<PaymentMethod>(provider, true, out var paymentProvider))
+            {
+                _logger.LogWarning("Unknown payment provider webhook: {Provider}", provider);
+                return BadRequest("Unknown provider");
+            }
+
+            var paymentService = _paymentGatewayFactory.Resolve(paymentProvider);
+
+            _logger.LogInformation("Processing {Provider} webhook", paymentProvider);
+
+            var payload = await new StreamReader(Request.Body).ReadToEndAsync();
+
+            // Convert headers to dictionary
+            var headers = Request.Headers.ToDictionary(h => h.Key, h => h.Value.ToString());
+>>>>>>> 923f973e367ef4ffc1892f700b70f80352b1a3e8
 
             try
             {
-                var stripeEvent = EventUtility.ConstructEvent(
-                    json,
-                    signature,
-                    secret!,
-                    throwOnApiVersionMismatch: false
-                );
+                var result = paymentService.ParseWebhook(paymentProvider, payload, headers);
 
-                await _paymentService.HandleWebhookEventAsync(stripeEvent);
+                if (!result.IsValid)
+                {
+                    _logger.LogWarning("Webhook validation failed: {Error}", result.Status);
+                    return BadRequest(result.Status);
+                }
+                if (result.Status == PaymentStatus.Failed)
+                {
+                    var response = await _mediator.Send(new HandlePaymentIntentFailedAsyncCommand(result));
+                    return ControllersHelperMethods.FinalResponse(response); ;
+                }
+                else if (result.Status == PaymentStatus.Completed)
+                {
+                    var response = await _mediator.Send(new HandlePaymentSucceededAsyncCommand(result));
+                    return ControllersHelperMethods.FinalResponse(response);
+                }
                 return Ok();
-            }
-            catch (StripeException ex)
-            {
-                _logger.LogWarning(ex, "Invalid Stripe webhook signature");
-                return BadRequest();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unhandled webhook processing error");
+                _logger.LogError(ex, "Unhandled webhook processing error for {Provider}", paymentProvider);
                 return Ok();
             }
+        
         }
 
 
@@ -96,7 +126,8 @@ namespace SmartCare.API.Controllers
         [Authorize(Roles = "Admin,Store")]
         public async Task<IActionResult> PayOfflineAsync([FromBody] string pickupCode)
         {
-            var result = await _paymentService.PayOfflineAsync(pickupCode);
+            //var result = await _paymentService.PayOfflineAsync(pickupCode);
+            var result = await _mediator.Send(new PayOfflineCommand(pickupCode));
             return ControllersHelperMethods.FinalResponse(result);
         }
 

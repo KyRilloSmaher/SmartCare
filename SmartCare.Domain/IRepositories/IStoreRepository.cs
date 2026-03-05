@@ -10,10 +10,12 @@ namespace SmartCare.Domain.IRepositories
 {
     public interface IStoreRepository : IGenericRepository<Store>
     {
-        public  Task<IEnumerable<Store>> GetAllStoresAsync();
+         Task<IEnumerable<Store>> GetAllStoresAsync();
 
-        public  Task<IEnumerable<Store>> GetAllStoresForAdminAsync();
+         IQueryable<Store> GetStoresQueryable(bool includeDeleted = false);
 
-        public Task<IEnumerable<Store>> SearchStoresAsync(string searchTerm);
+          Task<Store?> GetStoreByIdAsync(Guid storeId, bool trackChanges = false);
+
+          Task<IEnumerable<Store>> SearchStoresAsync(string searchTerm);
     }
 }

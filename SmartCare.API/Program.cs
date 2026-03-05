@@ -1,30 +1,32 @@
-using Serilog;
+
 using FluentValidation.AspNetCore;
+using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using SmartCare.API.EventHandlers;
+using SmartCare.API.Helpers;
+using SmartCare.API.Hubs;
+using SmartCare.API.InMemoryEventsHandlers;
+using SmartCare.API.Middlewares;
+using SmartCare.API.Services;
+using SmartCare.Application.CQRs.Payment.Extensions;
+using SmartCare.Application.DTOs.Auth.Requests;
+using SmartCare.Application.Handlers.ResponseHandler;
+using SmartCare.Application.InMemoryEventsHandlers;
+using SmartCare.Application.IServices;
+using SmartCare.Application.Messaging;
+using SmartCare.Application.Notifications;
 using SmartCare.InfraStructure.DbContexts;
 using SmartCare.InfraStructure.Extensions;
-using FluentValidation;
-using SmartCare.Application.DTOs.Auth.Requests;
-using SmartCare.API.Helpers;
-using SmartCare.Application.Handlers.ResponseHandler;
-using SmartCare.API.Middlewares;
-using SmartCare.InfraStructure.Seed;
-using Hangfire;
-using SmartCare.API.Hubs;
-using SmartCare.Application.Messaging;
-using SmartCare.API.InMemoryEventsHandlers;
-using SmartCare.API.EventHandlers;
-using SmartCare.Application.IServices;
 using SmartCare.InfraStructure.Messaging;
-using SmartCare.Application.InMemoryEventsHandlers;
-using SmartCare.Application.Notifications;
+using SmartCare.InfraStructure.Seed;
 using SmartCare.InfraStructure.Services;
-using SmartCare.API.Services;
+using StackExchange.Redis;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -68,6 +70,13 @@ builder.Services.AddHttpClient();
                      }
                    });
     });
+
+// To Convert Enum From 0,1,.. To string In Swagger
+//builder.Services.AddControllers().AddJsonOptions(options =>
+//{
+//    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+//});
+         
 #endregion
 
 #region Connection To SQL SERVER
@@ -85,6 +94,24 @@ builder.Services.AddDbContext<ApplicationDBContext>(options =>
 
 #endregion
 
+#region Connection To RedisCaching
+
+var redisConnectionString = builder.Configuration.GetConnectionString("Redis");
+
+
+if (redisConnectionString != null && redisConnectionString.StartsWith("redis://"))
+{
+    redisConnectionString = redisConnectionString.Replace("redis://", "");
+}
+
+builder.Services.AddStackExchangeRedisCache(option =>
+{
+    option.Configuration = redisConnectionString;
+    option.InstanceName = "SmartCare_";
+});
+
+#endregion
+
 #region Dependency injections
 builder.Services.AddInfrastructureDependencies(builder.Configuration);
 builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
@@ -94,6 +121,12 @@ builder.Services.AddScoped<IUrlHelper>(x =>
     x.GetRequiredService<IUrlHelperFactory>().GetUrlHelper(x.GetRequiredService<IActionContextAccessor>().ActionContext));
 builder.Services.AddScoped<HtmlTemplateService>();
 
+#region MediatR Registration
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssembly(typeof(SmartCare.Application.CQRs.Favourite.Commands.CreateFavouriteAsyncCommand).Assembly);
+});
+#endregion
 
 #endregion
 
@@ -160,10 +193,13 @@ builder.Services.AddSignalR();
 #region Event Bus Registration
 
 // Register Event Bus
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+    ConnectionMultiplexer.Connect(redisConnectionString));
 builder.Services.AddSingleton<IEventBus, InMemoryEventBus>();
+builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
 builder.Services.AddScoped<IEventPublisherService, EventPublisherService>();
 builder.Services.AddScoped<INotificationSender, SignalRNotificationSender>();
-
+builder.Services.AddScoped<PaymentExtensions>();
 // Add  events handlers
 builder.Services.AddScoped<PaymentStatusChangedHandler>();
 builder.Services.AddScoped<ProductStockStatusChangedHandler>();

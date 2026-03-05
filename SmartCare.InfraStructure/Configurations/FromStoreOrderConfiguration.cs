@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 
 namespace SmartCare.InfraStructure.Configurations
 {
-    public class FromStoreOrderConfiguration : IEntityTypeConfiguration<FromStoreOrder>
+    public class FromStoreOrderConfiguration : IEntityTypeConfiguration<PickUpOrder>
     {
-        public void Configure(EntityTypeBuilder<FromStoreOrder> builder)
+        public void Configure(EntityTypeBuilder<PickUpOrder> builder)
         {
             builder.ToTable("FromStoreOrders");
 

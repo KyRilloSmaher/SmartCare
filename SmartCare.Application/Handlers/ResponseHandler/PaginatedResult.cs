@@ -8,10 +8,10 @@ namespace SmartCare.Application.Handlers.ResponseHandler
 {
     public class PaginatedResult<T>
     {
-        public IEnumerable<T> Items { get; private set; }
-        public int TotalCount { get; private set; }
-        public int PageNumber { get; private set; }
-        public int PageSize { get; private set; }
+        public IEnumerable<T> Items { get; set; }
+        public int TotalCount { get;  set; }
+        public int PageNumber { get;  set; }
+        public int PageSize { get; set; }
         public int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
         public bool HasNext => PageNumber < TotalPages;
         public bool HasPrevious => PageNumber > 1;
@@ -22,6 +22,11 @@ namespace SmartCare.Application.Handlers.ResponseHandler
             TotalCount = totalCount;
             PageNumber = pageNumber;
             PageSize = pageSize;
+        }
+
+        public PaginatedResult()
+        {
+
         }
 
         public static PaginatedResult<T> Success(IEnumerable<T> items, int totalCount, int pageNumber, int pageSize)

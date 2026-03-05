@@ -3,20 +3,15 @@ using Microsoft.EntityFrameworkCore;
 using SmartCare.Domain.Entities;
 using SmartCare.Domain.IRepositories;
 using SmartCare.InfraStructure.DbContexts;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartCare.InfraStructure.Repositories
 {
-    public class StoreRepository : GenericRepository<Store>,IStoreRepository
+    public class StoreRepository : GenericRepository<Store>, IStoreRepository
     {
-        #region Feilds 
+        #region Fields 
         private readonly ApplicationDBContext _context;
         #endregion
+
         #region Constructor
         public StoreRepository(ApplicationDBContext context) : base(context)
         {
@@ -29,30 +24,43 @@ namespace SmartCare.InfraStructure.Repositories
         public async Task<IEnumerable<Store>> GetAllStoresAsync()
         {
             return await _context.Stores
-                .Where(c => !c.IsDeleted)
+                .Where(s => !s.IsDeleted)
+                .AsNoTracking()
                 .ToListAsync();
         }
 
-
-        public async Task<IEnumerable<Store>> GetAllStoresForAdminAsync()
+        public IQueryable<Store> GetStoresQueryable(bool includeDeleted = false)
         {
-            return await base.GetAllAsync();
+            var query = _context.Stores.AsQueryable();
+
+            if (!includeDeleted)
+                query = query.Where(s => !s.IsDeleted);
+
+            return query.AsNoTracking();
         }
 
+        public async Task<Store?> GetStoreByIdAsync(Guid storeId, bool trackChanges = false)
+        {
+            var query = _context.Stores.Where(s => s.Id == storeId);
 
-    public async Task<IEnumerable<Store>> SearchStoresAsync(string searchTerm)
-    {
+            return trackChanges
+                ? await query.FirstOrDefaultAsync()
+                : await query.AsNoTracking().FirstOrDefaultAsync();
+        }
+
+        public async Task<IEnumerable<Store>> SearchStoresAsync(string searchTerm)
+        {
             if (string.IsNullOrWhiteSpace(searchTerm))
                 return Enumerable.Empty<Store>();
 
             searchTerm = searchTerm.Trim().ToLower();
 
-
             var storesList = await _context.Stores
-                .Where(c => !c.IsDeleted)
+                .Where(s => !s.IsDeleted)
+                .AsNoTracking()
                 .ToListAsync();
 
-            var matchedStores = storesList
+            return storesList
                 .Select(s => new
                 {
                     Store = s,
@@ -61,15 +69,13 @@ namespace SmartCare.InfraStructure.Repositories
                         Fuzz.Ratio(s.Address?.ToLower() ?? "", searchTerm)
                     )
                 })
-                .Where(x => x.Score >= 70 || x.Store.Name.Contains(searchTerm) || x.Store.Address.Contains(searchTerm))
+                .Where(x => x.Score >= 70 ||
+                           x.Store.Name.ToLower().Contains(searchTerm) ||
+                           (x.Store.Address != null && x.Store.Address.ToLower().Contains(searchTerm)))
                 .Select(x => x.Store)
                 .ToList();
-
-
-            return matchedStores;
         }
 
-    #endregion
-
-}
+        #endregion
+    }
 }

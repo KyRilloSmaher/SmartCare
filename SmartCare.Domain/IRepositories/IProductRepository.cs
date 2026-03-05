@@ -12,17 +12,18 @@ namespace SmartCare.Domain.IRepositories
     public interface IProductRepository : IGenericRepository<Product>
     {
 
+        Task<bool> CalculateProductAvailabilty(Guid productId);
+
         #region FilterProducts
-        IQueryable<Product> FilterProductsAsync(
-       FilterProductsDTo filterProductsDTo);
+        IQueryable<Product> FilterProductsAsync(FilterProductsDTo filterProductsDTo);
         #endregion
 
 
-        IQueryable<Product> GetAllProductsQuerable();
+        IQueryable<Product> GetAllProductsQuerable(bool includeDeleted = false);
 
 
         #region Search
-
+        Task<List<Product>> FilterListAsync(Expression<Func<Product, bool>>? searchPredicate = null);
         #region SearchByProductName
         Task<Product> SearchProductByNameAsync(string nameEn);
         #endregion
