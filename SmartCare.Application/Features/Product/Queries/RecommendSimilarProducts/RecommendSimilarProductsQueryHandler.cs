@@ -47,7 +47,7 @@ namespace SmartCare.Application.Features.Product.Queries.RecommendSimilarProduct
             }
 
             // 2. Hydrate in parallel
-            var products = await Task.WhenAll(
+              var products = await Task.WhenAll(
                 similarIds.Results.Select(r => _unitOfWork.Products.GetByIdAsync(Guid.Parse(r.Id))));
 
             // 3. Filter nulls (stale AI IDs) then map

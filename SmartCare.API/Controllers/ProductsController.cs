@@ -216,16 +216,16 @@ namespace SmartCare.API.Controllers
             return ControllersHelperMethods.FinalResponse(result);
         }
 
-        /// <summary>
+        /// 
         /// Recommend Similar Products
         /// </summary>
-        /// <param name="Id">ProductId</param>
+        /// <param name="productId">ProductId</param>
         [HttpGet(ApplicationRouting.Product.RecommendSimilars)]
         [ProducesResponseType(typeof(Response<ICollection<ProductResponseDtoForClient>>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> RecommendSimilarProdcurts([FromRoute] Guid Id)
+        public async Task<IActionResult> RecommendSimilarProdcurts(Guid id)
         {
             
-            var result = await _mediator.Send(new RecommendSimilarProductsQuery(Id));
+            var result = await _mediator.Send(new RecommendSimilarProductsQuery(id));
             return ControllersHelperMethods.FinalResponse(result);
         }
         /// <summary>

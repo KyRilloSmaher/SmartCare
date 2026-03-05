@@ -158,7 +158,7 @@
             public const string GetByCategoryId = Prefix + "/CategoryId";
             public const string SearchByCategoryName = Prefix + "/CategoryName";
             public const string Search = Prefix+"/search";
-            public const string RecommendSimilars = Prefix + "/Id/Similars";
+            public const string RecommendSimilars = Prefix + "/Similars"+SingleRoute;
             public const string GetContradictions = Prefix + "/Id/contradions-with-user-History";
             public const string GetBestSeller = Prefix + "/BestSeller";
             public const string GetMorePopular = Prefix + "/MorePopular";
