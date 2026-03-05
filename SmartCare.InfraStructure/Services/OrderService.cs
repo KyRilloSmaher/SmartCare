@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
+using Hangfire;
 using MailKit.Search;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using NetTopologySuite.Index.HPRtree;
 using SmartCare.Application.commens;
 using SmartCare.Application.DTOs.Orders.Requests;
 using SmartCare.Application.DTOs.Orders.Responses;
@@ -465,28 +467,14 @@ namespace SmartCare.InfraStructure.Services
                 // 9. Commit transaction
                 // =====================================================
                 await _orderRepository.CommitTransactionAsync();
-
-                // =====================================================
-                // 10. Post-commit actions
-                // =====================================================
-                //if (orderType == OrderType.InStore && pickupCode != null)
-                //{
-                //    var store = await _storeRepository.GetByIdAsync(storeId!.Value);
-
-                //    var emailBody = SystemMessages.PICKUP_ORDER_EMAIL_TEMPLATE
-                //        .Replace("{{UserName}}", client.UserName)
-                //        .Replace("{{PickupCode}}", pickupCode)
-                //        .Replace("{{StoreName}}", store.Name)
-                //        .Replace("{{StoreAddress}}", store.Address)
-                //        .Replace("{{OrderDate}}", order.CreatedAt.ToString("MMMM dd, yyyy"))
-                //        .Replace("{{OrderTotal}}", order.TotalPrice.ToString("C"))
-                //        .Replace("{{Year}}", DateTime.UtcNow.Year.ToString());
-
-                //    _backgroundJobService.Schedule(() => _emailService.SendEmailAsync(client.Email, "Your Pickup Order Details", emailBody),
-                //                                    TimeSpan.FromSeconds(5));
-
-                //}
                 ScheduleOrderExpiration(order);
+
+
+                // Signal Each Product Avaliablity 
+                foreach (var item in  orderItems)
+                {
+                    PublishProductStockStatusChanged(item.ProductId, await _inventoryRepository.IsStockAvailableAsync(item.InvetoryId, item.ProductId));
+                }
                 var response = _mapper.Map<T>(order);
                 return _responseHandler.Success(response, SystemMessages.ORDER_PLACED);
             }
@@ -820,6 +808,7 @@ namespace SmartCare.InfraStructure.Services
                     inventoryId: item.InvetoryId,
                     status: reservationStatus
                 );
+                PublishProductStockStatusChanged(item.ProductId, await _inventoryRepository.IsStockAvailableAsync(item.InvetoryId, item.ProductId));
             }
 
             order.Status = OrderStatus.Expired;
@@ -839,6 +828,11 @@ namespace SmartCare.InfraStructure.Services
             using var sha = SHA256.Create();
             var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(input));
             return Convert.ToHexString(bytes); // uppercase hex
+        }
+        private void PublishProductStockStatusChanged(Guid productId, bool isAvailable)
+        {
+            _backgroundJobService.Enqueue<IEventPublisherService>(publisher =>
+                publisher.PublishProductStockStatusChanged(productId, isAvailable));
         }
         #endregion
     }

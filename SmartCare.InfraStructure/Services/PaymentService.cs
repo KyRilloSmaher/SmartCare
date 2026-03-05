@@ -150,13 +150,15 @@ namespace SmartCare.InfraStructure.Services
 
                 _logger.LogInformation("HandlePaymentIntentSucceeded - Order {OrderId} status from DB: {Status}",
                     orderId, currentStatus);
-                // What A Fucking Bug!
+
+                #region Bug!
                 //if (currentStatus != OrderStatus.Pending)
                 //{
                 //    _logger.LogWarning("HandlePaymentIntentSucceeded - Order {OrderId} not pending. Status: {Status}",
                 //        orderId, currentStatus);
                 //    return;
                 //}
+                #endregion
 
                 // Now load full order details for processing
                 var order = await _orderRepository.GetOrderWithDetailsByIdAsync(orderId, track: true);
@@ -189,14 +191,6 @@ namespace SmartCare.InfraStructure.Services
                     return;
                 }
 
-                // Double-check status one more time
-                //if (order.Status != OrderStatus.Pending)
-                //{
-                //    _logger.LogWarning("HandlePaymentIntentSucceeded - Order {OrderId} status changed during processing. Status: {Status}",
-                //        orderId, order.Status);
-                //    return;
-                //}
-
                 // Mark order as paid
                 order.Status = OrderStatus.Confirmed;
 
@@ -222,7 +216,7 @@ namespace SmartCare.InfraStructure.Services
                         await _reservationRepository.UpdateReservationStatusAsync(
                             (Guid)item.ReservationId,
                             ReservationStatus.Completed);
-                        PublishProductStockStatusChanged(orderId,await _inventoryRepository.IsStockAvailableAsync(item.InvetoryId,item.ProductId));
+                        
                     }
                     catch (Exception ex)
                     {
@@ -343,7 +337,6 @@ namespace SmartCare.InfraStructure.Services
                         (Guid)item.ReservationId,
                         ReservationStatus.Completed);
                     var isAvailble = await _inventoryRepository.IsStockAvailableAsync(item.InvetoryId, item.ProductId);
-                    PublishProductStockStatusChanged(order.Id, isAvailble);
                 }
                 catch (Exception ex)
                 {
@@ -374,6 +367,8 @@ namespace SmartCare.InfraStructure.Services
             var trackedCart = await _cartRepository.GetByIdAsync(cart.Id, true);
             await _cartRepository.DeleteAsync(trackedCart);
             await _cartRepository.CreateCartAsync(order.ClientId);
+
+
             return _responseHandler.Success(true);
         }
 
@@ -682,11 +677,6 @@ namespace SmartCare.InfraStructure.Services
         {
             _backgroundJobs.Enqueue<IEventPublisherService>(publisher =>
                 publisher.PublishPaymentStatusChanged(order.Id, order.ClientId, status, message));
-        }
-        private void PublishProductStockStatusChanged(Guid productId , bool isAvailable)
-        {
-            _backgroundJobs.Enqueue<IEventPublisherService>(publisher =>
-                publisher.PublishProductStockStatusChanged(productId,isAvailable));
         }
 
         //private async Task HandleCheckoutCompletedAsync(Event stripeEvent)

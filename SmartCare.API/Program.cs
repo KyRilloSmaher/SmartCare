@@ -1,4 +1,4 @@
-
+using Serilog;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -144,7 +144,13 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 #endregion
 
 #region Logging Configuration
-builder.Services.AddLogging();
+builder.Host.UseSerilog((context, services, configuration) => configuration
+    .ReadFrom.Configuration(context.Configuration)
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day,
+                  outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {Level:u3}] {SourceContext} {Message:lj}{NewLine}{Exception}"));
 #endregion
 
 #region  SignalR
