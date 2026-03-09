@@ -59,13 +59,15 @@ namespace SmartCare.InfraStructure.Repositories
         }
         public async Task<bool> CalculateProductAvailabilty(Guid productId)
         {
-            var product = await _context.Products.FirstOrDefaultAsync(p => p.ProductId == productId);
-            if (product is null)
-                throw new InvalidOperationException("Try To Change Availablity Of Non Existing product");
+            var product = await _context.Products
+                .SingleOrDefaultAsync(p => p.ProductId == productId)
+                ?? throw new InvalidOperationException("Product not found");
 
-            var isAvailble = await _context.Inventories.AnyAsync(inv => inv.ProductId == productId && Math.Min(0, inv.StockQuantity - inv.ReservedQuantity) > 0);
-            product.IsAvailable = isAvailble;
-            return isAvailble;
+            product.IsAvailable = await _context.Inventories
+                .AnyAsync(inv => inv.ProductId == productId &&
+                                 inv.StockQuantity > inv.ReservedQuantity);
+
+            return product.IsAvailable;
         }
         public IQueryable<Product> FilterProductsAsync(FilterProductsDTo filter)
         {

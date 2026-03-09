@@ -5,71 +5,83 @@ using SmartCare.Application.DTOs.Product.Responses;
 using SmartCare.Application.ExternalServiceInterfaces.AI;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Domain.IRepositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Collections.Immutable;
 
 namespace SmartCare.Application.Features.Product.Queries.RecommendSimilarProducts
 {
-    public class RecommendSimilarProductsQueryHandler : IRequestHandler<RecommendSimilarProductsQuery, Response<ICollection<ProductResponseDtoForClient>>>
+    public class RecommendSimilarProductsQueryHandler: IRequestHandler<RecommendSimilarProductsQuery, Response<List<ProductResponseDtoForClient>>>
     {
         private readonly IResponseHandler _responseHandler;
-        private readonly IMediator _mediator;
         private readonly ILogger<RecommendSimilarProductsQueryHandler> _logger;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IAiServices _aiServices;
-        public RecommendSimilarProductsQueryHandler(IResponseHandler responseHandler, IMediator mediator, ILogger<RecommendSimilarProductsQueryHandler> logger, IUnitOfWork unitOfWork, IMapper mapper, IAiServices aiServices)
+
+        public RecommendSimilarProductsQueryHandler(IResponseHandler responseHandler,ILogger<RecommendSimilarProductsQueryHandler> logger,IUnitOfWork unitOfWork,IMapper mapper,  IAiServices aiServices)
         {
             _responseHandler = responseHandler;
-            _mediator = mediator;
             _logger = logger;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _aiServices = aiServices;
         }
 
-        public async Task<Response<ICollection<ProductResponseDtoForClient>>> Handle(RecommendSimilarProductsQuery request,CancellationToken cancellationToken)
+        public async Task<Response<List<ProductResponseDtoForClient>>> Handle(RecommendSimilarProductsQuery request,CancellationToken cancellationToken)
         {
-            // 1. Ask AI for similar product IDs
+            // Ask AI for similar products
             var similarIds = await _aiServices.GetSimilarProductsAsync(request.ProductId);
 
-            if (similarIds is null || !similarIds.Results.Any())
+            if (similarIds == null || !similarIds.Results.Any())
             {
                 _logger.LogInformation(
-                    "AI returned no similar products for {ProductId}", request.ProductId);
+                    "AI returned no similar products for {ProductId}",
+                    request.ProductId);
 
-                return _responseHandler.Success<ICollection<ProductResponseDtoForClient>>(
+                return _responseHandler.Success<List<ProductResponseDtoForClient>>(
                     [],
                     "No similar products found.");
             }
 
-            // 2. Hydrate in parallel
-              var products = await Task.WhenAll(
-                similarIds.Results.Select(r => _unitOfWork.Products.GetByIdAsync(Guid.Parse(r.Id))));
-
-            // 3. Filter nulls (stale AI IDs) then map
-            ICollection<ProductResponseDtoForClient> result = products
-                .Where(p => p is not null)
-                .Select(p => _mapper.Map<ProductResponseDtoForClient>(p!))
+            //Convert AI IDs to Guid list
+            var ids = similarIds.Results
+                .Select(r => Guid.Parse(r.Id))
                 .ToList();
 
-            if (!result.Any())
+            // Fetch all products in ONE query
+            var products = await _unitOfWork.Products.FilterListAsync(
+                p => ids.Contains(p.ProductId));
+
+            if (!products.Any())
             {
                 _logger.LogWarning(
                     "AI returned {Count} ID(s) for {ProductId} but none resolved in DB",
-                    similarIds.Results.Count(), request.ProductId);
+                    ids.Count,
+                    request.ProductId);
 
-                return _responseHandler.Success<ICollection<ProductResponseDtoForClient>>(
+                return _responseHandler.Success<List<ProductResponseDtoForClient>>(
                     [],
                     "No similar products could be resolved.");
             }
 
+            // Preserve AI ranking
+            var rankMap = similarIds.Results
+                .Select((r, index) => new { r.Id, index })
+                .ToDictionary(x => x.Id, x => x.index);
+
+            var orderedProducts = products
+                .OrderBy(p => rankMap.TryGetValue(p.ProductId.ToString(), out var rank)
+                                ? rank
+                                : int.MaxValue).ToImmutableList();
+
+           
+            var result = orderedProducts
+                .Select(p => _mapper.Map<ProductResponseDtoForClient>(p))
+                .ToList();
+
             _logger.LogInformation(
-                "Returning {Count} similar product(s) for {ProductId}",
-                result.Count, request.ProductId);
+                "Returning {Count} similar products for {ProductId}",
+                result.Count,
+                request.ProductId);
 
             return _responseHandler.Success(result);
         }

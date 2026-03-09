@@ -26,16 +26,7 @@ namespace SmartCare.Domain.IRepositories
         /// Gets total available stock for a product across all inventories
         /// </summary>
         Task<int> GetTotalStockForProductAsync(Guid productId);
-<<<<<<< HEAD
-        Task<Inventory> IncreaseProductStockAsync(Guid InventoryId , int quantityToAdd);
-        Task<Inventory> DecreaseProductStockAsync(Guid InventoryId , int quantityToSubtract);
-        Task<Inventory?> GetStockOfProductInStore(Guid productId, Guid storeId , int quantity = 1);
-        Task<IQueryable<Inventory>> GetAllInventoryInStoreAsync(Guid storeId);
 
-        Task<bool> IsStockAvailableAsync(Guid inventoryId, Guid productId);
-=======
-
->>>>>>> 923f973e367ef4ffc1892f700b70f80352b1a3e8
         /// <summary>
         /// Gets stock of a product in a specific store
         /// </summary>

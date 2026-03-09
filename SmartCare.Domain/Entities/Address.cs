@@ -12,13 +12,6 @@ namespace SmartCare.Domain.Entities
     /// </summary>
     public class Address
     {
-<<<<<<< HEAD
-        public Guid Id { get; set; } 
-        public string ClientId { get; set; }
-        public string address { get; set; }
-        public string Label { get; set; }
-        public string? AdditionalInfo { get; set; }
-=======
         #region Attributes
 
         /// <summary>
@@ -49,7 +42,6 @@ namespace SmartCare.Domain.Entities
         /// <summary>
         /// Gets or sets the latitude coordinate of the address.
         /// </summary>
->>>>>>> 923f973e367ef4ffc1892f700b70f80352b1a3e8
         public float Latitude { get; set; }
 
         /// <summary>
@@ -92,10 +84,6 @@ namespace SmartCare.Domain.Entities
             Longitude = longitude;
             IsPrimary = isPrimary;
             IsDeleted = false;
-        }
-
-        public Address()
-        {
         }
 
         #endregion

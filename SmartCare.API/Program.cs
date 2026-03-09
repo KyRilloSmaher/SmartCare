@@ -1,4 +1,5 @@
 
+using FluentValidation;
 using FluentValidation.AspNetCore;
 using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Serilog;
 using SmartCare.API.EventHandlers;
 using SmartCare.API.Helpers;
 using SmartCare.API.Hubs;

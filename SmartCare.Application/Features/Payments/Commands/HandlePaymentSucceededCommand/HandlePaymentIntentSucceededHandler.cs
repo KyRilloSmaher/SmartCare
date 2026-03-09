@@ -57,7 +57,7 @@ namespace SmartCare.Application.CQRs.Payments.Commands.HandlePaymentSucceededCom
                 _logger.LogError("Handle payment Successed Method : No Existing payment For this order");
                 return _responseHandler.Failed<bool>();
             }
-            var paidAmount = paymentResult.Amount / 100m;
+            var paidAmount = paymentResult.Amount;
             if (decimal.Round(order.TotalPrice, 2) != decimal.Round((decimal)paidAmount, 2))
             {
                 _logger.LogError("Handle payment Successed Method : Miss Matching In Payment Amount");

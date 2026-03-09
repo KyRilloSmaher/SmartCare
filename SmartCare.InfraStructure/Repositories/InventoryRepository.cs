@@ -67,158 +67,11 @@ namespace SmartCare.InfraStructure.Repositories
 
         public IQueryable<Inventory> GetAllInventoryInStoreAsync(Guid storeId)
         {
-<<<<<<< HEAD
-            var Inventories =  _context.Inventories
-                                   .Include(x => x.Product)
-                                   .Include(x => x.Store)
-                                .Where(i => i.StoreId == storeId).AsQueryable();
-            return Inventories;
-        }
-
-        public async Task<bool> FinalizeStockDeductionAsync(Guid inventoryId, int quantity, bool pickUp = false)
-        {
-            var inventory = await _context.Inventories
-                .FirstOrDefaultAsync(i => i.Id == inventoryId);
-
-            if (inventory == null)
-                throw new InvalidOperationException($"Inventory with ID {inventoryId} not found.");
-
-            if (inventory.ReservedQuantity < quantity)
-                throw new InvalidOperationException("Insufficient reserved quantity.");
-
-            if (inventory.StockQuantity < quantity)
-                throw new InvalidOperationException("Insufficient stock quantity.");
-
-            inventory.StockQuantity -= quantity;
-
-            // 🔥 IMPORTANT: DO NOT LOAD PRODUCT AGAIN
-            var availableStock = await _context.Inventories
-                .Where(inv => inv.ProductId == inventory.ProductId)
-                .SumAsync(inv => inv.StockQuantity - inv.ReservedQuantity);
-
-            var trackedProduct = _context.ChangeTracker
-                .Entries<Product>()
-                .FirstOrDefault(e => e.Entity.ProductId == inventory.ProductId)
-                ?.Entity;
-
-            if (trackedProduct != null)
-            {
-                trackedProduct.IsAvailable = availableStock > 0;
-            }
-
-            return await _context.SaveChangesAsync() > 0;
-        }
-
-
-        public async Task<bool> FinalizeStockDeductionForProductAsync(Guid productId, int quantity)
-        {
-
-            // Get all inventories that contain reserved stock for this product
-            var inventories = await _context.Inventories
-                .Where(i => i.ProductId == productId && i.ReservedQuantity > 0)
-                .OrderByDescending(i => i.ReservedQuantity)
-                .ToListAsync();
-
-            if (inventories == null || inventories.Count == 0)
-                throw new InvalidOperationException("No inventories found with reserved stock for this product.");
-
-            int totalReserved = inventories.Sum(i => i.ReservedQuantity);
-            if (totalReserved < quantity)
-                throw new InvalidOperationException("Insufficient reserved stock across all inventories to finalize deduction.");
-
-            using var transaction = await _context.Database.BeginTransactionAsync();
-
-            try
-            {
-                int remainingToDeduct = quantity;
-
-                foreach (var inventory in inventories)
-                {
-                    if (remainingToDeduct <= 0)
-                        break;
-
-                    int deductQuantity = Math.Min(inventory.ReservedQuantity, remainingToDeduct);
-
-                    if (inventory.StockQuantity < deductQuantity)
-                        throw new InvalidOperationException($"Inventory {inventory.Id} has insufficient stock to deduct.");
-
-                    inventory.ReservedQuantity -= deductQuantity;
-                    inventory.StockQuantity -= deductQuantity;
-
-                    remainingToDeduct -= deductQuantity;
-                }
-
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                return true;
-            }
-            catch
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
-        }
-
-        public async Task<bool> ReserveStockAsync(Guid inventoryId, int quantity)
-        {
-            var inventory = await _context.Inventories
-                .FirstOrDefaultAsync(i => i.Id == inventoryId);
-
-            if (inventory == null)
-                throw new InvalidOperationException($"Inventory with ID {inventoryId} not found.");
-
-
-            var availableQuantity = inventory.StockQuantity - inventory.ReservedQuantity; 
-
-            if(quantity > availableQuantity)
-            {
-                throw new InvalidOperationException($"Quantity exceed from availableQuantity");
-            }
-            inventory.ReservedQuantity += quantity;
-
-            var result = await _context.SaveChangesAsync();
-            return result > 0;
-        }
-
-        public async Task<bool> ReleaseReservedStockAsync(Guid inventoryId, int quantity)
-        {
-            var inventory = await _context.Inventories
-                .FirstOrDefaultAsync(i => i.Id == inventoryId);
-
-            if (inventory == null)
-                throw new InvalidOperationException($"Inventory with ID {inventoryId} not found.");
-
-
-            inventory.ReservedQuantity -= quantity;
-
-            var result = await _context.SaveChangesAsync();
-            return result > 0;
-        }
-
-        public async Task<bool> TransferStockAsync(Guid fromInventoryId, Guid toInventoryId, int quantity)
-        {
-            var frominventory = await _context.Inventories
-                .FirstOrDefaultAsync(i => i.Id == fromInventoryId);
-            var toinventory = await _context.Inventories
-                .FirstOrDefaultAsync(i => i.Id == toInventoryId);
-            if (frominventory == null)
-                throw new InvalidOperationException($"Inventory with ID {fromInventoryId} not found.");
-            if (toinventory == null)
-                throw new InvalidOperationException($"Inventory with ID {toInventoryId} not found.");
-            frominventory.StockQuantity -= quantity;
-            toinventory.StockQuantity += quantity;
-
-            var result = await _context.SaveChangesAsync();
-            return result > 0;
-
-=======
             return _context.Inventories
                 .Include(i => i.Product)
                 .Include(i => i.Store)
                 .Where(i => i.StoreId == storeId)
                 .AsQueryable();
->>>>>>> 923f973e367ef4ffc1892f700b70f80352b1a3e8
         }
 
         public async Task<List<Inventory>> GetLowStockItemsAsync(int threshold)
@@ -363,7 +216,10 @@ namespace SmartCare.InfraStructure.Repositories
                 if (inventory.StockQuantity < quantity)
                     throw new InvalidOperationException("Stock quantity is insufficient.");
 
-                inventory.Confirm(quantity);
+                inventory.StockQuantity -= quantity;
+                if (pickUp)
+                    inventory.ReservedQuantity -= quantity;
+
                 return true;
             });
         }
@@ -415,48 +271,6 @@ namespace SmartCare.InfraStructure.Repositories
             return await base.AddAsync(inventory);
         }
 
-<<<<<<< HEAD
-        public async Task<bool> DeleteAsync(Guid Id)
-        {
-            var inventory = await _context.Inventories
-                             .Where(x => x.Id == Id)
-                             .FirstOrDefaultAsync();
-            if (inventory == null)
-                return false;
-
-            _context.Inventories.Remove(inventory);
-            await _context.SaveChangesAsync();
-
-            return true;
-        }
-
-        public async Task<Inventory> UpdateinventoryAsync(Guid Id ,int StockQuantity , int ReservedQuantity)
-        {
-            var inventory = await _context.Inventories
-                              .Where(x => x.Id == Id)
-                              .FirstOrDefaultAsync();
-
-            if (inventory == null)
-                throw new Exception("Inventory not found.");
-
-            inventory.StockQuantity = StockQuantity;
-            inventory.ReservedQuantity = ReservedQuantity;
-
-            await _context.SaveChangesAsync();
-            return await _context.Inventories
-                .Include(i => i.Store)
-                .Include(i => i.Product)
-                .FirstOrDefaultAsync(i => i.Id == Id);
-
-        }
-
-        public async Task<bool> IsStockAvailableAsync(Guid inventoryId, Guid productId)
-        { 
-           return await _context.Inventories
-                .AnyAsync(i => i.Id == inventoryId && i.ProductId == productId && (i.StockQuantity - i.ReservedQuantity) > 0);
-        }
-=======
         #endregion
->>>>>>> 923f973e367ef4ffc1892f700b70f80352b1a3e8
     }
 }

@@ -9,6 +9,6 @@ using System.Threading.Tasks;
 
 namespace SmartCare.Application.Features.Product.Queries.RecommendSimilarProducts
 {
-    public record RecommendSimilarProductsQuery(Guid ProductId) : IRequest<Response<ICollection<ProductResponseDtoForClient>>>;
+    public record RecommendSimilarProductsQuery(Guid ProductId) : IRequest<Response<List<ProductResponseDtoForClient>>>;
     
 }

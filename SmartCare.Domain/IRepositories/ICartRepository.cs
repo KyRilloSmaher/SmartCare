@@ -16,14 +16,7 @@ namespace SmartCare.Domain.IRepositories
 
         Task<Cart> CreateCartAsync(string userId);
 
-<<<<<<< HEAD
-        /// <summary>
-        /// Gets the active cart for a user if exists.
-        /// </summary>
-        Task<Cart?> GetActiveCartAsync(string userId , bool track =false);
-=======
         Task<Cart?> GetActiveCartAsync(string userId, bool trackChanges = false);
->>>>>>> 923f973e367ef4ffc1892f700b70f80352b1a3e8
 
         Task<Cart?> GetByIdAsync(Guid id, bool asTracking = false);
         Task<IEnumerable<CartItem>> GetCartItemsAsync(Guid cartId);

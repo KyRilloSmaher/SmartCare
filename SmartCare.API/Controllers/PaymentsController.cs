@@ -65,12 +65,7 @@ namespace SmartCare.API.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> WebhookAsync(string provider)
         {
-<<<<<<< HEAD
-            _logger.LogWarning("IInside WebHook");
-            var json = await new StreamReader(Request.Body).ReadToEndAsync();
-            var signature = Request.Headers["Stripe-Signature"];
-            var secret = _configuration["StripeSettings:WebhookSecret"];
-=======
+
             // Try parse provider dynamically
             if (!Enum.TryParse<PaymentMethod>(provider, true, out var paymentProvider))
             {
@@ -86,7 +81,6 @@ namespace SmartCare.API.Controllers
 
             // Convert headers to dictionary
             var headers = Request.Headers.ToDictionary(h => h.Key, h => h.Value.ToString());
->>>>>>> 923f973e367ef4ffc1892f700b70f80352b1a3e8
 
             try
             {

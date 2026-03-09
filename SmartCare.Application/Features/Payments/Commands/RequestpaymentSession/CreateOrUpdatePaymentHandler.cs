@@ -40,7 +40,7 @@ namespace SmartCare.Application.Features.Payments.Commands.RequestpaymentSession
         {
             IPaymentGetway _paymentGateway = _paymentGatewayFactory.Resolve(request.Provider); 
             var orderId = request.orderId;
-            var order = await _unitOfWork.Orders.GetOrderWithDetailsByIdAsync(orderId);
+            var order = await _unitOfWork.Orders.GetByIdAsync(orderId,true);
 
             if (order == null)
                 return _responseHandler.BadRequest<PaymentSessionResult>("Order not found");
@@ -108,12 +108,12 @@ namespace SmartCare.Application.Features.Payments.Commands.RequestpaymentSession
                 }
             }
            await _unitOfWork.SaveChangesAsync();
-            _backgroundJobService.Schedule(() => RealseOrder(order), TimeSpan.FromMinutes(TimeUntilPaymentExpired));
+            _backgroundJobService.Schedule(() => RealseOrder(order.Id), TimeSpan.FromMinutes(TimeUntilPaymentExpired));
         }
 
-        public async Task RealseOrder(Order request)
+        public async Task RealseOrder(Guid orderId)
         {
-            var orderId = request.Id;
+ 
             var order = await _unitOfWork.Orders.GetOrderWithDetailsByIdAsync(orderId);
 
             if (order is null)
