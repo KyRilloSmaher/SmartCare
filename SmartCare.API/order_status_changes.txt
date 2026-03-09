@@ -187,3 +187,6 @@ Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34) <- <
 2026-03-08 16:12:21.403 | Order 85bfcc9a-c88b-4b7f-afac-08de7d2cf164 | Pending -> PaymentFailed
 Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34) <- <Handle>d__6.MoveNext (HandlePaymentIntentFailedCommandHandler.cs:55) <- <GetPendingPaymentByOrderIdAsync>d__3.MoveNext (PaymentRepository.cs:32)
 ---
+2026-03-09 13:40:33.080 | Order 85bfcc9a-c88b-4b7f-afac-08de7d2cf164 | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34) <- <RealseOrder>d__9.MoveNext (CreateOrUpdatePaymentHandler.cs:142) <- <CancelReservationAsync>d__8.MoveNext (ReservationRepository.cs:115)
+---
