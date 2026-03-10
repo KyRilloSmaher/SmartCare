@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using SmartCare.API.Helpers;
 using SmartCare.Application.CQRs.Authentication.Commands.Auth;
@@ -118,12 +119,15 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Auth
                 await _unitOfWork.UserManager.AddToRoleAsync(user, "PHARMACIST");
 
                 // Generate email confirmation token
+                // Generate confirmation token
                 var token = await _unitOfWork.UserManager.GenerateEmailConfirmationTokenAsync(user);
-                var encodedToken = WebUtility.UrlEncode(token);
+                var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
-                var httpRequest = _httpContextAccessor.HttpContext!.Request;
-                var baseUrl = $"{httpRequest.Scheme}://{httpRequest.Host}";
-                var confirmEmailUrl = $"{baseUrl}/{ApplicationRouting.Authentication.ConfirmEmail}?email={user.Email}&token={encodedToken}";
+                // ✅ Use public BaseUrl from config instead of request host
+                var baseUrl = _jwtSettings.BaseUrl.TrimEnd('/');
+                var encodedEmail = Uri.EscapeDataString(user.Email!);
+                var confirmEmailUrl =
+                    $"{baseUrl}/{ApplicationRouting.Authentication.ConfirmEmail}?email={encodedEmail}&token={encodedToken}";
 
                 // Store email verification
                 await _unitOfWork.EmailVerifications.AddVerificationAsync(
