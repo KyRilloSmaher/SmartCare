@@ -30,7 +30,7 @@ namespace SmartCare.Infrastructure.Repositories
                 .Include(o => o.Client)
                 .Include(o => o.Client.User);
 
-            return trackChanges ? query : query.AsNoTracking();
+            return trackChanges ? query.AsTracking() : query.AsNoTracking();
         }
 
         public IQueryable<Order> GetOrdersQueryable(bool trackChanges = false)
@@ -238,7 +238,7 @@ namespace SmartCare.Infrastructure.Repositories
             else if (order.OrderType == OrderType.InStore)
             {
                 await _context.Database.ExecuteSqlRawAsync(
-                    "DELETE FROM PickUpOrders WHERE Id = {0}", order.Id);
+                    "DELETE FROM FromStoreOrders WHERE Id = {0}", order.Id);
             }
 
             // Insert new derived row
@@ -251,7 +251,7 @@ namespace SmartCare.Infrastructure.Repositories
             else
             {
                 await _context.Database.ExecuteSqlRawAsync(
-                    "INSERT INTO PickUpOrders (Id, StoreId) VALUES ({0}, {1})",
+                    "INSERT INTO FromStoreOrders (Id, StoreId) VALUES ({0}, {1})",
                     order.Id, storeId);
             }
 
@@ -262,7 +262,7 @@ namespace SmartCare.Infrastructure.Repositories
         public async Task UpdatePickupCodeHashAsync(Guid orderId, string pickupCodeHash)
         {
             await _context.Database.ExecuteSqlRawAsync(
-                "UPDATE PickUpOrders SET PickupCodeHash = {0} WHERE Id = {1}",
+                "UPDATE FromStoreOrders SET PickupCodeHash = {0} WHERE Id = {1}",
                 pickupCodeHash, orderId);
         }
 

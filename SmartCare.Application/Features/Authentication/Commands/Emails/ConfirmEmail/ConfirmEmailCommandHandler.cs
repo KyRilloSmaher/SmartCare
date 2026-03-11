@@ -71,21 +71,21 @@ namespace SmartCare.Application.Features.Authentication.Commands.Email.ConfirmEm
                     return _responseHandler.Failed<bool>(SystemMessages.INVALID_TOKEN);
                 }
 
-                    // Confirm email using Identity
-                    var result = await _unitOfWork.UserManager.ConfirmEmailAsync(user, rawToken);
+                // Confirm email using Identity
+                var result = await _unitOfWork.UserManager.ConfirmEmailAsync(user, rawToken);
 
-                    if (!result.Succeeded)
-                    {
-                        var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                        _logger.LogError("Email confirmation failed for user {UserId}. Errors: {Errors}",
-                            user.Id, errors);
+                if (!result.Succeeded)
+                {
+                    var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                    _logger.LogError("Email confirmation failed for user {UserId}. Errors: {Errors}",
+                        user.Id, errors);
 
-                        throw new Exception(errors);
-                    }
-                    // Update user
-                    user.EmailConfirmed = true;
-                    verification.markUsed();
-                    await _unitOfWork.UserManager.UpdateAsync(user);
+                    throw new Exception(errors);
+                }
+                // Update user
+                user.EmailConfirmed = true;
+                verification.markUsed();
+                await _unitOfWork.UserManager.UpdateAsync(user);
                 // Create A Cart For Client
                 var roles = await _unitOfWork.UserManager.GetRolesAsync(user);
                 if (roles.Contains("CLIENT"))
@@ -93,9 +93,9 @@ namespace SmartCare.Application.Features.Authentication.Commands.Email.ConfirmEm
                 // Save all changes atomically
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-                    _logger.LogInformation("Email confirmed successfully for user: {UserId}", user.Id);
+                _logger.LogInformation("Email confirmed successfully for user: {UserId}", user.Id);
 
-                    return _responseHandler.Success(true, SystemMessages.VERIFICATION_SUCCESS);
+                return _responseHandler.Success(true, SystemMessages.VERIFICATION_SUCCESS);
             }
             catch (Exception ex)
             {

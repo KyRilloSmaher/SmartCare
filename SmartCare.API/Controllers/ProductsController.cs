@@ -234,10 +234,10 @@ namespace SmartCare.API.Controllers
         /// <param name="Id">ProductId</param>
         [HttpGet(ApplicationRouting.Product.GetContradictions)]
         [ProducesResponseType(typeof(Response<ICollection<ProductResponseDtoForClient>>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetContradictions([FromRoute] Guid Id)
+        public async Task<IActionResult> GetContradictions( Guid id)
         {
             var clientId = User.Claims.FirstOrDefault(c=>c.Type == ClaimTypes.NameIdentifier)?.Value;
-            var result = await _mediator.Send(new GetContradictionsFromUserHistoryQuery(clientId,Id));
+            var result = await _mediator.Send(new GetContradictionsFromUserHistoryQuery(clientId,id));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
