@@ -45,11 +45,6 @@ namespace SmartCare.Application.Validators.Pharmacist
                 .Must(p => Constants.IsValid(Constants.StringType.PASSWORD, p))
                 .WithMessage("Password must contain upper/lowercase letters, digits, symbols, and be at least 12 characters long.");
 
-            RuleFor(x => x.BirthDate)
-                .NotEmpty().WithMessage("Birth date is required.")
-                .Must(date => date <= DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-13)))
-                .WithMessage("You must be at least 13 years old to register.");
-
             RuleFor(x => x.LicenseNumber)
                 .NotEmpty().WithMessage("License number is required.")
                 .Matches(@"^PH-\d{2}-[A-Z]{3}-\d{4}$").WithMessage("Invalid License Number format. Ex: PH-26-CAI-0842");

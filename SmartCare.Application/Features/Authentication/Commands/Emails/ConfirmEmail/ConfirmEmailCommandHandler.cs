@@ -59,10 +59,12 @@ namespace SmartCare.Application.Features.Authentication.Commands.Email.ConfirmEm
                     return _responseHandler.Failed<bool>(SystemMessages.EMAIL_ALREADY_VERIFIED);
                 }
 
+
                 // Get valid verification from EmailVerifications table
                 var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(dto.Token));
+                var rawToken = dto.Token.Replace(" ", "+");
 
-                var verification = await _unitOfWork.EmailVerifications.GetValidVerificationAsync(dto.Email, decodedToken);
+                var verification = await _unitOfWork.EmailVerifications.GetValidVerificationAsync(dto.Email, rawToken);
                 if (verification == null)
                 {
                     _logger.LogWarning("Invalid or expired verification token for email: {Email}", dto.Email);
@@ -70,7 +72,7 @@ namespace SmartCare.Application.Features.Authentication.Commands.Email.ConfirmEm
                 }
 
                     // Confirm email using Identity
-                    var result = await _unitOfWork.UserManager.ConfirmEmailAsync(user, decodedToken);
+                    var result = await _unitOfWork.UserManager.ConfirmEmailAsync(user, rawToken);
 
                     if (!result.Succeeded)
                     {
@@ -84,10 +86,12 @@ namespace SmartCare.Application.Features.Authentication.Commands.Email.ConfirmEm
                     user.EmailConfirmed = true;
                     verification.markUsed();
                     await _unitOfWork.UserManager.UpdateAsync(user);
-                    // Create A Cart For Client
+                // Create A Cart For Client
+                var roles = await _unitOfWork.UserManager.GetRolesAsync(user);
+                if (roles.Contains("CLIENT"))
                     await _unitOfWork.Carts.CreateCartAsync(user.Id);
-                    // Save all changes atomically
-                    await _unitOfWork.SaveChangesAsync(cancellationToken);
+                // Save all changes atomically
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
 
                     _logger.LogInformation("Email confirmed successfully for user: {UserId}", user.Id);
 

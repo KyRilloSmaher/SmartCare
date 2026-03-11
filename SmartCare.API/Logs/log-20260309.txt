@@ -1,0 +1,954 @@
+[2026-03-09 13:26:05.746 +02:00 WRN] Microsoft.EntityFrameworkCore.Model.Validation The 'PaymentMethod' property 'Method' on entity type 'Payment' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value 'Stripe', since this is the CLR default for the 'PaymentMethod' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.
+[2026-03-09 13:26:08.268 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (236ms) [Parameters=[@__normalizedName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedName_0
+[2026-03-09 13:26:08.440 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (80ms) [Parameters=[@__normalizedName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedName_0
+[2026-03-09 13:26:08.519 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (75ms) [Parameters=[@__normalizedName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedName_0
+[2026-03-09 13:26:08.640 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (118ms) [Parameters=[@__normalizedName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedName_0
+[2026-03-09 13:26:08.895 +02:00 INF] Hangfire.SqlServer.SqlServerObjectsInstaller Start installing Hangfire SQL objects...
+[2026-03-09 13:26:09.227 +02:00 INF] Hangfire.SqlServer.SqlServerObjectsInstaller Hangfire SQL objects installed.
+[2026-03-09 13:26:09.592 +02:00 INF] Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager User profile is available. Using 'C:\Users\HP\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+[2026-03-09 13:26:09.898 +02:00 WRN] Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServer The ASP.NET Core developer certificate is not trusted. For information about trusting the ASP.NET Core developer certificate, see https://aka.ms/aspnet/https-trust-dev-cert.
+[2026-03-09 13:26:09.972 +02:00 INF] Microsoft.Hosting.Lifetime Now listening on: https://localhost:7162
+[2026-03-09 13:26:09.973 +02:00 INF] Microsoft.Hosting.Lifetime Now listening on: http://localhost:5275
+[2026-03-09 13:26:10.144 +02:00 INF] Hangfire.BackgroundJobServer Starting Hangfire Server using job storage: '<Connection string can not be parsed>'
+[2026-03-09 13:26:10.147 +02:00 INF] Hangfire.BackgroundJobServer Using the following options for SQL Server job storage: Queue poll interval: 00:00:00.
+[2026-03-09 13:26:10.148 +02:00 INF] Hangfire.BackgroundJobServer Using the following options for Hangfire Server:
+    Worker count: 20
+    Listening queues: 'default'
+    Shutdown timeout: 00:00:15
+    Schedule polling interval: 00:00:15
+[2026-03-09 13:26:10.175 +02:00 INF] Microsoft.Hosting.Lifetime Application started. Press Ctrl+C to shut down.
+[2026-03-09 13:26:10.179 +02:00 INF] Microsoft.Hosting.Lifetime Hosting environment: Development
+[2026-03-09 13:26:10.180 +02:00 INF] Microsoft.Hosting.Lifetime Content root path: G:\SmartCare\SmartCare.API
+[2026-03-09 13:26:10.526 +02:00 INF] Hangfire.Server.BackgroundServerProcess Server desktop-e715lek:19008:e73a44f7 successfully announced in 353.397 ms
+[2026-03-09 13:26:10.532 +02:00 INF] Hangfire.Server.BackgroundServerProcess Server desktop-e715lek:19008:e73a44f7 is starting the registered dispatchers: ServerWatchdog, ServerJobCancellationWatcher, SqlServerHeartbeatProcess, ExpirationManager, CountersAggregator, Worker, DelayedJobScheduler, RecurringJobScheduler...
+[2026-03-09 13:26:10.628 +02:00 INF] Hangfire.Server.BackgroundServerProcess Server desktop-e715lek:19008:e73a44f7 all the dispatchers started
+[2026-03-09 13:26:15.394 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger - null null
+[2026-03-09 13:26:15.605 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger - 301 0 null 232.772ms
+[2026-03-09 13:26:15.613 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/index.html - null null
+[2026-03-09 13:26:15.722 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/index.html - 200 null text/html;charset=utf-8 108.6075ms
+[2026-03-09 13:26:15.726 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/swagger-ui-standalone-preset.js - null null
+[2026-03-09 13:26:15.726 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/swagger-ui-bundle.js - null null
+[2026-03-09 13:26:15.726 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/swagger-ui.css - null null
+[2026-03-09 13:26:15.727 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/_framework/aspnetcore-browser-refresh.js - null null
+[2026-03-09 13:26:15.728 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/_vs/browserLink - null null
+[2026-03-09 13:26:15.751 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/_framework/aspnetcore-browser-refresh.js - 200 13762 application/javascript; charset=utf-8 24.3039ms
+[2026-03-09 13:26:15.771 +02:00 INF] Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware Sending file. Request path: '/swagger-ui.css'. Physical path: 'N/A'
+[2026-03-09 13:26:15.773 +02:00 INF] Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware Sending file. Request path: '/swagger-ui-standalone-preset.js'. Physical path: 'N/A'
+[2026-03-09 13:26:15.774 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/swagger-ui.css - 200 152034 text/css 48.5561ms
+[2026-03-09 13:26:15.774 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/swagger-ui-standalone-preset.js - 200 230280 text/javascript 47.9433ms
+[2026-03-09 13:26:15.833 +02:00 INF] Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware Sending file. Request path: '/swagger-ui-bundle.js'. Physical path: 'N/A'
+[2026-03-09 13:26:15.836 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/swagger-ui-bundle.js - 200 1456926 text/javascript 109.6379ms
+[2026-03-09 13:26:15.846 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/_vs/browserLink - 200 null text/javascript; charset=UTF-8 118.391ms
+[2026-03-09 13:26:16.005 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/v1/swagger.json - null null
+[2026-03-09 13:26:16.058 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/favicon-32x32.png - null null
+[2026-03-09 13:26:16.107 +02:00 INF] Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware Sending file. Request path: '/favicon-32x32.png'. Physical path: 'N/A'
+[2026-03-09 13:26:16.110 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/favicon-32x32.png - 200 628 image/png 52.0967ms
+[2026-03-09 13:26:16.187 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 181.1942ms
+[2026-03-09 13:27:00.281 +02:00 WRN] Microsoft.EntityFrameworkCore.Query Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[2026-03-09 13:27:00.406 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (101ms) [Parameters=[@__orderId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT [t].[Id], [t].[ClientId], [t].[CreatedAt], [t].[IsDeleted], [t].[OrderType], [t].[PaymenId], [t].[Status], [t].[TotalPrice], [t].[UpdatedAt], [t].[ShippingAddressId], [t].[PickupCodeHash], [t].[StoreId], [t].[Discriminator], [t].[Id0], [t].[AdditionalInfo], [t].[AddressLine], [t].[ClientId0], [t].[IsDeleted0], [t].[IsPrimary], [t].[Label], [t].[Latitude], [t].[Longitude], [t].[Id1], [t].[Address], [t].[CreatedAt0], [t].[GeoLocation], [t].[IsDeleted1], [t].[Latitude0], [t].[Longitude0], [t].[Name], [t].[Phone], [t].[Id2], [t].[Id3], [t].[Id4], [t0].[Id], [t0].[InvetoryId], [t0].[OrderId], [t0].[ProductId], [t0].[Quantity], [t0].[ReservationId], [t0].[SubTotal], [t0].[UnitPrice], [t0].[ProductId0], [t0].[ActiveIngredients], [t0].[AverageRating], [t0].[CategoryId], [t0].[CompanyId], [t0].[Contraindications], [t0].[CreatedAt], [t0].[Description], [t0].[DiscountPercentage], [t0].[DosageForm], [t0].[IsAvailable], [t0].[IsDeleted], [t0].[MedicalDescription], [t0].[NameAr], [t0].[NameEn], [t0].[Price], [t0].[SideEffects], [t0].[Tags], [t0].[TotalRatings], [t0].[UpdatedAt], [t0].[Id0], [t0].[IsPrimary], [t0].[ProductId1], [t0].[Url], [t].[Amount], [t].[ClientPaymentToken], [t].[CompletedAt], [t].[CreatedAt1], [t].[Method], [t].[OrderId], [t].[ProviderReferenceId], [t].[Status0], [t].[UpdatedAt0], [t].[Version], [t].[AccountType], [t].[BirthDate], [t].[FavoritesCount], [t].[OrdersCount], [t].[RatesCount], [t].[AccessFailedCount], [t].[ConcurrencyStamp], [t].[Email], [t].[EmailConfirmed], [t].[FirstName], [t].[Gender], [t].[IsDeleted2], [t].[LastName], [t].[LockoutEnabled], [t].[LockoutEnd], [t].[NormalizedEmail], [t].[NormalizedUserName], [t].[OTP], [t].[OTPAttempts], [t].[OTPExpiryTime], [t].[PasswordHash], [t].[PhoneNumber], [t].[PhoneNumberConfirmed], [t].[ProfileImageUrl], [t].[RefreshToken], [t].[RefreshTokenExpiryTime], [t].[ResetPasswordConfirmed], [t].[SecurityStamp], [t].[TwoFactorEnabled], [t].[UserName]
+FROM (
+    SELECT TOP(1) [o].[Id], [o].[ClientId], [o].[CreatedAt], [o].[IsDeleted], [o].[OrderType], [o].[PaymenId], [o].[Status], [o].[TotalPrice], [o].[UpdatedAt], [o0].[ShippingAddressId], [f].[PickupCodeHash], [f].[StoreId], CASE
+        WHEN [f].[Id] IS NOT NULL THEN N'PickUpOrder'
+        WHEN [o0].[Id] IS NOT NULL THEN N'OnlineOrder'
+    END AS [Discriminator], [u].[Id] AS [Id0], [u].[AdditionalInfo], [u].[AddressLine], [u].[ClientId] AS [ClientId0], [u].[IsDeleted] AS [IsDeleted0], [u].[IsPrimary], [u].[Label], [u].[Latitude], [u].[Longitude], [s].[Id] AS [Id1], [s].[Address], [s].[CreatedAt] AS [CreatedAt0], [s].[GeoLocation], [s].[IsDeleted] AS [IsDeleted1], [s].[Latitude] AS [Latitude0], [s].[Longitude] AS [Longitude0], [s].[Name], [s].[Phone], [p].[Id] AS [Id2], [p].[Amount], [p].[ClientPaymentToken], [p].[CompletedAt], [p].[CreatedAt] AS [CreatedAt1], [p].[Method], [p].[OrderId], [p].[ProviderReferenceId], [p].[Status] AS [Status0], [p].[UpdatedAt] AS [UpdatedAt0], [p].[Version], [c].[Id] AS [Id3], [c].[AccountType], [c].[BirthDate], [c].[FavoritesCount], [c].[OrdersCount], [c].[RatesCount], [a].[Id] AS [Id4], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[Gender], [a].[IsDeleted] AS [IsDeleted2], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[OTP], [a].[OTPAttempts], [a].[OTPExpiryTime], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[ProfileImageUrl], [a].[RefreshToken], [a].[RefreshTokenExpiryTime], [a].[ResetPasswordConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+    FROM [Order] AS [o]
+    LEFT JOIN [OnlineOrders] AS [o0] ON [o].[Id] = [o0].[Id]
+    LEFT JOIN [FromStoreOrders] AS [f] ON [o].[Id] = [f].[Id]
+    LEFT JOIN [UserAddress] AS [u] ON [o0].[ShippingAddressId] = [u].[Id]
+    LEFT JOIN [Store] AS [s] ON [f].[StoreId] = [s].[Id]
+    LEFT JOIN [Payment] AS [p] ON [o].[Id] = [p].[OrderId]
+    LEFT JOIN [Clients] AS [c] ON [o].[ClientId] = [c].[Id]
+    LEFT JOIN [AspNetUsers] AS [a] ON [c].[Id] = [a].[Id]
+    WHERE [o].[Id] = @__orderId_0
+) AS [t]
+LEFT JOIN (
+    SELECT [o1].[Id], [o1].[InvetoryId], [o1].[OrderId], [o1].[ProductId], [o1].[Quantity], [o1].[ReservationId], [o1].[SubTotal], [o1].[UnitPrice], [p0].[ProductId] AS [ProductId0], [p0].[ActiveIngredients], [p0].[AverageRating], [p0].[CategoryId], [p0].[CompanyId], [p0].[Contraindications], [p0].[CreatedAt], [p0].[Description], [p0].[DiscountPercentage], [p0].[DosageForm], [p0].[IsAvailable], [p0].[IsDeleted], [p0].[MedicalDescription], [p0].[NameAr], [p0].[NameEn], [p0].[Price], [p0].[SideEffects], [p0].[Tags], [p0].[TotalRatings], [p0].[UpdatedAt], [p1].[Id] AS [Id0], [p1].[IsPrimary], [p1].[ProductId] AS [ProductId1], [p1].[Url]
+    FROM [OrderItem] AS [o1]
+    INNER JOIN [Products] AS [p0] ON [o1].[ProductId] = [p0].[ProductId]
+    LEFT JOIN [ProductImage] AS [p1] ON [p0].[ProductId] = [p1].[ProductId]
+) AS [t0] ON [t].[Id] = [t0].[OrderId]
+ORDER BY [t].[Id], [t].[Id0], [t].[Id1], [t].[Id2], [t].[Id3], [t].[Id4], [t0].[Id], [t0].[ProductId0]
+[2026-03-09 13:27:00.538 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (84ms) [Parameters=[@__reservationId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [r].[Id], [r].[ExpiredAt], [r].[InventoryId], [r].[OrderItemId], [r].[ProductId], [r].[QuantityReserved], [r].[ReservedAt], [r].[Status], [p].[ProductId], [p].[ActiveIngredients], [p].[AverageRating], [p].[CategoryId], [p].[CompanyId], [p].[Contraindications], [p].[CreatedAt], [p].[Description], [p].[DiscountPercentage], [p].[DosageForm], [p].[IsAvailable], [p].[IsDeleted], [p].[MedicalDescription], [p].[NameAr], [p].[NameEn], [p].[Price], [p].[SideEffects], [p].[Tags], [p].[TotalRatings], [p].[UpdatedAt], [i].[Id], [i].[ProductId], [i].[ReservedQuantity], [i].[StockQuantity], [i].[StoreId], [o].[Id], [o].[InvetoryId], [o].[OrderId], [o].[ProductId], [o].[Quantity], [o].[ReservationId], [o].[SubTotal], [o].[UnitPrice]
+FROM [Reservation] AS [r]
+INNER JOIN [Products] AS [p] ON [r].[ProductId] = [p].[ProductId]
+INNER JOIN [Inventory] AS [i] ON [r].[InventoryId] = [i].[Id]
+LEFT JOIN [OrderItem] AS [o] ON [r].[OrderItemId] = [o].[Id]
+WHERE [r].[Id] = @__reservationId_0
+[2026-03-09 13:27:01.284 +02:00 WRN] Hangfire.AutomaticRetryAttribute Failed to process the job '85': an exception occurred. Retry attempt 1 of 10 will be performed in 00:00:43.
+System.ArgumentException: Delay must be greater than zero. (Parameter 'delay')
+   at SmartCare.InfraStructure.BackgroundJobImplemantations.HangfireBackgroundJobService.Schedule(Expression`1 methodCall, TimeSpan delay) in G:\SmartCare\SmartCare.InfraStructure\BackgroundJobImplemantations\HangfireBackgroundJobService.cs:line 48
+   at SmartCare.Application.Features.Payments.Commands.RequestpaymentSession.CreateOrUpdatePaymentHandler.ExtendOrderReservedTimeForPayment(Guid orderId) in G:\SmartCare\SmartCare.Application\Features\Payments\Commands\RequestpaymentSession\CreateOrUpdatePaymentHandler.cs:line 111
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[2026-03-09 13:39:15.087 +02:00 WRN] Microsoft.EntityFrameworkCore.Model.Validation The 'PaymentMethod' property 'Method' on entity type 'Payment' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value 'Stripe', since this is the CLR default for the 'PaymentMethod' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.
+[2026-03-09 13:45:01.214 +02:00 WRN] Microsoft.EntityFrameworkCore.Model.Validation The 'PaymentMethod' property 'Method' on entity type 'Payment' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value 'Stripe', since this is the CLR default for the 'PaymentMethod' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.
+[2026-03-09 13:45:02.484 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (124ms) [Parameters=[@__normalizedName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedName_0
+[2026-03-09 13:45:02.647 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (86ms) [Parameters=[@__normalizedName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedName_0
+[2026-03-09 13:45:02.730 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (79ms) [Parameters=[@__normalizedName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedName_0
+[2026-03-09 13:45:02.811 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (77ms) [Parameters=[@__normalizedName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedName_0
+[2026-03-09 13:45:02.845 +02:00 INF] Hangfire.SqlServer.SqlServerObjectsInstaller Start installing Hangfire SQL objects...
+[2026-03-09 13:45:03.193 +02:00 INF] Hangfire.SqlServer.SqlServerObjectsInstaller Hangfire SQL objects installed.
+[2026-03-09 13:45:03.507 +02:00 INF] Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager User profile is available. Using 'C:\Users\HP\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+[2026-03-09 13:45:03.663 +02:00 WRN] Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServer The ASP.NET Core developer certificate is not trusted. For information about trusting the ASP.NET Core developer certificate, see https://aka.ms/aspnet/https-trust-dev-cert.
+[2026-03-09 13:45:03.731 +02:00 INF] Microsoft.Hosting.Lifetime Now listening on: https://localhost:7162
+[2026-03-09 13:45:03.732 +02:00 INF] Microsoft.Hosting.Lifetime Now listening on: http://localhost:5275
+[2026-03-09 13:45:03.867 +02:00 INF] Hangfire.BackgroundJobServer Starting Hangfire Server using job storage: '<Connection string can not be parsed>'
+[2026-03-09 13:45:03.869 +02:00 INF] Hangfire.BackgroundJobServer Using the following options for SQL Server job storage: Queue poll interval: 00:00:00.
+[2026-03-09 13:45:03.870 +02:00 INF] Hangfire.BackgroundJobServer Using the following options for Hangfire Server:
+    Worker count: 20
+    Listening queues: 'default'
+    Shutdown timeout: 00:00:15
+    Schedule polling interval: 00:00:15
+[2026-03-09 13:45:03.893 +02:00 INF] Microsoft.Hosting.Lifetime Application started. Press Ctrl+C to shut down.
+[2026-03-09 13:45:03.901 +02:00 INF] Microsoft.Hosting.Lifetime Hosting environment: Development
+[2026-03-09 13:45:03.902 +02:00 INF] Microsoft.Hosting.Lifetime Content root path: G:\SmartCare\SmartCare.API
+[2026-03-09 13:45:04.079 +02:00 INF] Hangfire.Server.BackgroundServerProcess Server desktop-e715lek:20260:c63880d7 successfully announced in 186.4245 ms
+[2026-03-09 13:45:04.086 +02:00 INF] Hangfire.Server.BackgroundServerProcess Server desktop-e715lek:20260:c63880d7 is starting the registered dispatchers: ServerWatchdog, ServerJobCancellationWatcher, SqlServerHeartbeatProcess, ExpirationManager, CountersAggregator, Worker, DelayedJobScheduler, RecurringJobScheduler...
+[2026-03-09 13:45:04.487 +02:00 INF] Hangfire.Server.BackgroundServerProcess Server desktop-e715lek:20260:c63880d7 all the dispatchers started
+[2026-03-09 13:45:04.526 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger - null null
+[2026-03-09 13:45:04.673 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger - 301 0 null 156.4298ms
+[2026-03-09 13:45:04.678 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/index.html - null null
+[2026-03-09 13:45:04.764 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/index.html - 200 null text/html;charset=utf-8 86.5335ms
+[2026-03-09 13:45:04.772 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/swagger-ui-bundle.js - null null
+[2026-03-09 13:45:04.772 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/swagger-ui-standalone-preset.js - null null
+[2026-03-09 13:45:04.772 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/swagger-ui.css - null null
+[2026-03-09 13:45:04.773 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/_framework/aspnetcore-browser-refresh.js - null null
+[2026-03-09 13:45:04.797 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/_vs/browserLink - null null
+[2026-03-09 13:45:04.846 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/_framework/aspnetcore-browser-refresh.js - 200 13762 application/javascript; charset=utf-8 73.0041ms
+[2026-03-09 13:45:04.883 +02:00 INF] Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware Sending file. Request path: '/swagger-ui.css'. Physical path: 'N/A'
+[2026-03-09 13:45:04.883 +02:00 INF] Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware Sending file. Request path: '/swagger-ui-standalone-preset.js'. Physical path: 'N/A'
+[2026-03-09 13:45:04.896 +02:00 INF] Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware Sending file. Request path: '/swagger-ui-bundle.js'. Physical path: 'N/A'
+[2026-03-09 13:45:04.898 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/swagger-ui-standalone-preset.js - 200 230280 text/javascript 125.8882ms
+[2026-03-09 13:45:04.897 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/swagger-ui.css - 200 152034 text/css 125.2414ms
+[2026-03-09 13:45:04.902 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/swagger-ui-bundle.js - 200 1456926 text/javascript 129.5736ms
+[2026-03-09 13:45:04.931 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/_vs/browserLink - 200 null text/javascript; charset=UTF-8 134.5635ms
+[2026-03-09 13:45:05.082 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/v1/swagger.json - null null
+[2026-03-09 13:45:05.264 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 182.451ms
+[2026-03-09 13:46:20.836 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/api/stores - null null
+[2026-03-09 13:46:22.549 +02:00 INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executing endpoint 'SmartCare.API.Controllers.StoreController.GetAllStoresAsync (SmartCare.API)'
+[2026-03-09 13:46:22.569 +02:00 INF] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker Route matched with {action = "GetAllStores", controller = "Store"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetAllStoresAsync() on controller SmartCare.API.Controllers.StoreController (SmartCare.API).
+[2026-03-09 13:46:24.015 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (79ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [s].[Id], [s].[Address], [s].[CreatedAt], [s].[GeoLocation], [s].[IsDeleted], [s].[Latitude], [s].[Longitude], [s].[Name], [s].[Phone]
+FROM [Store] AS [s]
+[2026-03-09 13:46:24.154 +02:00 INF] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor Executing OkObjectResult, writing value of type 'SmartCare.Application.Handlers.ResponseHandler.Response`1[[System.Collections.Generic.IEnumerable`1[[SmartCare.Application.DTOs.Stores.Responses.StoreResponseDto, SmartCare.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[2026-03-09 13:46:24.167 +02:00 INF] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker Executed action SmartCare.API.Controllers.StoreController.GetAllStoresAsync (SmartCare.API) in 1591.9617ms
+[2026-03-09 13:46:24.171 +02:00 INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executed endpoint 'SmartCare.API.Controllers.StoreController.GetAllStoresAsync (SmartCare.API)'
+[2026-03-09 13:46:24.179 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/api/stores - 200 null application/json; charset=utf-8 3342.6176ms
+[2026-03-09 13:46:48.643 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 POST https://localhost:7162/api/auth/Pharmacist-SignUp - multipart/form-data; boundary=----WebKitFormBoundaryHrAtg9BCgq6B6uMF 1115
+[2026-03-09 13:46:48.651 +02:00 INF] Microsoft.AspNetCore.Cors.Infrastructure.CorsService CORS policy execution successful.
+[2026-03-09 13:46:48.654 +02:00 INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executing endpoint 'SmartCare.API.Controllers.AuthenticationController.PharmacistSignUpAsync (SmartCare.API)'
+[2026-03-09 13:46:48.670 +02:00 INF] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker Route matched with {action = "PharmacistSignUp", controller = "Authentication"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] PharmacistSignUpAsync(SmartCare.Application.DTOs.Pharmacist.Request.pharmacistSignUpRequestDto) on controller SmartCare.API.Controllers.AuthenticationController (SmartCare.API).
+[2026-03-09 13:46:48.796 +02:00 INF] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor Executing BadRequestObjectResult, writing value of type 'SmartCare.Application.Handlers.ResponseHandler.Response`1[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[2026-03-09 13:46:48.803 +02:00 INF] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker Executed action SmartCare.API.Controllers.AuthenticationController.PharmacistSignUpAsync (SmartCare.API) in 130.871ms
+[2026-03-09 13:46:48.806 +02:00 INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executed endpoint 'SmartCare.API.Controllers.AuthenticationController.PharmacistSignUpAsync (SmartCare.API)'
+[2026-03-09 13:46:48.807 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 POST https://localhost:7162/api/auth/Pharmacist-SignUp - 400 null application/json; charset=utf-8 164.2155ms
+[2026-03-09 13:47:15.341 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 POST https://localhost:7162/api/auth/Pharmacist-SignUp - multipart/form-data; boundary=----WebKitFormBoundary9keaA2zxlAekfKq9 1113
+[2026-03-09 13:47:15.361 +02:00 INF] Microsoft.AspNetCore.Cors.Infrastructure.CorsService CORS policy execution successful.
+[2026-03-09 13:47:15.363 +02:00 INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executing endpoint 'SmartCare.API.Controllers.AuthenticationController.PharmacistSignUpAsync (SmartCare.API)'
+[2026-03-09 13:47:15.364 +02:00 INF] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker Route matched with {action = "PharmacistSignUp", controller = "Authentication"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] PharmacistSignUpAsync(SmartCare.Application.DTOs.Pharmacist.Request.pharmacistSignUpRequestDto) on controller SmartCare.API.Controllers.AuthenticationController (SmartCare.API).
+[2026-03-09 13:47:15.442 +02:00 INF] SmartCare.Application.CQRs.Authentication.Handlers.Auth.SignUpHandler Starting signup process for email: kiroanis04@gmail.com
+[2026-03-09 13:47:15.576 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (77ms) [Parameters=[@__get_Item_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [s].[Id], [s].[Address], [s].[CreatedAt], [s].[GeoLocation], [s].[IsDeleted], [s].[Latitude], [s].[Longitude], [s].[Name], [s].[Phone]
+FROM [Store] AS [s]
+WHERE [s].[Id] = @__get_Item_0
+[2026-03-09 13:47:15.741 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (81ms) [Parameters=[@__normalizedEmail_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(2) [a].[Id], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[Gender], [a].[IsDeleted], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[OTP], [a].[OTPAttempts], [a].[OTPExpiryTime], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[ProfileImageUrl], [a].[RefreshToken], [a].[RefreshTokenExpiryTime], [a].[ResetPasswordConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+FROM [AspNetUsers] AS [a]
+WHERE [a].[NormalizedEmail] = @__normalizedEmail_0
+[2026-03-09 13:47:15.853 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (99ms) [Parameters=[@__normalizedUserName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[Gender], [a].[IsDeleted], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[OTP], [a].[OTPAttempts], [a].[OTPExpiryTime], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[ProfileImageUrl], [a].[RefreshToken], [a].[RefreshTokenExpiryTime], [a].[ResetPasswordConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+FROM [AspNetUsers] AS [a]
+WHERE [a].[NormalizedUserName] = @__normalizedUserName_0
+[2026-03-09 13:47:15.956 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (80ms) [Parameters=[@__phone_0='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SELECT CASE
+    WHEN EXISTS (
+        SELECT 1
+        FROM [AspNetUsers] AS [a]
+        WHERE [a].[PhoneNumber] = @__phone_0) THEN CAST(1 AS bit)
+    ELSE CAST(0 AS bit)
+END
+[2026-03-09 13:47:16.276 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (81ms) [Parameters=[@__normalizedUserName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[Gender], [a].[IsDeleted], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[OTP], [a].[OTPAttempts], [a].[OTPExpiryTime], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[ProfileImageUrl], [a].[RefreshToken], [a].[RefreshTokenExpiryTime], [a].[ResetPasswordConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+FROM [AspNetUsers] AS [a]
+WHERE [a].[NormalizedUserName] = @__normalizedUserName_0
+[2026-03-09 13:47:16.372 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (85ms) [Parameters=[@__normalizedEmail_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(2) [a].[Id], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[Gender], [a].[IsDeleted], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[OTP], [a].[OTPAttempts], [a].[OTPExpiryTime], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[ProfileImageUrl], [a].[RefreshToken], [a].[RefreshTokenExpiryTime], [a].[ResetPasswordConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+FROM [AspNetUsers] AS [a]
+WHERE [a].[NormalizedEmail] = @__normalizedEmail_0
+[2026-03-09 13:47:16.682 +02:00 WRN] Microsoft.EntityFrameworkCore.Database.Transaction Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[2026-03-09 13:47:16.776 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (87ms) [Parameters=[@p0='?' (Size = 450), @p1='?' (DbType = Int32), @p2='?' (Size = 4000), @p3='?' (Size = 256), @p4='?' (DbType = Boolean), @p5='?' (Size = 4000), @p6='?' (DbType = Int32), @p7='?' (DbType = Boolean), @p8='?' (Size = 4000), @p9='?' (DbType = Boolean), @p10='?' (DbType = DateTimeOffset), @p11='?' (Size = 256), @p12='?' (Size = 256), @p13='?' (Size = 255), @p14='?' (DbType = Int32), @p15='?' (DbType = DateTime2), @p16='?' (Size = 4000), @p17='?' (Size = 4000), @p18='?' (DbType = Boolean), @p19='?' (Size = 255), @p20='?' (Size = 500), @p21='?' (DbType = DateTime2), @p22='?' (DbType = Boolean), @p23='?' (Size = 4000), @p24='?' (DbType = Boolean), @p25='?' (Size = 256), @p26='?' (Size = 450), @p27='?' (DbType = Boolean), @p28='?' (Size = 100), @p29='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SET NOCOUNT ON;
+INSERT INTO [AspNetUsers] ([Id], [AccessFailedCount], [ConcurrencyStamp], [Email], [EmailConfirmed], [FirstName], [Gender], [IsDeleted], [LastName], [LockoutEnabled], [LockoutEnd], [NormalizedEmail], [NormalizedUserName], [OTP], [OTPAttempts], [OTPExpiryTime], [PasswordHash], [PhoneNumber], [PhoneNumberConfirmed], [ProfileImageUrl], [RefreshToken], [RefreshTokenExpiryTime], [ResetPasswordConfirmed], [SecurityStamp], [TwoFactorEnabled], [UserName])
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15, @p16, @p17, @p18, @p19, @p20, @p21, @p22, @p23, @p24, @p25);
+INSERT INTO [Pharmacists] ([Id], [IsActive], [LicenseNumber], [StoreId])
+VALUES (@p26, @p27, @p28, @p29);
+[2026-03-09 13:47:16.876 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (80ms) [Parameters=[@__normalizedRoleName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(2) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedRoleName_0
+[2026-03-09 13:47:16.968 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (77ms) [Parameters=[@__p_0='?' (Size = 450), @__p_1='?' (Size = 450)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[UserId], [a].[RoleId]
+FROM [AspNetUserRoles] AS [a]
+WHERE [a].[UserId] = @__p_0 AND [a].[RoleId] = @__p_1
+[2026-03-09 13:47:17.057 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (82ms) [Parameters=[@__normalizedRoleName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(2) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedRoleName_0
+[2026-03-09 13:47:17.150 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (79ms) [Parameters=[@__normalizedUserName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[Gender], [a].[IsDeleted], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[OTP], [a].[OTPAttempts], [a].[OTPExpiryTime], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[ProfileImageUrl], [a].[RefreshToken], [a].[RefreshTokenExpiryTime], [a].[ResetPasswordConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+FROM [AspNetUsers] AS [a]
+WHERE [a].[NormalizedUserName] = @__normalizedUserName_0
+[2026-03-09 13:47:17.238 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (81ms) [Parameters=[@__normalizedEmail_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(2) [a].[Id], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[Gender], [a].[IsDeleted], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[OTP], [a].[OTPAttempts], [a].[OTPExpiryTime], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[ProfileImageUrl], [a].[RefreshToken], [a].[RefreshTokenExpiryTime], [a].[ResetPasswordConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+FROM [AspNetUsers] AS [a]
+WHERE [a].[NormalizedEmail] = @__normalizedEmail_0
+[2026-03-09 13:47:17.269 +02:00 WRN] Microsoft.EntityFrameworkCore.Database.Transaction Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[2026-03-09 13:47:17.358 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (86ms) [Parameters=[@p0='?' (Size = 450), @p1='?' (Size = 450), @p27='?' (Size = 450), @p2='?' (DbType = Int32), @p3='?' (Size = 4000), @p28='?' (Size = 4000), @p4='?' (Size = 256), @p5='?' (DbType = Boolean), @p6='?' (Size = 4000), @p7='?' (DbType = Int32), @p8='?' (DbType = Boolean), @p9='?' (Size = 4000), @p10='?' (DbType = Boolean), @p11='?' (DbType = DateTimeOffset), @p12='?' (Size = 256), @p13='?' (Size = 256), @p14='?' (Size = 255), @p15='?' (DbType = Int32), @p16='?' (DbType = DateTime2), @p17='?' (Size = 4000), @p18='?' (Size = 4000), @p19='?' (DbType = Boolean), @p20='?' (Size = 255), @p21='?' (Size = 500), @p22='?' (DbType = DateTime2), @p23='?' (DbType = Boolean), @p24='?' (Size = 4000), @p25='?' (DbType = Boolean), @p26='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SET NOCOUNT ON;
+INSERT INTO [AspNetUserRoles] ([RoleId], [UserId])
+VALUES (@p0, @p1);
+UPDATE [AspNetUsers] SET [AccessFailedCount] = @p2, [ConcurrencyStamp] = @p3, [Email] = @p4, [EmailConfirmed] = @p5, [FirstName] = @p6, [Gender] = @p7, [IsDeleted] = @p8, [LastName] = @p9, [LockoutEnabled] = @p10, [LockoutEnd] = @p11, [NormalizedEmail] = @p12, [NormalizedUserName] = @p13, [OTP] = @p14, [OTPAttempts] = @p15, [OTPExpiryTime] = @p16, [PasswordHash] = @p17, [PhoneNumber] = @p18, [PhoneNumberConfirmed] = @p19, [ProfileImageUrl] = @p20, [RefreshToken] = @p21, [RefreshTokenExpiryTime] = @p22, [ResetPasswordConfirmed] = @p23, [SecurityStamp] = @p24, [TwoFactorEnabled] = @p25, [UserName] = @p26
+OUTPUT 1
+WHERE [Id] = @p27 AND [ConcurrencyStamp] = @p28;
+[2026-03-09 13:47:17.417 +02:00 WRN] Microsoft.EntityFrameworkCore.Database.Transaction Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[2026-03-09 13:47:17.500 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (81ms) [Parameters=[@p0='?' (DbType = DateTime2), @p1='?' (Size = 4000), @p2='?' (DbType = DateTime2), @p3='?' (DbType = Boolean), @p4='?' (Size = 4000), @p5='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+INSERT INTO [EmailVerifications] ([CreatedAt], [Email], [ExpiresAt], [IsUsed], [Token], [UsedAt])
+OUTPUT INSERTED.[Id]
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5);
+[2026-03-09 13:47:17.612 +02:00 INF] SmartCare.Application.CQRs.Authentication.Handlers.Auth.SignUpHandler Signup transaction committed successfully for kiroanis04@gmail.com
+[2026-03-09 13:47:17.702 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (81ms) [Parameters=[@__normalizedEmail_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(2) [a].[Id], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[Gender], [a].[IsDeleted], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[OTP], [a].[OTPAttempts], [a].[OTPExpiryTime], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[ProfileImageUrl], [a].[RefreshToken], [a].[RefreshTokenExpiryTime], [a].[ResetPasswordConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+FROM [AspNetUsers] AS [a]
+WHERE [a].[NormalizedEmail] = @__normalizedEmail_0
+[2026-03-09 13:47:20.935 +02:00 INF] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor Executing OkObjectResult, writing value of type 'SmartCare.Application.Handlers.ResponseHandler.Response`1[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[2026-03-09 13:47:20.939 +02:00 INF] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker Executed action SmartCare.API.Controllers.AuthenticationController.PharmacistSignUpAsync (SmartCare.API) in 5571.0804ms
+[2026-03-09 13:47:20.941 +02:00 INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executed endpoint 'SmartCare.API.Controllers.AuthenticationController.PharmacistSignUpAsync (SmartCare.API)'
+[2026-03-09 13:47:20.942 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 POST https://localhost:7162/api/auth/Pharmacist-SignUp - 200 null application/json; charset=utf-8 5605.1322ms
+[2026-03-09 14:05:05.551 +02:00 INF] Hangfire.Server.ServerWatchdog 1 servers were removed due to timeout
+[2026-03-09 14:17:54.982 +02:00 WRN] Microsoft.EntityFrameworkCore.Model.Validation The 'PaymentMethod' property 'Method' on entity type 'Payment' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value 'Stripe', since this is the CLR default for the 'PaymentMethod' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.
+[2026-03-09 14:17:56.308 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (153ms) [Parameters=[@__normalizedName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedName_0
+[2026-03-09 14:17:56.466 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (77ms) [Parameters=[@__normalizedName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedName_0
+[2026-03-09 14:17:56.542 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (71ms) [Parameters=[@__normalizedName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedName_0
+[2026-03-09 14:17:56.617 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (71ms) [Parameters=[@__normalizedName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedName_0
+[2026-03-09 14:17:56.651 +02:00 INF] Hangfire.SqlServer.SqlServerObjectsInstaller Start installing Hangfire SQL objects...
+[2026-03-09 14:17:56.968 +02:00 INF] Hangfire.SqlServer.SqlServerObjectsInstaller Hangfire SQL objects installed.
+[2026-03-09 14:17:57.259 +02:00 INF] Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager User profile is available. Using 'C:\Users\HP\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+[2026-03-09 14:17:57.417 +02:00 WRN] Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServer The ASP.NET Core developer certificate is not trusted. For information about trusting the ASP.NET Core developer certificate, see https://aka.ms/aspnet/https-trust-dev-cert.
+[2026-03-09 14:17:57.476 +02:00 INF] Microsoft.Hosting.Lifetime Now listening on: https://localhost:7162
+[2026-03-09 14:17:57.477 +02:00 INF] Microsoft.Hosting.Lifetime Now listening on: http://localhost:5275
+[2026-03-09 14:17:57.609 +02:00 INF] Hangfire.BackgroundJobServer Starting Hangfire Server using job storage: '<Connection string can not be parsed>'
+[2026-03-09 14:17:57.610 +02:00 INF] Hangfire.BackgroundJobServer Using the following options for SQL Server job storage: Queue poll interval: 00:00:00.
+[2026-03-09 14:17:57.611 +02:00 INF] Hangfire.BackgroundJobServer Using the following options for Hangfire Server:
+    Worker count: 20
+    Listening queues: 'default'
+    Shutdown timeout: 00:00:15
+    Schedule polling interval: 00:00:15
+[2026-03-09 14:17:57.643 +02:00 INF] Microsoft.Hosting.Lifetime Application started. Press Ctrl+C to shut down.
+[2026-03-09 14:17:57.650 +02:00 INF] Microsoft.Hosting.Lifetime Hosting environment: Development
+[2026-03-09 14:17:57.651 +02:00 INF] Microsoft.Hosting.Lifetime Content root path: G:\SmartCare\SmartCare.API
+[2026-03-09 14:17:57.820 +02:00 INF] Hangfire.Server.BackgroundServerProcess Server desktop-e715lek:7144:06d6c621 successfully announced in 179.5465 ms
+[2026-03-09 14:17:57.832 +02:00 INF] Hangfire.Server.BackgroundServerProcess Server desktop-e715lek:7144:06d6c621 is starting the registered dispatchers: ServerWatchdog, ServerJobCancellationWatcher, SqlServerHeartbeatProcess, ExpirationManager, CountersAggregator, Worker, DelayedJobScheduler, RecurringJobScheduler...
+[2026-03-09 14:17:57.945 +02:00 INF] Hangfire.Server.ServerWatchdog 1 servers were removed due to timeout
+[2026-03-09 14:17:58.169 +02:00 INF] Hangfire.Server.BackgroundServerProcess Server desktop-e715lek:7144:06d6c621 all the dispatchers started
+[2026-03-09 14:17:58.243 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger - null null
+[2026-03-09 14:17:58.403 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger - 301 0 null 169.5671ms
+[2026-03-09 14:17:58.408 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/index.html - null null
+[2026-03-09 14:17:58.494 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/swagger-ui-bundle.js - null null
+[2026-03-09 14:17:58.494 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/swagger-ui.css - null null
+[2026-03-09 14:17:58.497 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/swagger-ui-standalone-preset.js - null null
+[2026-03-09 14:17:58.497 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/index.html - 200 null text/html;charset=utf-8 89.3451ms
+[2026-03-09 14:17:58.506 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/_framework/aspnetcore-browser-refresh.js - null null
+[2026-03-09 14:17:58.509 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/_vs/browserLink - null null
+[2026-03-09 14:17:58.530 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/_framework/aspnetcore-browser-refresh.js - 200 13762 application/javascript; charset=utf-8 24.7055ms
+[2026-03-09 14:17:58.546 +02:00 INF] Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware Sending file. Request path: '/swagger-ui.css'. Physical path: 'N/A'
+[2026-03-09 14:17:58.546 +02:00 INF] Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware Sending file. Request path: '/swagger-ui-standalone-preset.js'. Physical path: 'N/A'
+[2026-03-09 14:17:58.550 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/swagger-ui-standalone-preset.js - 200 230280 text/javascript 52.7591ms
+[2026-03-09 14:17:58.547 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/swagger-ui.css - 200 152034 text/css 52.7145ms
+[2026-03-09 14:17:58.587 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/_vs/browserLink - 200 null text/javascript; charset=UTF-8 77.8824ms
+[2026-03-09 14:17:58.588 +02:00 INF] Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware Sending file. Request path: '/swagger-ui-bundle.js'. Physical path: 'N/A'
+[2026-03-09 14:17:58.593 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/swagger-ui-bundle.js - 200 1456926 text/javascript 98.9155ms
+[2026-03-09 14:17:58.755 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/v1/swagger.json - null null
+[2026-03-09 14:17:58.930 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 174.7139ms
+[2026-03-09 14:54:15.751 +02:00 WRN] Microsoft.EntityFrameworkCore.Model.Validation The 'PaymentMethod' property 'Method' on entity type 'Payment' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value 'Stripe', since this is the CLR default for the 'PaymentMethod' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.
+[2026-03-09 14:54:17.078 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (132ms) [Parameters=[@__normalizedName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedName_0
+[2026-03-09 14:54:17.237 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (79ms) [Parameters=[@__normalizedName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedName_0
+[2026-03-09 14:54:17.335 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (93ms) [Parameters=[@__normalizedName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedName_0
+[2026-03-09 14:54:17.415 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (77ms) [Parameters=[@__normalizedName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedName_0
+[2026-03-09 14:54:17.450 +02:00 INF] Hangfire.SqlServer.SqlServerObjectsInstaller Start installing Hangfire SQL objects...
+[2026-03-09 14:54:17.788 +02:00 INF] Hangfire.SqlServer.SqlServerObjectsInstaller Hangfire SQL objects installed.
+[2026-03-09 14:54:18.079 +02:00 INF] Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager User profile is available. Using 'C:\Users\HP\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+[2026-03-09 14:54:18.293 +02:00 WRN] Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServer The ASP.NET Core developer certificate is not trusted. For information about trusting the ASP.NET Core developer certificate, see https://aka.ms/aspnet/https-trust-dev-cert.
+[2026-03-09 14:54:18.352 +02:00 INF] Microsoft.Hosting.Lifetime Now listening on: https://localhost:7162
+[2026-03-09 14:54:18.353 +02:00 INF] Microsoft.Hosting.Lifetime Now listening on: http://localhost:5275
+[2026-03-09 14:54:18.519 +02:00 INF] Hangfire.BackgroundJobServer Starting Hangfire Server using job storage: '<Connection string can not be parsed>'
+[2026-03-09 14:54:18.710 +02:00 INF] Hangfire.BackgroundJobServer Using the following options for SQL Server job storage: Queue poll interval: 00:00:00.
+[2026-03-09 14:54:18.711 +02:00 INF] Hangfire.BackgroundJobServer Using the following options for Hangfire Server:
+    Worker count: 20
+    Listening queues: 'default'
+    Shutdown timeout: 00:00:15
+    Schedule polling interval: 00:00:15
+[2026-03-09 14:54:18.743 +02:00 INF] Microsoft.Hosting.Lifetime Application started. Press Ctrl+C to shut down.
+[2026-03-09 14:54:18.747 +02:00 INF] Microsoft.Hosting.Lifetime Hosting environment: Development
+[2026-03-09 14:54:18.751 +02:00 INF] Microsoft.Hosting.Lifetime Content root path: G:\SmartCare\SmartCare.API
+[2026-03-09 14:54:18.785 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger - null null
+[2026-03-09 14:54:18.971 +02:00 INF] Hangfire.Server.BackgroundServerProcess Server desktop-e715lek:19904:1db05687 successfully announced in 229.9078 ms
+[2026-03-09 14:54:18.973 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger - 301 0 null 204.2951ms
+[2026-03-09 14:54:18.980 +02:00 INF] Hangfire.Server.BackgroundServerProcess Server desktop-e715lek:19904:1db05687 is starting the registered dispatchers: ServerWatchdog, ServerJobCancellationWatcher, SqlServerHeartbeatProcess, ExpirationManager, CountersAggregator, Worker, DelayedJobScheduler, RecurringJobScheduler...
+[2026-03-09 14:54:18.982 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/index.html - null null
+[2026-03-09 14:54:19.109 +02:00 INF] Hangfire.Server.BackgroundServerProcess Server desktop-e715lek:19904:1db05687 all the dispatchers started
+[2026-03-09 14:54:19.186 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/swagger-ui.css - null null
+[2026-03-09 14:54:19.191 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/swagger-ui-bundle.js - null null
+[2026-03-09 14:54:19.191 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/swagger-ui-standalone-preset.js - null null
+[2026-03-09 14:54:19.193 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/index.html - 200 null text/html;charset=utf-8 210.9729ms
+[2026-03-09 14:54:19.206 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/_framework/aspnetcore-browser-refresh.js - null null
+[2026-03-09 14:54:19.207 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/_vs/browserLink - null null
+[2026-03-09 14:54:19.221 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/_framework/aspnetcore-browser-refresh.js - 200 13762 application/javascript; charset=utf-8 14.8186ms
+[2026-03-09 14:54:19.248 +02:00 INF] Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware Sending file. Request path: '/swagger-ui.css'. Physical path: 'N/A'
+[2026-03-09 14:54:19.258 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/swagger-ui.css - 200 152034 text/css 71.8974ms
+[2026-03-09 14:54:19.248 +02:00 INF] Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware Sending file. Request path: '/swagger-ui-standalone-preset.js'. Physical path: 'N/A'
+[2026-03-09 14:54:19.269 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/swagger-ui-standalone-preset.js - 200 230280 text/javascript 78.2898ms
+[2026-03-09 14:54:19.300 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/_vs/browserLink - 200 null text/javascript; charset=UTF-8 92.7039ms
+[2026-03-09 14:54:19.304 +02:00 INF] Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware Sending file. Request path: '/swagger-ui-bundle.js'. Physical path: 'N/A'
+[2026-03-09 14:54:19.309 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/swagger-ui-bundle.js - 200 1456926 text/javascript 118.6087ms
+[2026-03-09 14:54:19.470 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/v1/swagger.json - null null
+[2026-03-09 14:54:19.650 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 180.2703ms
+[2026-03-09 14:55:20.869 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 POST https://localhost:7162/api/auth/Pharmacist-SignUp - multipart/form-data; boundary=----WebKitFormBoundaryor4mzzOL1ZX3pW02 1110
+[2026-03-09 14:55:20.987 +02:00 INF] Microsoft.AspNetCore.Cors.Infrastructure.CorsService CORS policy execution successful.
+[2026-03-09 14:55:20.990 +02:00 INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executing endpoint 'SmartCare.API.Controllers.AuthenticationController.PharmacistSignUpAsync (SmartCare.API)'
+[2026-03-09 14:55:21.014 +02:00 INF] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker Route matched with {action = "PharmacistSignUp", controller = "Authentication"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] PharmacistSignUpAsync(SmartCare.Application.DTOs.Pharmacist.Request.pharmacistSignUpRequestDto) on controller SmartCare.API.Controllers.AuthenticationController (SmartCare.API).
+[2026-03-09 14:55:21.474 +02:00 INF] SmartCare.Application.CQRs.Authentication.Handlers.Auth.SignUpHandler Starting signup process for email: kiroanis1920@gmail.com
+[2026-03-09 14:55:21.611 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (77ms) [Parameters=[@__get_Item_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [s].[Id], [s].[Address], [s].[CreatedAt], [s].[GeoLocation], [s].[IsDeleted], [s].[Latitude], [s].[Longitude], [s].[Name], [s].[Phone]
+FROM [Store] AS [s]
+WHERE [s].[Id] = @__get_Item_0
+[2026-03-09 14:55:21.757 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (73ms) [Parameters=[@__normalizedEmail_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(2) [a].[Id], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[Gender], [a].[IsDeleted], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[OTP], [a].[OTPAttempts], [a].[OTPExpiryTime], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[ProfileImageUrl], [a].[RefreshToken], [a].[RefreshTokenExpiryTime], [a].[ResetPasswordConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+FROM [AspNetUsers] AS [a]
+WHERE [a].[NormalizedEmail] = @__normalizedEmail_0
+[2026-03-09 14:55:21.845 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (78ms) [Parameters=[@__normalizedUserName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[Gender], [a].[IsDeleted], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[OTP], [a].[OTPAttempts], [a].[OTPExpiryTime], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[ProfileImageUrl], [a].[RefreshToken], [a].[RefreshTokenExpiryTime], [a].[ResetPasswordConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+FROM [AspNetUsers] AS [a]
+WHERE [a].[NormalizedUserName] = @__normalizedUserName_0
+[2026-03-09 14:55:21.934 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (70ms) [Parameters=[@__phone_0='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SELECT CASE
+    WHEN EXISTS (
+        SELECT 1
+        FROM [AspNetUsers] AS [a]
+        WHERE [a].[PhoneNumber] = @__phone_0) THEN CAST(1 AS bit)
+    ELSE CAST(0 AS bit)
+END
+[2026-03-09 14:55:22.230 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (81ms) [Parameters=[@__normalizedUserName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[Gender], [a].[IsDeleted], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[OTP], [a].[OTPAttempts], [a].[OTPExpiryTime], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[ProfileImageUrl], [a].[RefreshToken], [a].[RefreshTokenExpiryTime], [a].[ResetPasswordConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+FROM [AspNetUsers] AS [a]
+WHERE [a].[NormalizedUserName] = @__normalizedUserName_0
+[2026-03-09 14:55:22.318 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (80ms) [Parameters=[@__normalizedEmail_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(2) [a].[Id], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[Gender], [a].[IsDeleted], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[OTP], [a].[OTPAttempts], [a].[OTPExpiryTime], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[ProfileImageUrl], [a].[RefreshToken], [a].[RefreshTokenExpiryTime], [a].[ResetPasswordConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+FROM [AspNetUsers] AS [a]
+WHERE [a].[NormalizedEmail] = @__normalizedEmail_0
+[2026-03-09 14:55:22.514 +02:00 WRN] Microsoft.EntityFrameworkCore.Database.Transaction Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[2026-03-09 14:55:22.598 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (76ms) [Parameters=[@p0='?' (Size = 450), @p1='?' (DbType = Int32), @p2='?' (Size = 4000), @p3='?' (Size = 256), @p4='?' (DbType = Boolean), @p5='?' (Size = 4000), @p6='?' (DbType = Int32), @p7='?' (DbType = Boolean), @p8='?' (Size = 4000), @p9='?' (DbType = Boolean), @p10='?' (DbType = DateTimeOffset), @p11='?' (Size = 256), @p12='?' (Size = 256), @p13='?' (Size = 255), @p14='?' (DbType = Int32), @p15='?' (DbType = DateTime2), @p16='?' (Size = 4000), @p17='?' (Size = 4000), @p18='?' (DbType = Boolean), @p19='?' (Size = 255), @p20='?' (Size = 500), @p21='?' (DbType = DateTime2), @p22='?' (DbType = Boolean), @p23='?' (Size = 4000), @p24='?' (DbType = Boolean), @p25='?' (Size = 256), @p26='?' (Size = 450), @p27='?' (DbType = Boolean), @p28='?' (Size = 100), @p29='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SET NOCOUNT ON;
+INSERT INTO [AspNetUsers] ([Id], [AccessFailedCount], [ConcurrencyStamp], [Email], [EmailConfirmed], [FirstName], [Gender], [IsDeleted], [LastName], [LockoutEnabled], [LockoutEnd], [NormalizedEmail], [NormalizedUserName], [OTP], [OTPAttempts], [OTPExpiryTime], [PasswordHash], [PhoneNumber], [PhoneNumberConfirmed], [ProfileImageUrl], [RefreshToken], [RefreshTokenExpiryTime], [ResetPasswordConfirmed], [SecurityStamp], [TwoFactorEnabled], [UserName])
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15, @p16, @p17, @p18, @p19, @p20, @p21, @p22, @p23, @p24, @p25);
+INSERT INTO [Pharmacists] ([Id], [IsActive], [LicenseNumber], [StoreId])
+VALUES (@p26, @p27, @p28, @p29);
+[2026-03-09 14:55:22.708 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (86ms) [Parameters=[@__normalizedRoleName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(2) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedRoleName_0
+[2026-03-09 14:55:22.792 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (71ms) [Parameters=[@__p_0='?' (Size = 450), @__p_1='?' (Size = 450)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[UserId], [a].[RoleId]
+FROM [AspNetUserRoles] AS [a]
+WHERE [a].[UserId] = @__p_0 AND [a].[RoleId] = @__p_1
+[2026-03-09 14:55:22.879 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (75ms) [Parameters=[@__normalizedRoleName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(2) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedRoleName_0
+[2026-03-09 14:55:22.986 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (94ms) [Parameters=[@__normalizedUserName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[Gender], [a].[IsDeleted], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[OTP], [a].[OTPAttempts], [a].[OTPExpiryTime], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[ProfileImageUrl], [a].[RefreshToken], [a].[RefreshTokenExpiryTime], [a].[ResetPasswordConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+FROM [AspNetUsers] AS [a]
+WHERE [a].[NormalizedUserName] = @__normalizedUserName_0
+[2026-03-09 14:55:23.089 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (97ms) [Parameters=[@__normalizedEmail_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(2) [a].[Id], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[Gender], [a].[IsDeleted], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[OTP], [a].[OTPAttempts], [a].[OTPExpiryTime], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[ProfileImageUrl], [a].[RefreshToken], [a].[RefreshTokenExpiryTime], [a].[ResetPasswordConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+FROM [AspNetUsers] AS [a]
+WHERE [a].[NormalizedEmail] = @__normalizedEmail_0
+[2026-03-09 14:55:23.112 +02:00 WRN] Microsoft.EntityFrameworkCore.Database.Transaction Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[2026-03-09 14:55:23.191 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (77ms) [Parameters=[@p0='?' (Size = 450), @p1='?' (Size = 450), @p27='?' (Size = 450), @p2='?' (DbType = Int32), @p3='?' (Size = 4000), @p28='?' (Size = 4000), @p4='?' (Size = 256), @p5='?' (DbType = Boolean), @p6='?' (Size = 4000), @p7='?' (DbType = Int32), @p8='?' (DbType = Boolean), @p9='?' (Size = 4000), @p10='?' (DbType = Boolean), @p11='?' (DbType = DateTimeOffset), @p12='?' (Size = 256), @p13='?' (Size = 256), @p14='?' (Size = 255), @p15='?' (DbType = Int32), @p16='?' (DbType = DateTime2), @p17='?' (Size = 4000), @p18='?' (Size = 4000), @p19='?' (DbType = Boolean), @p20='?' (Size = 255), @p21='?' (Size = 500), @p22='?' (DbType = DateTime2), @p23='?' (DbType = Boolean), @p24='?' (Size = 4000), @p25='?' (DbType = Boolean), @p26='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SET NOCOUNT ON;
+INSERT INTO [AspNetUserRoles] ([RoleId], [UserId])
+VALUES (@p0, @p1);
+UPDATE [AspNetUsers] SET [AccessFailedCount] = @p2, [ConcurrencyStamp] = @p3, [Email] = @p4, [EmailConfirmed] = @p5, [FirstName] = @p6, [Gender] = @p7, [IsDeleted] = @p8, [LastName] = @p9, [LockoutEnabled] = @p10, [LockoutEnd] = @p11, [NormalizedEmail] = @p12, [NormalizedUserName] = @p13, [OTP] = @p14, [OTPAttempts] = @p15, [OTPExpiryTime] = @p16, [PasswordHash] = @p17, [PhoneNumber] = @p18, [PhoneNumberConfirmed] = @p19, [ProfileImageUrl] = @p20, [RefreshToken] = @p21, [RefreshTokenExpiryTime] = @p22, [ResetPasswordConfirmed] = @p23, [SecurityStamp] = @p24, [TwoFactorEnabled] = @p25, [UserName] = @p26
+OUTPUT 1
+WHERE [Id] = @p27 AND [ConcurrencyStamp] = @p28;
+[2026-03-09 14:55:23.247 +02:00 WRN] Microsoft.EntityFrameworkCore.Database.Transaction Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[2026-03-09 14:55:23.322 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (73ms) [Parameters=[@p0='?' (DbType = DateTime2), @p1='?' (Size = 4000), @p2='?' (DbType = DateTime2), @p3='?' (DbType = Boolean), @p4='?' (Size = 4000), @p5='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+INSERT INTO [EmailVerifications] ([CreatedAt], [Email], [ExpiresAt], [IsUsed], [Token], [UsedAt])
+OUTPUT INSERTED.[Id]
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5);
+[2026-03-09 14:55:23.438 +02:00 INF] SmartCare.Application.CQRs.Authentication.Handlers.Auth.SignUpHandler Signup transaction committed successfully for kiroanis1920@gmail.com
+[2026-03-09 14:55:23.516 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (75ms) [Parameters=[@__normalizedEmail_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(2) [a].[Id], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[Gender], [a].[IsDeleted], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[OTP], [a].[OTPAttempts], [a].[OTPExpiryTime], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[ProfileImageUrl], [a].[RefreshToken], [a].[RefreshTokenExpiryTime], [a].[ResetPasswordConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+FROM [AspNetUsers] AS [a]
+WHERE [a].[NormalizedEmail] = @__normalizedEmail_0
+[2026-03-09 14:55:25.858 +02:00 INF] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor Executing OkObjectResult, writing value of type 'SmartCare.Application.Handlers.ResponseHandler.Response`1[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[2026-03-09 14:55:25.873 +02:00 INF] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker Executed action SmartCare.API.Controllers.AuthenticationController.PharmacistSignUpAsync (SmartCare.API) in 4851.9697ms
+[2026-03-09 14:55:25.875 +02:00 INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executed endpoint 'SmartCare.API.Controllers.AuthenticationController.PharmacistSignUpAsync (SmartCare.API)'
+[2026-03-09 14:55:25.889 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 POST https://localhost:7162/api/auth/Pharmacist-SignUp - 200 null application/json; charset=utf-8 5019.6815ms
+[2026-03-09 15:14:59.694 +02:00 WRN] Microsoft.EntityFrameworkCore.Model.Validation The 'PaymentMethod' property 'Method' on entity type 'Payment' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value 'Stripe', since this is the CLR default for the 'PaymentMethod' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.
+[2026-03-09 15:15:01.026 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (121ms) [Parameters=[@__normalizedName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedName_0
+[2026-03-09 15:15:01.180 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (79ms) [Parameters=[@__normalizedName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedName_0
+[2026-03-09 15:15:01.264 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (80ms) [Parameters=[@__normalizedName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedName_0
+[2026-03-09 15:15:01.345 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (78ms) [Parameters=[@__normalizedName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedName_0
+[2026-03-09 15:15:01.379 +02:00 INF] Hangfire.SqlServer.SqlServerObjectsInstaller Start installing Hangfire SQL objects...
+[2026-03-09 15:15:01.700 +02:00 INF] Hangfire.SqlServer.SqlServerObjectsInstaller Hangfire SQL objects installed.
+[2026-03-09 15:15:02.009 +02:00 INF] Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager User profile is available. Using 'C:\Users\HP\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+[2026-03-09 15:15:02.177 +02:00 WRN] Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServer The ASP.NET Core developer certificate is not trusted. For information about trusting the ASP.NET Core developer certificate, see https://aka.ms/aspnet/https-trust-dev-cert.
+[2026-03-09 15:15:02.238 +02:00 INF] Microsoft.Hosting.Lifetime Now listening on: https://localhost:7162
+[2026-03-09 15:15:02.240 +02:00 INF] Microsoft.Hosting.Lifetime Now listening on: http://localhost:5275
+[2026-03-09 15:15:02.376 +02:00 INF] Hangfire.BackgroundJobServer Starting Hangfire Server using job storage: '<Connection string can not be parsed>'
+[2026-03-09 15:15:02.378 +02:00 INF] Hangfire.BackgroundJobServer Using the following options for SQL Server job storage: Queue poll interval: 00:00:00.
+[2026-03-09 15:15:02.379 +02:00 INF] Hangfire.BackgroundJobServer Using the following options for Hangfire Server:
+    Worker count: 20
+    Listening queues: 'default'
+    Shutdown timeout: 00:00:15
+    Schedule polling interval: 00:00:15
+[2026-03-09 15:15:02.413 +02:00 INF] Microsoft.Hosting.Lifetime Application started. Press Ctrl+C to shut down.
+[2026-03-09 15:15:02.416 +02:00 INF] Microsoft.Hosting.Lifetime Hosting environment: Development
+[2026-03-09 15:15:02.422 +02:00 INF] Microsoft.Hosting.Lifetime Content root path: G:\SmartCare\SmartCare.API
+[2026-03-09 15:15:02.608 +02:00 INF] Hangfire.Server.BackgroundServerProcess Server desktop-e715lek:9888:a93a5708 successfully announced in 202.7906 ms
+[2026-03-09 15:15:02.615 +02:00 INF] Hangfire.Server.BackgroundServerProcess Server desktop-e715lek:9888:a93a5708 is starting the registered dispatchers: ServerWatchdog, ServerJobCancellationWatcher, SqlServerHeartbeatProcess, ExpirationManager, CountersAggregator, Worker, DelayedJobScheduler, RecurringJobScheduler...
+[2026-03-09 15:15:02.774 +02:00 INF] Hangfire.Server.BackgroundServerProcess Server desktop-e715lek:9888:a93a5708 all the dispatchers started
+[2026-03-09 15:15:02.937 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger - null null
+[2026-03-09 15:15:03.082 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger - 301 0 null 152.2517ms
+[2026-03-09 15:15:03.089 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/index.html - null null
+[2026-03-09 15:15:03.195 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/swagger-ui.css - null null
+[2026-03-09 15:15:03.195 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/swagger-ui-bundle.js - null null
+[2026-03-09 15:15:03.195 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/index.html - 200 null text/html;charset=utf-8 106.0432ms
+[2026-03-09 15:15:03.195 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/swagger-ui-standalone-preset.js - null null
+[2026-03-09 15:15:03.204 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/_framework/aspnetcore-browser-refresh.js - null null
+[2026-03-09 15:15:03.210 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/_vs/browserLink - null null
+[2026-03-09 15:15:03.226 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/_framework/aspnetcore-browser-refresh.js - 200 13762 application/javascript; charset=utf-8 22.1437ms
+[2026-03-09 15:15:03.241 +02:00 INF] Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware Sending file. Request path: '/swagger-ui-standalone-preset.js'. Physical path: 'N/A'
+[2026-03-09 15:15:03.241 +02:00 INF] Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware Sending file. Request path: '/swagger-ui.css'. Physical path: 'N/A'
+[2026-03-09 15:15:03.242 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/swagger-ui-standalone-preset.js - 200 230280 text/javascript 47.3361ms
+[2026-03-09 15:15:03.243 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/swagger-ui.css - 200 152034 text/css 48.8604ms
+[2026-03-09 15:15:03.289 +02:00 INF] Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware Sending file. Request path: '/swagger-ui-bundle.js'. Physical path: 'N/A'
+[2026-03-09 15:15:03.293 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/_vs/browserLink - 200 null text/javascript; charset=UTF-8 82.5764ms
+[2026-03-09 15:15:03.295 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/swagger-ui-bundle.js - 200 1456926 text/javascript 99.9196ms
+[2026-03-09 15:15:03.458 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/v1/swagger.json - null null
+[2026-03-09 15:15:03.624 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 173.4998ms
+[2026-03-09 15:15:54.834 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 POST https://localhost:7162/api/auth/Pharmacist-SignUp - multipart/form-data; boundary=----WebKitFormBoundaryuwqGXHE3wIuBlny1 1110
+[2026-03-09 15:15:54.951 +02:00 INF] Microsoft.AspNetCore.Cors.Infrastructure.CorsService CORS policy execution successful.
+[2026-03-09 15:15:54.955 +02:00 INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executing endpoint 'SmartCare.API.Controllers.AuthenticationController.PharmacistSignUpAsync (SmartCare.API)'
+[2026-03-09 15:15:54.978 +02:00 INF] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker Route matched with {action = "PharmacistSignUp", controller = "Authentication"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] PharmacistSignUpAsync(SmartCare.Application.DTOs.Pharmacist.Request.pharmacistSignUpRequestDto) on controller SmartCare.API.Controllers.AuthenticationController (SmartCare.API).
+[2026-03-09 15:15:55.408 +02:00 INF] SmartCare.Application.CQRs.Authentication.Handlers.Auth.SignUpHandler Starting signup process for email: kiroanis1920@gmail.com
+[2026-03-09 15:15:55.545 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (80ms) [Parameters=[@__get_Item_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [s].[Id], [s].[Address], [s].[CreatedAt], [s].[GeoLocation], [s].[IsDeleted], [s].[Latitude], [s].[Longitude], [s].[Name], [s].[Phone]
+FROM [Store] AS [s]
+WHERE [s].[Id] = @__get_Item_0
+[2026-03-09 15:15:55.715 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (84ms) [Parameters=[@__normalizedEmail_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(2) [a].[Id], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[Gender], [a].[IsDeleted], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[OTP], [a].[OTPAttempts], [a].[OTPExpiryTime], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[ProfileImageUrl], [a].[RefreshToken], [a].[RefreshTokenExpiryTime], [a].[ResetPasswordConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+FROM [AspNetUsers] AS [a]
+WHERE [a].[NormalizedEmail] = @__normalizedEmail_0
+[2026-03-09 15:15:55.811 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (82ms) [Parameters=[@__normalizedUserName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[Gender], [a].[IsDeleted], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[OTP], [a].[OTPAttempts], [a].[OTPExpiryTime], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[ProfileImageUrl], [a].[RefreshToken], [a].[RefreshTokenExpiryTime], [a].[ResetPasswordConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+FROM [AspNetUsers] AS [a]
+WHERE [a].[NormalizedUserName] = @__normalizedUserName_0
+[2026-03-09 15:15:55.910 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (77ms) [Parameters=[@__phone_0='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SELECT CASE
+    WHEN EXISTS (
+        SELECT 1
+        FROM [AspNetUsers] AS [a]
+        WHERE [a].[PhoneNumber] = @__phone_0) THEN CAST(1 AS bit)
+    ELSE CAST(0 AS bit)
+END
+[2026-03-09 15:15:56.204 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (85ms) [Parameters=[@__normalizedUserName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[Gender], [a].[IsDeleted], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[OTP], [a].[OTPAttempts], [a].[OTPExpiryTime], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[ProfileImageUrl], [a].[RefreshToken], [a].[RefreshTokenExpiryTime], [a].[ResetPasswordConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+FROM [AspNetUsers] AS [a]
+WHERE [a].[NormalizedUserName] = @__normalizedUserName_0
+[2026-03-09 15:15:56.296 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (84ms) [Parameters=[@__normalizedEmail_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(2) [a].[Id], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[Gender], [a].[IsDeleted], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[OTP], [a].[OTPAttempts], [a].[OTPExpiryTime], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[ProfileImageUrl], [a].[RefreshToken], [a].[RefreshTokenExpiryTime], [a].[ResetPasswordConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+FROM [AspNetUsers] AS [a]
+WHERE [a].[NormalizedEmail] = @__normalizedEmail_0
+[2026-03-09 15:15:56.497 +02:00 WRN] Microsoft.EntityFrameworkCore.Database.Transaction Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[2026-03-09 15:15:56.588 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (85ms) [Parameters=[@p0='?' (Size = 450), @p1='?' (DbType = Int32), @p2='?' (Size = 4000), @p3='?' (Size = 256), @p4='?' (DbType = Boolean), @p5='?' (Size = 4000), @p6='?' (DbType = Int32), @p7='?' (DbType = Boolean), @p8='?' (Size = 4000), @p9='?' (DbType = Boolean), @p10='?' (DbType = DateTimeOffset), @p11='?' (Size = 256), @p12='?' (Size = 256), @p13='?' (Size = 255), @p14='?' (DbType = Int32), @p15='?' (DbType = DateTime2), @p16='?' (Size = 4000), @p17='?' (Size = 4000), @p18='?' (DbType = Boolean), @p19='?' (Size = 255), @p20='?' (Size = 500), @p21='?' (DbType = DateTime2), @p22='?' (DbType = Boolean), @p23='?' (Size = 4000), @p24='?' (DbType = Boolean), @p25='?' (Size = 256), @p26='?' (Size = 450), @p27='?' (DbType = Boolean), @p28='?' (Size = 100), @p29='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SET NOCOUNT ON;
+INSERT INTO [AspNetUsers] ([Id], [AccessFailedCount], [ConcurrencyStamp], [Email], [EmailConfirmed], [FirstName], [Gender], [IsDeleted], [LastName], [LockoutEnabled], [LockoutEnd], [NormalizedEmail], [NormalizedUserName], [OTP], [OTPAttempts], [OTPExpiryTime], [PasswordHash], [PhoneNumber], [PhoneNumberConfirmed], [ProfileImageUrl], [RefreshToken], [RefreshTokenExpiryTime], [ResetPasswordConfirmed], [SecurityStamp], [TwoFactorEnabled], [UserName])
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15, @p16, @p17, @p18, @p19, @p20, @p21, @p22, @p23, @p24, @p25);
+INSERT INTO [Pharmacists] ([Id], [IsActive], [LicenseNumber], [StoreId])
+VALUES (@p26, @p27, @p28, @p29);
+[2026-03-09 15:15:56.692 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (79ms) [Parameters=[@__normalizedRoleName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(2) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedRoleName_0
+[2026-03-09 15:15:56.781 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (76ms) [Parameters=[@__p_0='?' (Size = 450), @__p_1='?' (Size = 450)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[UserId], [a].[RoleId]
+FROM [AspNetUserRoles] AS [a]
+WHERE [a].[UserId] = @__p_0 AND [a].[RoleId] = @__p_1
+[2026-03-09 15:15:56.870 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (81ms) [Parameters=[@__normalizedRoleName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(2) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedRoleName_0
+[2026-03-09 15:15:56.961 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (80ms) [Parameters=[@__normalizedUserName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[Gender], [a].[IsDeleted], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[OTP], [a].[OTPAttempts], [a].[OTPExpiryTime], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[ProfileImageUrl], [a].[RefreshToken], [a].[RefreshTokenExpiryTime], [a].[ResetPasswordConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+FROM [AspNetUsers] AS [a]
+WHERE [a].[NormalizedUserName] = @__normalizedUserName_0
+[2026-03-09 15:15:57.048 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (80ms) [Parameters=[@__normalizedEmail_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(2) [a].[Id], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[Gender], [a].[IsDeleted], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[OTP], [a].[OTPAttempts], [a].[OTPExpiryTime], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[ProfileImageUrl], [a].[RefreshToken], [a].[RefreshTokenExpiryTime], [a].[ResetPasswordConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+FROM [AspNetUsers] AS [a]
+WHERE [a].[NormalizedEmail] = @__normalizedEmail_0
+[2026-03-09 15:15:57.080 +02:00 WRN] Microsoft.EntityFrameworkCore.Database.Transaction Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[2026-03-09 15:15:57.165 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (83ms) [Parameters=[@p0='?' (Size = 450), @p1='?' (Size = 450), @p27='?' (Size = 450), @p2='?' (DbType = Int32), @p3='?' (Size = 4000), @p28='?' (Size = 4000), @p4='?' (Size = 256), @p5='?' (DbType = Boolean), @p6='?' (Size = 4000), @p7='?' (DbType = Int32), @p8='?' (DbType = Boolean), @p9='?' (Size = 4000), @p10='?' (DbType = Boolean), @p11='?' (DbType = DateTimeOffset), @p12='?' (Size = 256), @p13='?' (Size = 256), @p14='?' (Size = 255), @p15='?' (DbType = Int32), @p16='?' (DbType = DateTime2), @p17='?' (Size = 4000), @p18='?' (Size = 4000), @p19='?' (DbType = Boolean), @p20='?' (Size = 255), @p21='?' (Size = 500), @p22='?' (DbType = DateTime2), @p23='?' (DbType = Boolean), @p24='?' (Size = 4000), @p25='?' (DbType = Boolean), @p26='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SET NOCOUNT ON;
+INSERT INTO [AspNetUserRoles] ([RoleId], [UserId])
+VALUES (@p0, @p1);
+UPDATE [AspNetUsers] SET [AccessFailedCount] = @p2, [ConcurrencyStamp] = @p3, [Email] = @p4, [EmailConfirmed] = @p5, [FirstName] = @p6, [Gender] = @p7, [IsDeleted] = @p8, [LastName] = @p9, [LockoutEnabled] = @p10, [LockoutEnd] = @p11, [NormalizedEmail] = @p12, [NormalizedUserName] = @p13, [OTP] = @p14, [OTPAttempts] = @p15, [OTPExpiryTime] = @p16, [PasswordHash] = @p17, [PhoneNumber] = @p18, [PhoneNumberConfirmed] = @p19, [ProfileImageUrl] = @p20, [RefreshToken] = @p21, [RefreshTokenExpiryTime] = @p22, [ResetPasswordConfirmed] = @p23, [SecurityStamp] = @p24, [TwoFactorEnabled] = @p25, [UserName] = @p26
+OUTPUT 1
+WHERE [Id] = @p27 AND [ConcurrencyStamp] = @p28;
+[2026-03-09 15:15:57.280 +02:00 INF] SmartCare.Application.CQRs.Authentication.Handlers.Auth.SignUpHandler Signup transaction committed successfully for kiroanis1920@gmail.com
+[2026-03-09 15:15:57.369 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (81ms) [Parameters=[@__normalizedEmail_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(2) [a].[Id], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[Gender], [a].[IsDeleted], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[OTP], [a].[OTPAttempts], [a].[OTPExpiryTime], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[ProfileImageUrl], [a].[RefreshToken], [a].[RefreshTokenExpiryTime], [a].[ResetPasswordConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+FROM [AspNetUsers] AS [a]
+WHERE [a].[NormalizedEmail] = @__normalizedEmail_0
+[2026-03-09 15:15:59.520 +02:00 INF] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor Executing OkObjectResult, writing value of type 'SmartCare.Application.Handlers.ResponseHandler.Response`1[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[2026-03-09 15:15:59.536 +02:00 INF] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker Executed action SmartCare.API.Controllers.AuthenticationController.PharmacistSignUpAsync (SmartCare.API) in 4551.2323ms
+[2026-03-09 15:15:59.540 +02:00 INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executed endpoint 'SmartCare.API.Controllers.AuthenticationController.PharmacistSignUpAsync (SmartCare.API)'
+[2026-03-09 15:15:59.544 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 POST https://localhost:7162/api/auth/Pharmacist-SignUp - 200 null application/json; charset=utf-8 4709.8777ms
+[2026-03-09 15:33:50.058 +02:00 WRN] Microsoft.EntityFrameworkCore.Query Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[2026-03-09 15:33:50.197 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (115ms) [Parameters=[@__orderId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT [t].[Id], [t].[ClientId], [t].[CreatedAt], [t].[IsDeleted], [t].[OrderType], [t].[PaymenId], [t].[Status], [t].[TotalPrice], [t].[UpdatedAt], [t].[ShippingAddressId], [t].[PickupCodeHash], [t].[StoreId], [t].[Discriminator], [t].[Id0], [t].[AdditionalInfo], [t].[AddressLine], [t].[ClientId0], [t].[IsDeleted0], [t].[IsPrimary], [t].[Label], [t].[Latitude], [t].[Longitude], [t].[Id1], [t].[Address], [t].[CreatedAt0], [t].[GeoLocation], [t].[IsDeleted1], [t].[Latitude0], [t].[Longitude0], [t].[Name], [t].[Phone], [t].[Id2], [t].[Id3], [t].[Id4], [t0].[Id], [t0].[InvetoryId], [t0].[OrderId], [t0].[ProductId], [t0].[Quantity], [t0].[ReservationId], [t0].[SubTotal], [t0].[UnitPrice], [t0].[ProductId0], [t0].[ActiveIngredients], [t0].[AverageRating], [t0].[CategoryId], [t0].[CompanyId], [t0].[Contraindications], [t0].[CreatedAt], [t0].[Description], [t0].[DiscountPercentage], [t0].[DosageForm], [t0].[IsAvailable], [t0].[IsDeleted], [t0].[MedicalDescription], [t0].[NameAr], [t0].[NameEn], [t0].[Price], [t0].[SideEffects], [t0].[Tags], [t0].[TotalRatings], [t0].[UpdatedAt], [t0].[Id0], [t0].[IsPrimary], [t0].[ProductId1], [t0].[Url], [t].[Amount], [t].[ClientPaymentToken], [t].[CompletedAt], [t].[CreatedAt1], [t].[Method], [t].[OrderId], [t].[ProviderReferenceId], [t].[Status0], [t].[UpdatedAt0], [t].[Version], [t].[AccountType], [t].[BirthDate], [t].[FavoritesCount], [t].[OrdersCount], [t].[RatesCount], [t].[AccessFailedCount], [t].[ConcurrencyStamp], [t].[Email], [t].[EmailConfirmed], [t].[FirstName], [t].[Gender], [t].[IsDeleted2], [t].[LastName], [t].[LockoutEnabled], [t].[LockoutEnd], [t].[NormalizedEmail], [t].[NormalizedUserName], [t].[OTP], [t].[OTPAttempts], [t].[OTPExpiryTime], [t].[PasswordHash], [t].[PhoneNumber], [t].[PhoneNumberConfirmed], [t].[ProfileImageUrl], [t].[RefreshToken], [t].[RefreshTokenExpiryTime], [t].[ResetPasswordConfirmed], [t].[SecurityStamp], [t].[TwoFactorEnabled], [t].[UserName]
+FROM (
+    SELECT TOP(1) [o].[Id], [o].[ClientId], [o].[CreatedAt], [o].[IsDeleted], [o].[OrderType], [o].[PaymenId], [o].[Status], [o].[TotalPrice], [o].[UpdatedAt], [o0].[ShippingAddressId], [f].[PickupCodeHash], [f].[StoreId], CASE
+        WHEN [f].[Id] IS NOT NULL THEN N'PickUpOrder'
+        WHEN [o0].[Id] IS NOT NULL THEN N'OnlineOrder'
+    END AS [Discriminator], [u].[Id] AS [Id0], [u].[AdditionalInfo], [u].[AddressLine], [u].[ClientId] AS [ClientId0], [u].[IsDeleted] AS [IsDeleted0], [u].[IsPrimary], [u].[Label], [u].[Latitude], [u].[Longitude], [s].[Id] AS [Id1], [s].[Address], [s].[CreatedAt] AS [CreatedAt0], [s].[GeoLocation], [s].[IsDeleted] AS [IsDeleted1], [s].[Latitude] AS [Latitude0], [s].[Longitude] AS [Longitude0], [s].[Name], [s].[Phone], [p].[Id] AS [Id2], [p].[Amount], [p].[ClientPaymentToken], [p].[CompletedAt], [p].[CreatedAt] AS [CreatedAt1], [p].[Method], [p].[OrderId], [p].[ProviderReferenceId], [p].[Status] AS [Status0], [p].[UpdatedAt] AS [UpdatedAt0], [p].[Version], [c].[Id] AS [Id3], [c].[AccountType], [c].[BirthDate], [c].[FavoritesCount], [c].[OrdersCount], [c].[RatesCount], [a].[Id] AS [Id4], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[Gender], [a].[IsDeleted] AS [IsDeleted2], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[OTP], [a].[OTPAttempts], [a].[OTPExpiryTime], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[ProfileImageUrl], [a].[RefreshToken], [a].[RefreshTokenExpiryTime], [a].[ResetPasswordConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+    FROM [Order] AS [o]
+    LEFT JOIN [OnlineOrders] AS [o0] ON [o].[Id] = [o0].[Id]
+    LEFT JOIN [FromStoreOrders] AS [f] ON [o].[Id] = [f].[Id]
+    LEFT JOIN [UserAddress] AS [u] ON [o0].[ShippingAddressId] = [u].[Id]
+    LEFT JOIN [Store] AS [s] ON [f].[StoreId] = [s].[Id]
+    LEFT JOIN [Payment] AS [p] ON [o].[Id] = [p].[OrderId]
+    LEFT JOIN [Clients] AS [c] ON [o].[ClientId] = [c].[Id]
+    LEFT JOIN [AspNetUsers] AS [a] ON [c].[Id] = [a].[Id]
+    WHERE [o].[Id] = @__orderId_0
+) AS [t]
+LEFT JOIN (
+    SELECT [o1].[Id], [o1].[InvetoryId], [o1].[OrderId], [o1].[ProductId], [o1].[Quantity], [o1].[ReservationId], [o1].[SubTotal], [o1].[UnitPrice], [p0].[ProductId] AS [ProductId0], [p0].[ActiveIngredients], [p0].[AverageRating], [p0].[CategoryId], [p0].[CompanyId], [p0].[Contraindications], [p0].[CreatedAt], [p0].[Description], [p0].[DiscountPercentage], [p0].[DosageForm], [p0].[IsAvailable], [p0].[IsDeleted], [p0].[MedicalDescription], [p0].[NameAr], [p0].[NameEn], [p0].[Price], [p0].[SideEffects], [p0].[Tags], [p0].[TotalRatings], [p0].[UpdatedAt], [p1].[Id] AS [Id0], [p1].[IsPrimary], [p1].[ProductId] AS [ProductId1], [p1].[Url]
+    FROM [OrderItem] AS [o1]
+    INNER JOIN [Products] AS [p0] ON [o1].[ProductId] = [p0].[ProductId]
+    LEFT JOIN [ProductImage] AS [p1] ON [p0].[ProductId] = [p1].[ProductId]
+) AS [t0] ON [t].[Id] = [t0].[OrderId]
+ORDER BY [t].[Id], [t].[Id0], [t].[Id1], [t].[Id2], [t].[Id3], [t].[Id4], [t0].[Id], [t0].[ProductId0]
+[2026-03-09 15:33:50.331 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (83ms) [Parameters=[@__reservationId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [r].[Id], [r].[ExpiredAt], [r].[InventoryId], [r].[OrderItemId], [r].[ProductId], [r].[QuantityReserved], [r].[ReservedAt], [r].[Status], [p].[ProductId], [p].[ActiveIngredients], [p].[AverageRating], [p].[CategoryId], [p].[CompanyId], [p].[Contraindications], [p].[CreatedAt], [p].[Description], [p].[DiscountPercentage], [p].[DosageForm], [p].[IsAvailable], [p].[IsDeleted], [p].[MedicalDescription], [p].[NameAr], [p].[NameEn], [p].[Price], [p].[SideEffects], [p].[Tags], [p].[TotalRatings], [p].[UpdatedAt], [i].[Id], [i].[ProductId], [i].[ReservedQuantity], [i].[StockQuantity], [i].[StoreId], [o].[Id], [o].[InvetoryId], [o].[OrderId], [o].[ProductId], [o].[Quantity], [o].[ReservationId], [o].[SubTotal], [o].[UnitPrice]
+FROM [Reservation] AS [r]
+INNER JOIN [Products] AS [p] ON [r].[ProductId] = [p].[ProductId]
+INNER JOIN [Inventory] AS [i] ON [r].[InventoryId] = [i].[Id]
+LEFT JOIN [OrderItem] AS [o] ON [r].[OrderItemId] = [o].[Id]
+WHERE [r].[Id] = @__reservationId_0
+[2026-03-09 15:33:50.536 +02:00 WRN] Microsoft.EntityFrameworkCore.Database.Transaction Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[2026-03-09 15:33:50.636 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (98ms) [Parameters=[@p1='?' (DbType = Guid), @p0='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+UPDATE [Reservation] SET [ExpiredAt] = @p0
+OUTPUT 1
+WHERE [Id] = @p1;
+[2026-03-09 15:33:51.103 +02:00 WRN] Hangfire.AutomaticRetryAttribute Failed to process the job '94': an exception occurred. Retry attempt 1 of 10 will be performed in 00:00:23.
+System.ArgumentException: Delay must be greater than zero. (Parameter 'delay')
+   at SmartCare.InfraStructure.BackgroundJobImplemantations.HangfireBackgroundJobService.Schedule(Expression`1 methodCall, TimeSpan delay) in G:\SmartCare\SmartCare.InfraStructure\BackgroundJobImplemantations\HangfireBackgroundJobService.cs:line 48
+   at SmartCare.Application.Features.Payments.Commands.RequestpaymentSession.CreateOrUpdatePaymentHandler.ExtendOrderReservedTimeForPayment(Guid orderId) in G:\SmartCare\SmartCare.Application\Features\Payments\Commands\RequestpaymentSession\CreateOrUpdatePaymentHandler.cs:line 111
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[2026-03-09 15:40:32.822 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (132ms) [Parameters=[@__orderId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT [t].[Id], [t].[ClientId], [t].[CreatedAt], [t].[IsDeleted], [t].[OrderType], [t].[PaymenId], [t].[Status], [t].[TotalPrice], [t].[UpdatedAt], [t].[ShippingAddressId], [t].[PickupCodeHash], [t].[StoreId], [t].[Discriminator], [t].[Id0], [t].[AdditionalInfo], [t].[AddressLine], [t].[ClientId0], [t].[IsDeleted0], [t].[IsPrimary], [t].[Label], [t].[Latitude], [t].[Longitude], [t].[Id1], [t].[Address], [t].[CreatedAt0], [t].[GeoLocation], [t].[IsDeleted1], [t].[Latitude0], [t].[Longitude0], [t].[Name], [t].[Phone], [t].[Id2], [t].[Id3], [t].[Id4], [t0].[Id], [t0].[InvetoryId], [t0].[OrderId], [t0].[ProductId], [t0].[Quantity], [t0].[ReservationId], [t0].[SubTotal], [t0].[UnitPrice], [t0].[ProductId0], [t0].[ActiveIngredients], [t0].[AverageRating], [t0].[CategoryId], [t0].[CompanyId], [t0].[Contraindications], [t0].[CreatedAt], [t0].[Description], [t0].[DiscountPercentage], [t0].[DosageForm], [t0].[IsAvailable], [t0].[IsDeleted], [t0].[MedicalDescription], [t0].[NameAr], [t0].[NameEn], [t0].[Price], [t0].[SideEffects], [t0].[Tags], [t0].[TotalRatings], [t0].[UpdatedAt], [t0].[Id0], [t0].[IsPrimary], [t0].[ProductId1], [t0].[Url], [t].[Amount], [t].[ClientPaymentToken], [t].[CompletedAt], [t].[CreatedAt1], [t].[Method], [t].[OrderId], [t].[ProviderReferenceId], [t].[Status0], [t].[UpdatedAt0], [t].[Version], [t].[AccountType], [t].[BirthDate], [t].[FavoritesCount], [t].[OrdersCount], [t].[RatesCount], [t].[AccessFailedCount], [t].[ConcurrencyStamp], [t].[Email], [t].[EmailConfirmed], [t].[FirstName], [t].[Gender], [t].[IsDeleted2], [t].[LastName], [t].[LockoutEnabled], [t].[LockoutEnd], [t].[NormalizedEmail], [t].[NormalizedUserName], [t].[OTP], [t].[OTPAttempts], [t].[OTPExpiryTime], [t].[PasswordHash], [t].[PhoneNumber], [t].[PhoneNumberConfirmed], [t].[ProfileImageUrl], [t].[RefreshToken], [t].[RefreshTokenExpiryTime], [t].[ResetPasswordConfirmed], [t].[SecurityStamp], [t].[TwoFactorEnabled], [t].[UserName]
+FROM (
+    SELECT TOP(1) [o].[Id], [o].[ClientId], [o].[CreatedAt], [o].[IsDeleted], [o].[OrderType], [o].[PaymenId], [o].[Status], [o].[TotalPrice], [o].[UpdatedAt], [o0].[ShippingAddressId], [f].[PickupCodeHash], [f].[StoreId], CASE
+        WHEN [f].[Id] IS NOT NULL THEN N'PickUpOrder'
+        WHEN [o0].[Id] IS NOT NULL THEN N'OnlineOrder'
+    END AS [Discriminator], [u].[Id] AS [Id0], [u].[AdditionalInfo], [u].[AddressLine], [u].[ClientId] AS [ClientId0], [u].[IsDeleted] AS [IsDeleted0], [u].[IsPrimary], [u].[Label], [u].[Latitude], [u].[Longitude], [s].[Id] AS [Id1], [s].[Address], [s].[CreatedAt] AS [CreatedAt0], [s].[GeoLocation], [s].[IsDeleted] AS [IsDeleted1], [s].[Latitude] AS [Latitude0], [s].[Longitude] AS [Longitude0], [s].[Name], [s].[Phone], [p].[Id] AS [Id2], [p].[Amount], [p].[ClientPaymentToken], [p].[CompletedAt], [p].[CreatedAt] AS [CreatedAt1], [p].[Method], [p].[OrderId], [p].[ProviderReferenceId], [p].[Status] AS [Status0], [p].[UpdatedAt] AS [UpdatedAt0], [p].[Version], [c].[Id] AS [Id3], [c].[AccountType], [c].[BirthDate], [c].[FavoritesCount], [c].[OrdersCount], [c].[RatesCount], [a].[Id] AS [Id4], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[Gender], [a].[IsDeleted] AS [IsDeleted2], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[OTP], [a].[OTPAttempts], [a].[OTPExpiryTime], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[ProfileImageUrl], [a].[RefreshToken], [a].[RefreshTokenExpiryTime], [a].[ResetPasswordConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+    FROM [Order] AS [o]
+    LEFT JOIN [OnlineOrders] AS [o0] ON [o].[Id] = [o0].[Id]
+    LEFT JOIN [FromStoreOrders] AS [f] ON [o].[Id] = [f].[Id]
+    LEFT JOIN [UserAddress] AS [u] ON [o0].[ShippingAddressId] = [u].[Id]
+    LEFT JOIN [Store] AS [s] ON [f].[StoreId] = [s].[Id]
+    LEFT JOIN [Payment] AS [p] ON [o].[Id] = [p].[OrderId]
+    LEFT JOIN [Clients] AS [c] ON [o].[ClientId] = [c].[Id]
+    LEFT JOIN [AspNetUsers] AS [a] ON [c].[Id] = [a].[Id]
+    WHERE [o].[Id] = @__orderId_0
+) AS [t]
+LEFT JOIN (
+    SELECT [o1].[Id], [o1].[InvetoryId], [o1].[OrderId], [o1].[ProductId], [o1].[Quantity], [o1].[ReservationId], [o1].[SubTotal], [o1].[UnitPrice], [p0].[ProductId] AS [ProductId0], [p0].[ActiveIngredients], [p0].[AverageRating], [p0].[CategoryId], [p0].[CompanyId], [p0].[Contraindications], [p0].[CreatedAt], [p0].[Description], [p0].[DiscountPercentage], [p0].[DosageForm], [p0].[IsAvailable], [p0].[IsDeleted], [p0].[MedicalDescription], [p0].[NameAr], [p0].[NameEn], [p0].[Price], [p0].[SideEffects], [p0].[Tags], [p0].[TotalRatings], [p0].[UpdatedAt], [p1].[Id] AS [Id0], [p1].[IsPrimary], [p1].[ProductId] AS [ProductId1], [p1].[Url]
+    FROM [OrderItem] AS [o1]
+    INNER JOIN [Products] AS [p0] ON [o1].[ProductId] = [p0].[ProductId]
+    LEFT JOIN [ProductImage] AS [p1] ON [p0].[ProductId] = [p1].[ProductId]
+) AS [t0] ON [t].[Id] = [t0].[OrderId]
+ORDER BY [t].[Id], [t].[Id0], [t].[Id1], [t].[Id2], [t].[Id3], [t].[Id4], [t0].[Id], [t0].[ProductId0]
+[2026-03-09 15:40:32.930 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (93ms) [Parameters=[@__reservationId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [r].[Id], [r].[ExpiredAt], [r].[InventoryId], [r].[OrderItemId], [r].[ProductId], [r].[QuantityReserved], [r].[ReservedAt], [r].[Status]
+FROM [Reservation] AS [r]
+WHERE [r].[Id] = @__reservationId_0
+[2026-03-09 15:40:33.024 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (85ms) [Parameters=[@__inventoryId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [i].[Id], [i].[ProductId], [i].[ReservedQuantity], [i].[StockQuantity], [i].[StoreId]
+FROM [Inventory] AS [i]
+WHERE [i].[Id] = @__inventoryId_0
+[2026-03-09 15:40:35.970 +02:00 WRN] Microsoft.EntityFrameworkCore.Database.Transaction Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[2026-03-09 15:40:36.164 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (189ms) [Parameters=[@p1='?' (DbType = Guid), @p0='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+UPDATE [Reservation] SET [ExpiredAt] = @p0
+OUTPUT 1
+WHERE [Id] = @p1;
+[2026-03-09 16:04:40.961 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (102ms) [Parameters=[@__orderId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT [t].[Id], [t].[ClientId], [t].[CreatedAt], [t].[IsDeleted], [t].[OrderType], [t].[PaymenId], [t].[Status], [t].[TotalPrice], [t].[UpdatedAt], [t].[ShippingAddressId], [t].[PickupCodeHash], [t].[StoreId], [t].[Discriminator], [t].[Id0], [t].[AdditionalInfo], [t].[AddressLine], [t].[ClientId0], [t].[IsDeleted0], [t].[IsPrimary], [t].[Label], [t].[Latitude], [t].[Longitude], [t].[Id1], [t].[Address], [t].[CreatedAt0], [t].[GeoLocation], [t].[IsDeleted1], [t].[Latitude0], [t].[Longitude0], [t].[Name], [t].[Phone], [t].[Id2], [t].[Id3], [t].[Id4], [t0].[Id], [t0].[InvetoryId], [t0].[OrderId], [t0].[ProductId], [t0].[Quantity], [t0].[ReservationId], [t0].[SubTotal], [t0].[UnitPrice], [t0].[ProductId0], [t0].[ActiveIngredients], [t0].[AverageRating], [t0].[CategoryId], [t0].[CompanyId], [t0].[Contraindications], [t0].[CreatedAt], [t0].[Description], [t0].[DiscountPercentage], [t0].[DosageForm], [t0].[IsAvailable], [t0].[IsDeleted], [t0].[MedicalDescription], [t0].[NameAr], [t0].[NameEn], [t0].[Price], [t0].[SideEffects], [t0].[Tags], [t0].[TotalRatings], [t0].[UpdatedAt], [t0].[Id0], [t0].[IsPrimary], [t0].[ProductId1], [t0].[Url], [t].[Amount], [t].[ClientPaymentToken], [t].[CompletedAt], [t].[CreatedAt1], [t].[Method], [t].[OrderId], [t].[ProviderReferenceId], [t].[Status0], [t].[UpdatedAt0], [t].[Version], [t].[AccountType], [t].[BirthDate], [t].[FavoritesCount], [t].[OrdersCount], [t].[RatesCount], [t].[AccessFailedCount], [t].[ConcurrencyStamp], [t].[Email], [t].[EmailConfirmed], [t].[FirstName], [t].[Gender], [t].[IsDeleted2], [t].[LastName], [t].[LockoutEnabled], [t].[LockoutEnd], [t].[NormalizedEmail], [t].[NormalizedUserName], [t].[OTP], [t].[OTPAttempts], [t].[OTPExpiryTime], [t].[PasswordHash], [t].[PhoneNumber], [t].[PhoneNumberConfirmed], [t].[ProfileImageUrl], [t].[RefreshToken], [t].[RefreshTokenExpiryTime], [t].[ResetPasswordConfirmed], [t].[SecurityStamp], [t].[TwoFactorEnabled], [t].[UserName]
+FROM (
+    SELECT TOP(1) [o].[Id], [o].[ClientId], [o].[CreatedAt], [o].[IsDeleted], [o].[OrderType], [o].[PaymenId], [o].[Status], [o].[TotalPrice], [o].[UpdatedAt], [o0].[ShippingAddressId], [f].[PickupCodeHash], [f].[StoreId], CASE
+        WHEN [f].[Id] IS NOT NULL THEN N'PickUpOrder'
+        WHEN [o0].[Id] IS NOT NULL THEN N'OnlineOrder'
+    END AS [Discriminator], [u].[Id] AS [Id0], [u].[AdditionalInfo], [u].[AddressLine], [u].[ClientId] AS [ClientId0], [u].[IsDeleted] AS [IsDeleted0], [u].[IsPrimary], [u].[Label], [u].[Latitude], [u].[Longitude], [s].[Id] AS [Id1], [s].[Address], [s].[CreatedAt] AS [CreatedAt0], [s].[GeoLocation], [s].[IsDeleted] AS [IsDeleted1], [s].[Latitude] AS [Latitude0], [s].[Longitude] AS [Longitude0], [s].[Name], [s].[Phone], [p].[Id] AS [Id2], [p].[Amount], [p].[ClientPaymentToken], [p].[CompletedAt], [p].[CreatedAt] AS [CreatedAt1], [p].[Method], [p].[OrderId], [p].[ProviderReferenceId], [p].[Status] AS [Status0], [p].[UpdatedAt] AS [UpdatedAt0], [p].[Version], [c].[Id] AS [Id3], [c].[AccountType], [c].[BirthDate], [c].[FavoritesCount], [c].[OrdersCount], [c].[RatesCount], [a].[Id] AS [Id4], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[Gender], [a].[IsDeleted] AS [IsDeleted2], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[OTP], [a].[OTPAttempts], [a].[OTPExpiryTime], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[ProfileImageUrl], [a].[RefreshToken], [a].[RefreshTokenExpiryTime], [a].[ResetPasswordConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+    FROM [Order] AS [o]
+    LEFT JOIN [OnlineOrders] AS [o0] ON [o].[Id] = [o0].[Id]
+    LEFT JOIN [FromStoreOrders] AS [f] ON [o].[Id] = [f].[Id]
+    LEFT JOIN [UserAddress] AS [u] ON [o0].[ShippingAddressId] = [u].[Id]
+    LEFT JOIN [Store] AS [s] ON [f].[StoreId] = [s].[Id]
+    LEFT JOIN [Payment] AS [p] ON [o].[Id] = [p].[OrderId]
+    LEFT JOIN [Clients] AS [c] ON [o].[ClientId] = [c].[Id]
+    LEFT JOIN [AspNetUsers] AS [a] ON [c].[Id] = [a].[Id]
+    WHERE [o].[Id] = @__orderId_0
+) AS [t]
+LEFT JOIN (
+    SELECT [o1].[Id], [o1].[InvetoryId], [o1].[OrderId], [o1].[ProductId], [o1].[Quantity], [o1].[ReservationId], [o1].[SubTotal], [o1].[UnitPrice], [p0].[ProductId] AS [ProductId0], [p0].[ActiveIngredients], [p0].[AverageRating], [p0].[CategoryId], [p0].[CompanyId], [p0].[Contraindications], [p0].[CreatedAt], [p0].[Description], [p0].[DiscountPercentage], [p0].[DosageForm], [p0].[IsAvailable], [p0].[IsDeleted], [p0].[MedicalDescription], [p0].[NameAr], [p0].[NameEn], [p0].[Price], [p0].[SideEffects], [p0].[Tags], [p0].[TotalRatings], [p0].[UpdatedAt], [p1].[Id] AS [Id0], [p1].[IsPrimary], [p1].[ProductId] AS [ProductId1], [p1].[Url]
+    FROM [OrderItem] AS [o1]
+    INNER JOIN [Products] AS [p0] ON [o1].[ProductId] = [p0].[ProductId]
+    LEFT JOIN [ProductImage] AS [p1] ON [p0].[ProductId] = [p1].[ProductId]
+) AS [t0] ON [t].[Id] = [t0].[OrderId]
+ORDER BY [t].[Id], [t].[Id0], [t].[Id1], [t].[Id2], [t].[Id3], [t].[Id4], [t0].[Id], [t0].[ProductId0]
+[2026-03-09 16:04:41.048 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (78ms) [Parameters=[@__reservationId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [r].[Id], [r].[ExpiredAt], [r].[InventoryId], [r].[OrderItemId], [r].[ProductId], [r].[QuantityReserved], [r].[ReservedAt], [r].[Status], [p].[ProductId], [p].[ActiveIngredients], [p].[AverageRating], [p].[CategoryId], [p].[CompanyId], [p].[Contraindications], [p].[CreatedAt], [p].[Description], [p].[DiscountPercentage], [p].[DosageForm], [p].[IsAvailable], [p].[IsDeleted], [p].[MedicalDescription], [p].[NameAr], [p].[NameEn], [p].[Price], [p].[SideEffects], [p].[Tags], [p].[TotalRatings], [p].[UpdatedAt], [i].[Id], [i].[ProductId], [i].[ReservedQuantity], [i].[StockQuantity], [i].[StoreId], [o].[Id], [o].[InvetoryId], [o].[OrderId], [o].[ProductId], [o].[Quantity], [o].[ReservationId], [o].[SubTotal], [o].[UnitPrice]
+FROM [Reservation] AS [r]
+INNER JOIN [Products] AS [p] ON [r].[ProductId] = [p].[ProductId]
+INNER JOIN [Inventory] AS [i] ON [r].[InventoryId] = [i].[Id]
+LEFT JOIN [OrderItem] AS [o] ON [r].[OrderItemId] = [o].[Id]
+WHERE [r].[Id] = @__reservationId_0
+[2026-03-09 16:04:41.129 +02:00 WRN] Microsoft.EntityFrameworkCore.Database.Transaction Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[2026-03-09 16:04:41.208 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (75ms) [Parameters=[@p1='?' (DbType = Guid), @p0='?' (DbType = DateTime2)], CommandType='"Text"', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+UPDATE [Reservation] SET [ExpiredAt] = @p0
+OUTPUT 1
+WHERE [Id] = @p1;
+[2026-03-09 16:04:41.560 +02:00 WRN] Hangfire.AutomaticRetryAttribute Failed to process the job '98': an exception occurred. Retry attempt 1 of 10 will be performed in 00:00:15.
+System.ArgumentException: Delay must be greater than zero. (Parameter 'delay')
+   at SmartCare.InfraStructure.BackgroundJobImplemantations.HangfireBackgroundJobService.Schedule(Expression`1 methodCall, TimeSpan delay) in G:\SmartCare\SmartCare.InfraStructure\BackgroundJobImplemantations\HangfireBackgroundJobService.cs:line 48
+   at SmartCare.Application.Features.Payments.Commands.RequestpaymentSession.CreateOrUpdatePaymentHandler.ExtendOrderReservedTimeForPayment(Guid orderId) in G:\SmartCare\SmartCare.Application\Features\Payments\Commands\RequestpaymentSession\CreateOrUpdatePaymentHandler.cs:line 111
+   at InvokeStub_TaskAwaiter.GetResult(Object, Object, IntPtr*)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[2026-03-09 16:04:42.314 +02:00 INF] Hangfire.Processing.BackgroundExecution Execution Worker recovered from the Faulted state after 00:22:15.0315653 and is in the Running state now
+[2026-03-09 16:13:01.008 +02:00 WRN] Hangfire.Server.ServerHeartbeatProcess Server desktop-e715lek:9888:a93a5708 encountered an exception while sending heartbeat
+Microsoft.Data.SqlClient.SqlException (0x80131904): A network-related or instance-specific error occurred while establishing a connection to SQL Server. The server was not found or was not accessible. Verify that the instance name is correct and that SQL Server is configured to allow remote connections. (provider: Named Pipes Provider, error: 40 - Could not open a connection to SQL Server)
+ ---> System.ComponentModel.Win32Exception (64): The specified network name is no longer available.
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.Connect(ServerInfo serverInfo, SqlInternalConnectionTds connHandler, Boolean ignoreSniOpenTimeout, Int64 timerExpire, SqlConnectionString connectionOptions, Boolean withFailover)
+   at Microsoft.Data.SqlClient.SqlInternalConnectionTds.AttemptOneLogin(ServerInfo serverInfo, String newPassword, SecureString newSecurePassword, Boolean ignoreSniOpenTimeout, TimeoutTimer timeout, Boolean withFailover)
+   at Microsoft.Data.SqlClient.SqlInternalConnectionTds.LoginNoFailover(ServerInfo serverInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString connectionOptions, SqlCredential credential, TimeoutTimer timeout)
+   at Microsoft.Data.SqlClient.SqlInternalConnectionTds.OpenLoginEnlist(TimeoutTimer timeout, SqlConnectionString connectionOptions, SqlCredential credential, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance)
+   at Microsoft.Data.SqlClient.SqlInternalConnectionTds..ctor(DbConnectionPoolIdentity identity, SqlConnectionString connectionOptions, SqlCredential credential, Object providerInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString userConnectionOptions, SessionData reconnectSessionData, Boolean applyTransientFaultHandling, String accessToken, DbConnectionPool pool)
+   at Microsoft.Data.SqlClient.SqlConnectionFactory.CreateConnection(DbConnectionOptions options, DbConnectionPoolKey poolKey, Object poolGroupProviderInfo, DbConnectionPool pool, DbConnection owningConnection, DbConnectionOptions userOptions)
+   at Microsoft.Data.ProviderBase.DbConnectionFactory.CreatePooledConnection(DbConnectionPool pool, DbConnection owningObject, DbConnectionOptions options, DbConnectionPoolKey poolKey, DbConnectionOptions userOptions)
+   at Microsoft.Data.ProviderBase.DbConnectionPool.CreateObject(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+   at Microsoft.Data.ProviderBase.DbConnectionPool.UserCreateRequest(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+   at Microsoft.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, UInt32 waitForMultipleObjectsTimeout, Boolean allowCreate, Boolean onlyOneCheckConnection, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   at Microsoft.Data.ProviderBase.DbConnectionFactory.TryGetConnection(DbConnection owningConnection, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal oldConnection, DbConnectionInternal& connection)
+   at Microsoft.Data.ProviderBase.DbConnectionInternal.TryOpenConnectionInternal(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at Microsoft.Data.SqlClient.SqlConnection.Open(SqlConnectionOverrides overrides)
+   at Hangfire.SqlServer.SqlServerStorage.CreateAndOpenConnection() in C:\projects\hangfire-525\src\Hangfire.SqlServer\SqlServerStorage.cs:line 406
+   at Hangfire.SqlServer.SqlServerStorage.UseConnection[TContext,TResult](DbConnection dedicatedConnection, Func`4 func, TContext context) in C:\projects\hangfire-525\src\Hangfire.SqlServer\SqlServerStorage.cs:line 291
+   at Hangfire.Server.ServerHeartbeatProcess.Execute(BackgroundProcessContext context) in C:\projects\hangfire-525\src\Hangfire.Core\Server\ServerHeartbeatProcess.cs:line 42
+ClientConnectionId:00000000-0000-0000-0000-000000000000
+Error Number:64,State:0,Class:20
+[2026-03-09 16:13:19.101 +02:00 INF] Hangfire.Processing.BackgroundExecution Execution RecurringJobScheduler recovered from the Faulted state after 00:00:16.3170008 and is in the Running state now
+[2026-03-09 16:13:19.164 +02:00 INF] Hangfire.Processing.BackgroundExecution Execution DelayedJobScheduler recovered from the Faulted state after 00:00:16.3795185 and is in the Running state now
+[2026-03-09 16:13:31.131 +02:00 INF] Hangfire.Server.ServerHeartbeatProcess Server desktop-e715lek:9888:a93a5708 is now able to continue sending heartbeats
+[2026-03-09 16:45:22.229 +02:00 WRN] Microsoft.EntityFrameworkCore.Model.Validation The 'PaymentMethod' property 'Method' on entity type 'Payment' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value 'Stripe', since this is the CLR default for the 'PaymentMethod' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.
+[2026-03-09 16:45:23.539 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (117ms) [Parameters=[@__normalizedName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedName_0
+[2026-03-09 16:45:23.681 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (69ms) [Parameters=[@__normalizedName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedName_0
+[2026-03-09 16:45:23.754 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (70ms) [Parameters=[@__normalizedName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedName_0
+[2026-03-09 16:45:23.833 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (74ms) [Parameters=[@__normalizedName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedName_0
+[2026-03-09 16:45:23.876 +02:00 INF] Hangfire.SqlServer.SqlServerObjectsInstaller Start installing Hangfire SQL objects...
+[2026-03-09 16:45:24.179 +02:00 INF] Hangfire.SqlServer.SqlServerObjectsInstaller Hangfire SQL objects installed.
+[2026-03-09 16:45:24.500 +02:00 INF] Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager User profile is available. Using 'C:\Users\HP\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+[2026-03-09 16:45:24.662 +02:00 WRN] Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServer The ASP.NET Core developer certificate is not trusted. For information about trusting the ASP.NET Core developer certificate, see https://aka.ms/aspnet/https-trust-dev-cert.
+[2026-03-09 16:45:24.720 +02:00 INF] Microsoft.Hosting.Lifetime Now listening on: https://localhost:7162
+[2026-03-09 16:45:24.721 +02:00 INF] Microsoft.Hosting.Lifetime Now listening on: http://localhost:5275
+[2026-03-09 16:45:24.853 +02:00 INF] Hangfire.BackgroundJobServer Starting Hangfire Server using job storage: '<Connection string can not be parsed>'
+[2026-03-09 16:45:24.856 +02:00 INF] Hangfire.BackgroundJobServer Using the following options for SQL Server job storage: Queue poll interval: 00:00:00.
+[2026-03-09 16:45:24.856 +02:00 INF] Hangfire.BackgroundJobServer Using the following options for Hangfire Server:
+    Worker count: 20
+    Listening queues: 'default'
+    Shutdown timeout: 00:00:15
+    Schedule polling interval: 00:00:15
+[2026-03-09 16:45:24.881 +02:00 INF] Microsoft.Hosting.Lifetime Application started. Press Ctrl+C to shut down.
+[2026-03-09 16:45:24.888 +02:00 INF] Microsoft.Hosting.Lifetime Hosting environment: Development
+[2026-03-09 16:45:24.890 +02:00 INF] Microsoft.Hosting.Lifetime Content root path: G:\SmartCare\SmartCare.API
+[2026-03-09 16:45:25.065 +02:00 INF] Hangfire.Server.BackgroundServerProcess Server desktop-e715lek:22960:528aebc2 successfully announced in 185.0119 ms
+[2026-03-09 16:45:25.073 +02:00 INF] Hangfire.Server.BackgroundServerProcess Server desktop-e715lek:22960:528aebc2 is starting the registered dispatchers: ServerWatchdog, ServerJobCancellationWatcher, SqlServerHeartbeatProcess, ExpirationManager, CountersAggregator, Worker, DelayedJobScheduler, RecurringJobScheduler...
+[2026-03-09 16:45:25.169 +02:00 INF] Hangfire.Server.ServerWatchdog 1 servers were removed due to timeout
+[2026-03-09 16:45:25.232 +02:00 INF] Hangfire.Server.BackgroundServerProcess Server desktop-e715lek:22960:528aebc2 all the dispatchers started
+[2026-03-09 16:45:25.433 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger - null null
+[2026-03-09 16:45:25.570 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger - 301 0 null 144.8801ms
+[2026-03-09 16:45:25.575 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/index.html - null null
+[2026-03-09 16:45:25.655 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/index.html - 200 null text/html;charset=utf-8 79.392ms
+[2026-03-09 16:45:25.660 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/swagger-ui.css - null null
+[2026-03-09 16:45:25.660 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/swagger-ui-standalone-preset.js - null null
+[2026-03-09 16:45:25.660 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/swagger-ui-bundle.js - null null
+[2026-03-09 16:45:25.661 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/_framework/aspnetcore-browser-refresh.js - null null
+[2026-03-09 16:45:25.680 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/_vs/browserLink - null null
+[2026-03-09 16:45:25.697 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/_framework/aspnetcore-browser-refresh.js - 200 13762 application/javascript; charset=utf-8 36.4703ms
+[2026-03-09 16:45:25.713 +02:00 INF] Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware Sending file. Request path: '/swagger-ui.css'. Physical path: 'N/A'
+[2026-03-09 16:45:25.721 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/swagger-ui.css - 200 152034 text/css 61.5014ms
+[2026-03-09 16:45:25.716 +02:00 INF] Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware Sending file. Request path: '/swagger-ui-standalone-preset.js'. Physical path: 'N/A'
+[2026-03-09 16:45:25.744 +02:00 INF] Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware Sending file. Request path: '/swagger-ui-bundle.js'. Physical path: 'N/A'
+[2026-03-09 16:45:25.751 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/swagger-ui-bundle.js - 200 1456926 text/javascript 90.6097ms
+[2026-03-09 16:45:25.749 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/swagger-ui-standalone-preset.js - 200 230280 text/javascript 89.0507ms
+[2026-03-09 16:45:25.769 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/_vs/browserLink - 200 null text/javascript; charset=UTF-8 89.1131ms
+[2026-03-09 16:45:25.940 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/v1/swagger.json - null null
+[2026-03-09 16:45:26.113 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 172.6272ms
+[2026-03-09 16:47:17.575 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 POST https://localhost:7162/api/auth/Pharmacist-SignUp - multipart/form-data; boundary=----WebKitFormBoundaryr3wstLSEXtGBBcJn 1119
+[2026-03-09 16:47:17.682 +02:00 INF] Microsoft.AspNetCore.Cors.Infrastructure.CorsService CORS policy execution successful.
+[2026-03-09 16:47:17.686 +02:00 INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executing endpoint 'SmartCare.API.Controllers.AuthenticationController.PharmacistSignUpAsync (SmartCare.API)'
+[2026-03-09 16:47:17.709 +02:00 INF] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker Route matched with {action = "PharmacistSignUp", controller = "Authentication"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] PharmacistSignUpAsync(SmartCare.Application.DTOs.Pharmacist.Request.pharmacistSignUpRequestDto) on controller SmartCare.API.Controllers.AuthenticationController (SmartCare.API).
+[2026-03-09 16:47:17.810 +02:00 INF] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor Executing BadRequestObjectResult, writing value of type 'SmartCare.Application.Handlers.ResponseHandler.Response`1[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[2026-03-09 16:47:17.825 +02:00 INF] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker Executed action SmartCare.API.Controllers.AuthenticationController.PharmacistSignUpAsync (SmartCare.API) in 110.1561ms
+[2026-03-09 16:47:17.827 +02:00 INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executed endpoint 'SmartCare.API.Controllers.AuthenticationController.PharmacistSignUpAsync (SmartCare.API)'
+[2026-03-09 16:47:17.828 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 POST https://localhost:7162/api/auth/Pharmacist-SignUp - 400 null application/json; charset=utf-8 252.1656ms
+[2026-03-09 16:47:37.783 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 POST https://localhost:7162/api/auth/Pharmacist-SignUp - multipart/form-data; boundary=----WebKitFormBoundaryDCAcFtV2CwQc2N4B 1114
+[2026-03-09 16:47:37.791 +02:00 INF] Microsoft.AspNetCore.Cors.Infrastructure.CorsService CORS policy execution successful.
+[2026-03-09 16:47:37.792 +02:00 INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executing endpoint 'SmartCare.API.Controllers.AuthenticationController.PharmacistSignUpAsync (SmartCare.API)'
+[2026-03-09 16:47:37.793 +02:00 INF] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker Route matched with {action = "PharmacistSignUp", controller = "Authentication"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] PharmacistSignUpAsync(SmartCare.Application.DTOs.Pharmacist.Request.pharmacistSignUpRequestDto) on controller SmartCare.API.Controllers.AuthenticationController (SmartCare.API).
+[2026-03-09 16:47:38.135 +02:00 INF] SmartCare.Application.CQRs.Authentication.Handlers.Auth.SignUpHandler Starting signup process for email: kiroanis1920@gmail.com
+[2026-03-09 16:47:38.276 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (75ms) [Parameters=[@__get_Item_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [s].[Id], [s].[Address], [s].[CreatedAt], [s].[GeoLocation], [s].[IsDeleted], [s].[Latitude], [s].[Longitude], [s].[Name], [s].[Phone]
+FROM [Store] AS [s]
+WHERE [s].[Id] = @__get_Item_0
+[2026-03-09 16:47:38.441 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (75ms) [Parameters=[@__normalizedEmail_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(2) [a].[Id], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[Gender], [a].[IsDeleted], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[OTP], [a].[OTPAttempts], [a].[OTPExpiryTime], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[ProfileImageUrl], [a].[RefreshToken], [a].[RefreshTokenExpiryTime], [a].[ResetPasswordConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+FROM [AspNetUsers] AS [a]
+WHERE [a].[NormalizedEmail] = @__normalizedEmail_0
+[2026-03-09 16:47:38.540 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (77ms) [Parameters=[@__normalizedUserName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[Gender], [a].[IsDeleted], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[OTP], [a].[OTPAttempts], [a].[OTPExpiryTime], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[ProfileImageUrl], [a].[RefreshToken], [a].[RefreshTokenExpiryTime], [a].[ResetPasswordConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+FROM [AspNetUsers] AS [a]
+WHERE [a].[NormalizedUserName] = @__normalizedUserName_0
+[2026-03-09 16:47:38.648 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (73ms) [Parameters=[@__phone_0='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SELECT CASE
+    WHEN EXISTS (
+        SELECT 1
+        FROM [AspNetUsers] AS [a]
+        WHERE [a].[PhoneNumber] = @__phone_0) THEN CAST(1 AS bit)
+    ELSE CAST(0 AS bit)
+END
+[2026-03-09 16:47:39.021 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (112ms) [Parameters=[@__normalizedUserName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[Gender], [a].[IsDeleted], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[OTP], [a].[OTPAttempts], [a].[OTPExpiryTime], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[ProfileImageUrl], [a].[RefreshToken], [a].[RefreshTokenExpiryTime], [a].[ResetPasswordConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+FROM [AspNetUsers] AS [a]
+WHERE [a].[NormalizedUserName] = @__normalizedUserName_0
+[2026-03-09 16:47:39.123 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (93ms) [Parameters=[@__normalizedEmail_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(2) [a].[Id], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[Gender], [a].[IsDeleted], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[OTP], [a].[OTPAttempts], [a].[OTPExpiryTime], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[ProfileImageUrl], [a].[RefreshToken], [a].[RefreshTokenExpiryTime], [a].[ResetPasswordConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+FROM [AspNetUsers] AS [a]
+WHERE [a].[NormalizedEmail] = @__normalizedEmail_0
+[2026-03-09 16:47:39.339 +02:00 WRN] Microsoft.EntityFrameworkCore.Database.Transaction Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[2026-03-09 16:47:39.420 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (74ms) [Parameters=[@p0='?' (Size = 450), @p1='?' (DbType = Int32), @p2='?' (Size = 4000), @p3='?' (Size = 256), @p4='?' (DbType = Boolean), @p5='?' (Size = 4000), @p6='?' (DbType = Int32), @p7='?' (DbType = Boolean), @p8='?' (Size = 4000), @p9='?' (DbType = Boolean), @p10='?' (DbType = DateTimeOffset), @p11='?' (Size = 256), @p12='?' (Size = 256), @p13='?' (Size = 255), @p14='?' (DbType = Int32), @p15='?' (DbType = DateTime2), @p16='?' (Size = 4000), @p17='?' (Size = 4000), @p18='?' (DbType = Boolean), @p19='?' (Size = 255), @p20='?' (Size = 500), @p21='?' (DbType = DateTime2), @p22='?' (DbType = Boolean), @p23='?' (Size = 4000), @p24='?' (DbType = Boolean), @p25='?' (Size = 256), @p26='?' (Size = 450), @p27='?' (DbType = Boolean), @p28='?' (Size = 100), @p29='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SET NOCOUNT ON;
+INSERT INTO [AspNetUsers] ([Id], [AccessFailedCount], [ConcurrencyStamp], [Email], [EmailConfirmed], [FirstName], [Gender], [IsDeleted], [LastName], [LockoutEnabled], [LockoutEnd], [NormalizedEmail], [NormalizedUserName], [OTP], [OTPAttempts], [OTPExpiryTime], [PasswordHash], [PhoneNumber], [PhoneNumberConfirmed], [ProfileImageUrl], [RefreshToken], [RefreshTokenExpiryTime], [ResetPasswordConfirmed], [SecurityStamp], [TwoFactorEnabled], [UserName])
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15, @p16, @p17, @p18, @p19, @p20, @p21, @p22, @p23, @p24, @p25);
+INSERT INTO [Pharmacists] ([Id], [IsActive], [LicenseNumber], [StoreId])
+VALUES (@p26, @p27, @p28, @p29);
+[2026-03-09 16:47:39.509 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (68ms) [Parameters=[@__normalizedRoleName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(2) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedRoleName_0
+[2026-03-09 16:47:39.590 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (68ms) [Parameters=[@__p_0='?' (Size = 450), @__p_1='?' (Size = 450)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[UserId], [a].[RoleId]
+FROM [AspNetUserRoles] AS [a]
+WHERE [a].[UserId] = @__p_0 AND [a].[RoleId] = @__p_1
+[2026-03-09 16:47:39.699 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (103ms) [Parameters=[@__normalizedRoleName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(2) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedRoleName_0
+[2026-03-09 16:47:39.783 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (72ms) [Parameters=[@__normalizedUserName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[Gender], [a].[IsDeleted], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[OTP], [a].[OTPAttempts], [a].[OTPExpiryTime], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[ProfileImageUrl], [a].[RefreshToken], [a].[RefreshTokenExpiryTime], [a].[ResetPasswordConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+FROM [AspNetUsers] AS [a]
+WHERE [a].[NormalizedUserName] = @__normalizedUserName_0
+[2026-03-09 16:47:39.868 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (79ms) [Parameters=[@__normalizedEmail_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(2) [a].[Id], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[Gender], [a].[IsDeleted], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[OTP], [a].[OTPAttempts], [a].[OTPExpiryTime], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[ProfileImageUrl], [a].[RefreshToken], [a].[RefreshTokenExpiryTime], [a].[ResetPasswordConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+FROM [AspNetUsers] AS [a]
+WHERE [a].[NormalizedEmail] = @__normalizedEmail_0
+[2026-03-09 16:47:39.890 +02:00 WRN] Microsoft.EntityFrameworkCore.Database.Transaction Savepoints are disabled because Multiple Active Result Sets (MARS) is enabled. If 'SaveChanges' fails, then the transaction cannot be automatically rolled back to a known clean state. Instead, the transaction should be rolled back by the application before retrying 'SaveChanges'. See https://go.microsoft.com/fwlink/?linkid=2149338 for more information and examples. To identify the code which triggers this warning, call 'ConfigureWarnings(w => w.Throw(SqlServerEventId.SavepointsDisabledBecauseOfMARS))'.
+[2026-03-09 16:47:39.972 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (80ms) [Parameters=[@p0='?' (Size = 450), @p1='?' (Size = 450), @p27='?' (Size = 450), @p2='?' (DbType = Int32), @p3='?' (Size = 4000), @p28='?' (Size = 4000), @p4='?' (Size = 256), @p5='?' (DbType = Boolean), @p6='?' (Size = 4000), @p7='?' (DbType = Int32), @p8='?' (DbType = Boolean), @p9='?' (Size = 4000), @p10='?' (DbType = Boolean), @p11='?' (DbType = DateTimeOffset), @p12='?' (Size = 256), @p13='?' (Size = 256), @p14='?' (Size = 255), @p15='?' (DbType = Int32), @p16='?' (DbType = DateTime2), @p17='?' (Size = 4000), @p18='?' (Size = 4000), @p19='?' (DbType = Boolean), @p20='?' (Size = 255), @p21='?' (Size = 500), @p22='?' (DbType = DateTime2), @p23='?' (DbType = Boolean), @p24='?' (Size = 4000), @p25='?' (DbType = Boolean), @p26='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SET NOCOUNT ON;
+INSERT INTO [AspNetUserRoles] ([RoleId], [UserId])
+VALUES (@p0, @p1);
+UPDATE [AspNetUsers] SET [AccessFailedCount] = @p2, [ConcurrencyStamp] = @p3, [Email] = @p4, [EmailConfirmed] = @p5, [FirstName] = @p6, [Gender] = @p7, [IsDeleted] = @p8, [LastName] = @p9, [LockoutEnabled] = @p10, [LockoutEnd] = @p11, [NormalizedEmail] = @p12, [NormalizedUserName] = @p13, [OTP] = @p14, [OTPAttempts] = @p15, [OTPExpiryTime] = @p16, [PasswordHash] = @p17, [PhoneNumber] = @p18, [PhoneNumberConfirmed] = @p19, [ProfileImageUrl] = @p20, [RefreshToken] = @p21, [RefreshTokenExpiryTime] = @p22, [ResetPasswordConfirmed] = @p23, [SecurityStamp] = @p24, [TwoFactorEnabled] = @p25, [UserName] = @p26
+OUTPUT 1
+WHERE [Id] = @p27 AND [ConcurrencyStamp] = @p28;
+[2026-03-09 16:47:40.067 +02:00 INF] SmartCare.Application.CQRs.Authentication.Handlers.Auth.SignUpHandler Signup transaction committed successfully for kiroanis1920@gmail.com
+[2026-03-09 16:47:40.141 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (72ms) [Parameters=[@__normalizedEmail_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(2) [a].[Id], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[Gender], [a].[IsDeleted], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[OTP], [a].[OTPAttempts], [a].[OTPExpiryTime], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[ProfileImageUrl], [a].[RefreshToken], [a].[RefreshTokenExpiryTime], [a].[ResetPasswordConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+FROM [AspNetUsers] AS [a]
+WHERE [a].[NormalizedEmail] = @__normalizedEmail_0
+[2026-03-09 16:47:42.559 +02:00 INF] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor Executing OkObjectResult, writing value of type 'SmartCare.Application.Handlers.ResponseHandler.Response`1[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[2026-03-09 16:47:42.563 +02:00 INF] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker Executed action SmartCare.API.Controllers.AuthenticationController.PharmacistSignUpAsync (SmartCare.API) in 4768.056ms
+[2026-03-09 16:47:42.566 +02:00 INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executed endpoint 'SmartCare.API.Controllers.AuthenticationController.PharmacistSignUpAsync (SmartCare.API)'
+[2026-03-09 16:47:42.570 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 POST https://localhost:7162/api/auth/Pharmacist-SignUp - 200 null application/json; charset=utf-8 4787.8819ms
+[2026-03-09 16:49:22.137 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 POST https://localhost:7162/api/auth/Pharmacist-Login - application/json 69
+[2026-03-09 16:49:22.149 +02:00 INF] Microsoft.AspNetCore.Cors.Infrastructure.CorsService CORS policy execution successful.
+[2026-03-09 16:49:22.161 +02:00 INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executing endpoint 'SmartCare.API.Controllers.AuthenticationController.PharmacistLoginAsync (SmartCare.API)'
+[2026-03-09 16:49:22.179 +02:00 INF] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker Route matched with {action = "PharmacistLogin", controller = "Authentication"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] PharmacistLoginAsync(SmartCare.Application.DTOs.Auth.Requests.LoginRequestDto) on controller SmartCare.API.Controllers.AuthenticationController (SmartCare.API).
+[2026-03-09 16:50:10.352 +02:00 WRN] Microsoft.EntityFrameworkCore.Model.Validation The 'PaymentMethod' property 'Method' on entity type 'Payment' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value 'Stripe', since this is the CLR default for the 'PaymentMethod' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.
+[2026-03-09 16:50:11.714 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (182ms) [Parameters=[@__normalizedName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedName_0
+[2026-03-09 16:50:11.865 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (76ms) [Parameters=[@__normalizedName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedName_0
+[2026-03-09 16:50:11.947 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (78ms) [Parameters=[@__normalizedName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedName_0
+[2026-03-09 16:50:12.029 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (77ms) [Parameters=[@__normalizedName_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [a].[Id], [a].[ConcurrencyStamp], [a].[Name], [a].[NormalizedName]
+FROM [AspNetRoles] AS [a]
+WHERE [a].[NormalizedName] = @__normalizedName_0
+[2026-03-09 16:50:12.097 +02:00 INF] Hangfire.SqlServer.SqlServerObjectsInstaller Start installing Hangfire SQL objects...
+[2026-03-09 16:50:12.423 +02:00 INF] Hangfire.SqlServer.SqlServerObjectsInstaller Hangfire SQL objects installed.
+[2026-03-09 16:50:12.737 +02:00 INF] Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager User profile is available. Using 'C:\Users\HP\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+[2026-03-09 16:50:12.893 +02:00 WRN] Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServer The ASP.NET Core developer certificate is not trusted. For information about trusting the ASP.NET Core developer certificate, see https://aka.ms/aspnet/https-trust-dev-cert.
+[2026-03-09 16:50:12.953 +02:00 INF] Microsoft.Hosting.Lifetime Now listening on: https://localhost:7162
+[2026-03-09 16:50:12.954 +02:00 INF] Microsoft.Hosting.Lifetime Now listening on: http://localhost:5275
+[2026-03-09 16:50:13.095 +02:00 INF] Hangfire.BackgroundJobServer Starting Hangfire Server using job storage: '<Connection string can not be parsed>'
+[2026-03-09 16:50:13.098 +02:00 INF] Hangfire.BackgroundJobServer Using the following options for SQL Server job storage: Queue poll interval: 00:00:00.
+[2026-03-09 16:50:13.098 +02:00 INF] Hangfire.BackgroundJobServer Using the following options for Hangfire Server:
+    Worker count: 20
+    Listening queues: 'default'
+    Shutdown timeout: 00:00:15
+    Schedule polling interval: 00:00:15
+[2026-03-09 16:50:13.123 +02:00 INF] Microsoft.Hosting.Lifetime Application started. Press Ctrl+C to shut down.
+[2026-03-09 16:50:13.129 +02:00 INF] Microsoft.Hosting.Lifetime Hosting environment: Development
+[2026-03-09 16:50:13.130 +02:00 INF] Microsoft.Hosting.Lifetime Content root path: G:\SmartCare\SmartCare.API
+[2026-03-09 16:50:13.306 +02:00 INF] Hangfire.Server.BackgroundServerProcess Server desktop-e715lek:22564:f021d1e8 successfully announced in 184.0686 ms
+[2026-03-09 16:50:13.313 +02:00 INF] Hangfire.Server.BackgroundServerProcess Server desktop-e715lek:22564:f021d1e8 is starting the registered dispatchers: ServerWatchdog, ServerJobCancellationWatcher, SqlServerHeartbeatProcess, ExpirationManager, CountersAggregator, Worker, DelayedJobScheduler, RecurringJobScheduler...
+[2026-03-09 16:50:13.414 +02:00 INF] Hangfire.Server.ServerWatchdog 1 servers were removed due to timeout
+[2026-03-09 16:50:13.510 +02:00 INF] Hangfire.Server.BackgroundServerProcess Server desktop-e715lek:22564:f021d1e8 all the dispatchers started
+[2026-03-09 16:50:13.571 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger - null null
+[2026-03-09 16:50:13.714 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger - 301 0 null 151.3085ms
+[2026-03-09 16:50:13.720 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/index.html - null null
+[2026-03-09 16:50:13.805 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/index.html - 200 null text/html;charset=utf-8 84.6046ms
+[2026-03-09 16:50:13.809 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/swagger-ui.css - null null
+[2026-03-09 16:50:13.809 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/swagger-ui-bundle.js - null null
+[2026-03-09 16:50:13.809 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/swagger-ui-standalone-preset.js - null null
+[2026-03-09 16:50:13.811 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/_framework/aspnetcore-browser-refresh.js - null null
+[2026-03-09 16:50:13.830 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/_vs/browserLink - null null
+[2026-03-09 16:50:13.843 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/_framework/aspnetcore-browser-refresh.js - 200 13762 application/javascript; charset=utf-8 32.1246ms
+[2026-03-09 16:50:13.849 +02:00 INF] Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware Sending file. Request path: '/swagger-ui.css'. Physical path: 'N/A'
+[2026-03-09 16:50:13.849 +02:00 INF] Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware Sending file. Request path: '/swagger-ui-standalone-preset.js'. Physical path: 'N/A'
+[2026-03-09 16:50:13.858 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/swagger-ui.css - 200 152034 text/css 50.5122ms
+[2026-03-09 16:50:13.867 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/swagger-ui-standalone-preset.js - 200 230280 text/javascript 57.5111ms
+[2026-03-09 16:50:13.879 +02:00 INF] Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware Sending file. Request path: '/swagger-ui-bundle.js'. Physical path: 'N/A'
+[2026-03-09 16:50:13.888 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/swagger-ui-bundle.js - 200 1456926 text/javascript 79.3074ms
+[2026-03-09 16:50:13.920 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/_vs/browserLink - 200 null text/javascript; charset=UTF-8 90.3126ms
+[2026-03-09 16:50:14.069 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 GET https://localhost:7162/swagger/v1/swagger.json - null null
+[2026-03-09 16:50:14.226 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 GET https://localhost:7162/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 157.5714ms
+[2026-03-09 16:50:42.801 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/2 POST https://localhost:7162/api/auth/Pharmacist-Login - application/json 69
+[2026-03-09 16:50:42.913 +02:00 INF] Microsoft.AspNetCore.Cors.Infrastructure.CorsService CORS policy execution successful.
+[2026-03-09 16:50:42.917 +02:00 INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executing endpoint 'SmartCare.API.Controllers.AuthenticationController.PharmacistLoginAsync (SmartCare.API)'
+[2026-03-09 16:50:42.942 +02:00 INF] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker Route matched with {action = "PharmacistLogin", controller = "Authentication"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] PharmacistLoginAsync(SmartCare.Application.DTOs.Auth.Requests.LoginRequestDto) on controller SmartCare.API.Controllers.AuthenticationController (SmartCare.API).
+[2026-03-09 16:50:43.442 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (83ms) [Parameters=[@__normalizedEmail_0='?' (Size = 256)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(2) [a].[Id], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[Gender], [a].[IsDeleted], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[OTP], [a].[OTPAttempts], [a].[OTPExpiryTime], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[ProfileImageUrl], [a].[RefreshToken], [a].[RefreshTokenExpiryTime], [a].[ResetPasswordConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+FROM [AspNetUsers] AS [a]
+WHERE [a].[NormalizedEmail] = @__normalizedEmail_0
+[2026-03-09 16:50:43.698 +02:00 INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (70ms) [Parameters=[@__userId_0='?' (Size = 450)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [p].[Id], [p].[IsActive], [p].[LicenseNumber], [p].[StoreId]
+FROM [Pharmacists] AS [p]
+WHERE [p].[Id] = @__userId_0
+[2026-03-09 16:50:43.733 +02:00 INF] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor Executing UnauthorizedObjectResult, writing value of type 'SmartCare.Application.Handlers.ResponseHandler.Response`1[[SmartCare.Application.DTOs.Auth.Responses.TokenResponseDto, SmartCare.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+[2026-03-09 16:50:43.749 +02:00 INF] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker Executed action SmartCare.API.Controllers.AuthenticationController.PharmacistLoginAsync (SmartCare.API) in 802.3646ms
+[2026-03-09 16:50:43.751 +02:00 INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executed endpoint 'SmartCare.API.Controllers.AuthenticationController.PharmacistLoginAsync (SmartCare.API)'
+[2026-03-09 16:50:43.817 +02:00 INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/2 POST https://localhost:7162/api/auth/Pharmacist-Login - 401 null application/json; charset=utf-8 1016.0675ms
