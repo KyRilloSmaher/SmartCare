@@ -198,6 +198,93 @@ namespace SmartCare.InfraStructure.Migrations
                     b.ToTable("UserAddress", (string)null);
                 });
 
+            modelBuilder.Entity("SmartCare.Domain.Entities.AuditLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Action")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("ChangedColumns")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClassName")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid?>("EntityId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("EntityName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IpAddress")
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(45)
+                        .HasColumnType("nvarchar(45)")
+                        .HasDefaultValue("127.0.0.1");
+
+                    b.Property<int?>("LineNumber")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MethodName")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Namespace")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("NewValues")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OldValues")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SourceFile")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("StackTrace")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TableName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("Timestamp")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("UserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Action");
+
+                    b.HasIndex("ClassName");
+
+                    b.HasIndex("EntityId");
+
+                    b.HasIndex("MethodName");
+
+                    b.HasIndex("Namespace");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("TableName", "Timestamp");
+
+                    b.ToTable("AuditLogs", (string)null);
+                });
+
             modelBuilder.Entity("SmartCare.Domain.Entities.Cart", b =>
                 {
                     b.Property<Guid>("Id")
@@ -241,9 +328,6 @@ namespace SmartCare.InfraStructure.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.Property<Guid>("ReservationId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<decimal>("SubTotal")
                         .HasColumnType("decimal(18,2)");
 
@@ -257,8 +341,6 @@ namespace SmartCare.InfraStructure.Migrations
                     b.HasIndex("InventoryId");
 
                     b.HasIndex("ProductId");
-
-                    b.HasIndex("ReservationId");
 
                     b.ToTable("CartItem", (string)null);
                 });
@@ -311,10 +393,6 @@ namespace SmartCare.InfraStructure.Migrations
                     b.Property<DateOnly>("BirthDate")
                         .HasColumnType("date");
 
-                    b.Property<string>("Code")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
@@ -322,6 +400,9 @@ namespace SmartCare.InfraStructure.Migrations
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("EmailConfirmationLink")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
@@ -358,6 +439,10 @@ namespace SmartCare.InfraStructure.Migrations
                     b.Property<string>("NormalizedUserName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("OTP")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<int>("OrdersCount")
                         .ValueGeneratedOnAdd()
@@ -400,11 +485,10 @@ namespace SmartCare.InfraStructure.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
-                    b.HasKey("Id");
+                    b.Property<DateTime>("VerificationURLExpiresAt")
+                        .HasColumnType("datetime2");
 
-                    b.HasIndex("Code")
-                        .IsUnique()
-                        .HasFilter("[Code] IS NOT NULL");
+                    b.HasKey("Id");
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
@@ -413,6 +497,10 @@ namespace SmartCare.InfraStructure.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.HasIndex("OTP")
+                        .IsUnique()
+                        .HasFilter("[OTP] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -520,7 +608,10 @@ namespace SmartCare.InfraStructure.Migrations
                     b.Property<int>("OrderType")
                         .HasColumnType("int");
 
-                    b.Property<int>("PaymentId")
+                    b.Property<string>("PaymentIntentId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PaymentVersion")
                         .HasColumnType("int");
 
                     b.Property<int>("Status")
@@ -560,7 +651,7 @@ namespace SmartCare.InfraStructure.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.Property<Guid>("ReservationId")
+                    b.Property<Guid?>("ReservationId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("SubTotal")
@@ -579,8 +670,6 @@ namespace SmartCare.InfraStructure.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.HasIndex("ReservationId");
-
                     b.ToTable("OrderItem", (string)null);
                 });
 
@@ -596,11 +685,17 @@ namespace SmartCare.InfraStructure.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("ClientSecret")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("ExpiredAt")
-                        .HasColumnType("datetime2");
+                    b.Property<int>("Method")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
 
                     b.Property<Guid>("OrderId")
                         .HasColumnType("uniqueidentifier");
@@ -608,21 +703,18 @@ namespace SmartCare.InfraStructure.Migrations
                     b.Property<string>("PaymentIntentId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("PaymentMethod")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(1);
-
-                    b.Property<string>("SessionId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<int>("Status")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasDefaultValue(0);
 
-                    b.Property<string>("url")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Version")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
 
                     b.HasKey("Id");
 
@@ -630,8 +722,6 @@ namespace SmartCare.InfraStructure.Migrations
                         .IsUnique();
 
                     b.HasIndex("PaymentIntentId");
-
-                    b.HasIndex("SessionId");
 
                     b.ToTable("Payment", (string)null);
                 });
@@ -659,6 +749,9 @@ namespace SmartCare.InfraStructure.Migrations
                     b.Property<string>("Contraindications")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -709,6 +802,9 @@ namespace SmartCare.InfraStructure.Migrations
 
                     b.Property<int>("TotalRatings")
                         .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("ProductId");
 
@@ -797,11 +893,17 @@ namespace SmartCare.InfraStructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("CartItemId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime>("ExpiredAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<Guid>("InventoryId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("OrderItemId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("QuantityReserved")
                         .HasColumnType("int");
@@ -814,10 +916,11 @@ namespace SmartCare.InfraStructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CartItemId")
-                        .IsUnique();
-
                     b.HasIndex("ExpiredAt");
+
+                    b.HasIndex("OrderItemId")
+                        .IsUnique()
+                        .HasFilter("[OrderItemId] IS NOT NULL");
 
                     b.HasIndex("ReservedAt");
 
@@ -877,8 +980,13 @@ namespace SmartCare.InfraStructure.Migrations
                 {
                     b.HasBaseType("SmartCare.Domain.Entities.Order");
 
+                    b.Property<string>("PickupCodeHash")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<Guid>("StoreId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.HasIndex("PickupCodeHash");
 
                     b.HasIndex("StoreId");
 
@@ -889,13 +997,8 @@ namespace SmartCare.InfraStructure.Migrations
                 {
                     b.HasBaseType("SmartCare.Domain.Entities.Order");
 
-                    b.Property<Guid?>("AddressId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid>("ShippingAddressId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.HasIndex("AddressId");
 
                     b.HasIndex("ShippingAddressId");
 
@@ -1070,19 +1173,11 @@ namespace SmartCare.InfraStructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SmartCare.Domain.Entities.Reservation", "Reservation")
-                        .WithMany()
-                        .HasForeignKey("ReservationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Inventory");
 
                     b.Navigation("Order");
 
                     b.Navigation("Product");
-
-                    b.Navigation("Reservation");
                 });
 
             modelBuilder.Entity("SmartCare.Domain.Entities.Payment", b =>
@@ -1146,13 +1241,11 @@ namespace SmartCare.InfraStructure.Migrations
 
             modelBuilder.Entity("SmartCare.Domain.Entities.Reservation", b =>
                 {
-                    b.HasOne("SmartCare.Domain.Entities.CartItem", "CartItem")
+                    b.HasOne("SmartCare.Domain.Entities.OrderItem", "OrderItem")
                         .WithOne("Reservation")
-                        .HasForeignKey("SmartCare.Domain.Entities.Reservation", "CartItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("SmartCare.Domain.Entities.Reservation", "OrderItemId");
 
-                    b.Navigation("CartItem");
+                    b.Navigation("OrderItem");
                 });
 
             modelBuilder.Entity("SmartCare.Domain.Entities.FromStoreOrder", b =>
@@ -1174,10 +1267,6 @@ namespace SmartCare.InfraStructure.Migrations
 
             modelBuilder.Entity("SmartCare.Domain.Entities.OnlineOrder", b =>
                 {
-                    b.HasOne("SmartCare.Domain.Entities.Address", null)
-                        .WithMany("Orders")
-                        .HasForeignKey("AddressId");
-
                     b.HasOne("SmartCare.Domain.Entities.Order", null)
                         .WithOne()
                         .HasForeignKey("SmartCare.Domain.Entities.OnlineOrder", "Id")
@@ -1185,9 +1274,9 @@ namespace SmartCare.InfraStructure.Migrations
                         .IsRequired();
 
                     b.HasOne("SmartCare.Domain.Entities.Address", "Address")
-                        .WithMany()
+                        .WithMany("Orders")
                         .HasForeignKey("ShippingAddressId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Address");
@@ -1201,12 +1290,6 @@ namespace SmartCare.InfraStructure.Migrations
             modelBuilder.Entity("SmartCare.Domain.Entities.Cart", b =>
                 {
                     b.Navigation("Items");
-                });
-
-            modelBuilder.Entity("SmartCare.Domain.Entities.CartItem", b =>
-                {
-                    b.Navigation("Reservation")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("SmartCare.Domain.Entities.Category", b =>
@@ -1243,7 +1326,12 @@ namespace SmartCare.InfraStructure.Migrations
                 {
                     b.Navigation("Items");
 
-                    b.Navigation("Payment")
+                    b.Navigation("Payment");
+                });
+
+            modelBuilder.Entity("SmartCare.Domain.Entities.OrderItem", b =>
+                {
+                    b.Navigation("Reservation")
                         .IsRequired();
                 });
 

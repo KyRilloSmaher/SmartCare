@@ -1,4 +1,4 @@
-
+using Serilog;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -24,6 +24,7 @@ using SmartCare.InfraStructure.Messaging;
 using SmartCare.Application.InMemoryEventsHandlers;
 using SmartCare.Application.Notifications;
 using SmartCare.InfraStructure.Services;
+using SmartCare.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -91,6 +92,7 @@ builder.Services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUrlHelper>(x =>
     x.GetRequiredService<IUrlHelperFactory>().GetUrlHelper(x.GetRequiredService<IActionContextAccessor>().ActionContext));
+builder.Services.AddScoped<HtmlTemplateService>();
 
 
 #endregion
@@ -142,7 +144,13 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 #endregion
 
 #region Logging Configuration
-builder.Services.AddLogging();
+builder.Host.UseSerilog((context, services, configuration) => configuration
+    .ReadFrom.Configuration(context.Configuration)
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day,
+                  outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {Level:u3}] {SourceContext} {Message:lj}{NewLine}{Exception}"));
 #endregion
 
 #region  SignalR

@@ -12,9 +12,11 @@ namespace SmartCare.Domain.Entities
         public Gender Gender { get; set; }
         public string ProfileImageUrl { get; set; }
         public DateOnly BirthDate { get; set; }
-        public string? Code { get; set; }
+        public string? OTP { get; set; }
         public string? RefreshToken { get; set; }
         public DateTime? RefreshTokenExpiryTime { get; set; }
+        public string? EmailConfirmationLink { get; set; } = default!;
+        public DateTime VerificationURLExpiresAt { get; set; }
         public AccountType AccountType { get; set; }
         public int RatesCount { get; set; } = 0;
         public int OrdersCount { get; set; } = 0;

@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using SmartCare.Application.IServices;
 using SmartCare.Domain.Entities;
 using SmartCare.Domain.Enums;
 using SmartCare.Domain.IRepositories;
@@ -16,270 +15,224 @@ namespace SmartCare.InfraStructure.Repositories
     {
         private readonly ApplicationDBContext _context;
         private readonly IConfiguration _configuration;
+        private readonly int _defaultReservationDayForPickUp;
+        private readonly int _defaultReservationDayForOnlinepayment;
 
-        public ReservationRepository(ApplicationDBContext context, IConfiguration configuration) : base(context)
+        public ReservationRepository(ApplicationDBContext context, IConfiguration configuration)
+            : base(context)
         {
             _context = context;
             _configuration = configuration;
+            _defaultReservationDayForPickUp = _configuration.GetValue<int>("ReservationTimes:DaysForPickUp");
+            _defaultReservationDayForOnlinepayment = _configuration.GetValue<int>("ReservationTimes:HoursForPayment");
         }
 
-        #region Methods
+        #region Reservation Methods
 
         /// <summary>
-        /// Creates a new reservation for a product in a cart.
+        /// Creates a reservation for a product in a specific inventory
+        /// Used by Pickup Orders
         /// </summary>
-        public async Task<Reservation?> CreateReservationAsync(CartItem cartItem, int quantity, ReservationStatus status)
+        public async Task<Reservation> CreateReservationAsync(
+            Guid orderItemId,
+            Guid productId,
+            Guid inventoryId,
+            int quantity,
+            ReservationStatus status = ReservationStatus.ReservedUntilPickup)
         {
-            if (cartItem.InventoryId == Guid.Empty)
-                return null;
+            if (quantity <= 0)
+                throw new ArgumentException("Quantity must be greater than zero");
 
-            var inventory = await _context.Inventories.FirstOrDefaultAsync(inv => inv.Id == cartItem.InventoryId);
+            var inventory = await _context.Inventories
+                .FirstOrDefaultAsync(i =>
+                    i.Id == inventoryId &&
+                    i.ProductId == productId);
+
             if (inventory == null)
-                return null;
+                throw new InvalidOperationException("Inventory not found for this product");
 
             if (inventory.StockQuantity - inventory.ReservedQuantity < quantity)
-                return null;
+                throw new InvalidOperationException("Not enough stock to reserve");
 
             inventory.ReservedQuantity += quantity;
-            DateTime ExpirationDate = DateTime.UtcNow;
-            if(status == ReservationStatus.ReservedUntilCheckout)
-            {
-                var expirationMinutes = _configuration.GetValue<int>("ReservationTimes:ForCartExpirationMinutes");
-                ExpirationDate = DateTime.UtcNow.AddMinutes(expirationMinutes);
-            }
-            else if (status == ReservationStatus.ReservedUntilPayment)
-            {
-                var expirationMinutes = _configuration.GetValue<int>("ReservationTimes:ForOrderExpirationMinutes");
-                ExpirationDate = DateTime.UtcNow.AddMinutes(expirationMinutes);
-            }
-            else if (status == ReservationStatus.Extra)
-            {
-                var expirationMinutes = _configuration.GetValue<int>("ReservationTimes:ForPaymentExpirationMinutes");
-                ExpirationDate = DateTime.UtcNow.AddMinutes(expirationMinutes);
-            }
+
             var reservation = new Reservation
             {
                 Id = Guid.NewGuid(),
-                CartItemId = cartItem.CartItemId,
+                ProductId = productId,
+                InventoryId = inventoryId,
                 QuantityReserved = quantity,
                 ReservedAt = DateTime.UtcNow,
                 Status = status,
-                ExpiredAt = ExpirationDate
+                ExpiredAt = status == ReservationStatus.ReservedUntilPickup
+                    ? DateTime.UtcNow.AddDays(_defaultReservationDayForPickUp)
+                    : DateTime.UtcNow.AddHours(_defaultReservationDayForOnlinepayment),
+                OrderItemId = orderItemId
             };
 
             await _context.Reservations.AddAsync(reservation);
             await _context.SaveChangesAsync();
 
+            var product = await _context.Products.AsTracking()
+                .FirstOrDefaultAsync(p => p.ProductId == productId);
+
+            if (product != null)
+            {
+                product.IsAvailable = await _context.Inventories
+                    .AnyAsync(inv =>
+                        inv.ProductId == productId &&
+                        (inv.StockQuantity - inv.ReservedQuantity) > 0);
+            }
+             _context.Products.Update(product);
+             await _context.SaveChangesAsync();
+
             return reservation;
         }
-        /// <summary>
-        /// Cancels a reservation, releases inventory, and updates product availability.
-        /// </summary>
-        public async Task<bool> CancelReservationAsync(Guid reservationId, Guid inventoryId, ReservationStatus status)
+
+
+        public async Task<bool> CancelReservationAsync(
+            Guid reservationId,
+            Guid inventoryId,
+            ReservationStatus status = ReservationStatus.Realesed)
         {
             var reservation = await _context.Reservations
-                .AsTracking()
                 .FirstOrDefaultAsync(r => r.Id == reservationId);
 
             if (reservation == null)
                 return false;
 
-            // If reservation is completed, only update status
-            if (status == ReservationStatus.Completed)
-            {
-                reservation.Status = status;
-                return await _context.SaveChangesAsync() > 0;
-            }
-
-            // Cannot cancel before expiration
-            if (DateTime.UtcNow < reservation.ExpiredAt)
+            if (reservation.Status == ReservationStatus.Realesed ||
+                reservation.Status == ReservationStatus.Completed)
                 return false;
 
             var inventory = await _context.Inventories
-                .AsTracking()
-                .FirstOrDefaultAsync(inv => inv.Id == inventoryId);
+                .FirstOrDefaultAsync(i => i.Id == inventoryId);
 
-            if (inventory == null)
-                return false;
+            if (inventory != null)
+            {
+                inventory.ReservedQuantity = Math.Max(
+                    0,
+                    inventory.ReservedQuantity - reservation.QuantityReserved);
+            }
 
-            // Release reserved quantity
-            inventory.ReservedQuantity =
-                Math.Max(0, inventory.ReservedQuantity - reservation.QuantityReserved);
-
-            // Update reservation state
             reservation.Status = status;
             reservation.ExpiredAt = DateTime.UtcNow;
-
-            // Update product availability
-            var product = await _context.Products
-                .AsTracking()
-                .FirstOrDefaultAsync(p => p.ProductId == inventory.ProductId);
+            await _context.SaveChangesAsync();
+            var product = await _context.Products.AsTracking()
+              .FirstOrDefaultAsync(p => p.ProductId == inventory.ProductId);
 
             if (product != null)
             {
-                var totalStock = await _context.Inventories
-                    .Where(i => i.ProductId == product.ProductId)
-                    .SumAsync(i => i.StockQuantity - i.ReservedQuantity);
+                product.IsAvailable = await _context.Inventories
+                    .AnyAsync(inv =>
+                        inv.ProductId == inventory.ProductId &&
+                        (inv.StockQuantity - inv.ReservedQuantity) > 0);
+            }
+            _context.Products.Update(product);
+            return await _context.SaveChangesAsync()>0;
+        }
 
-                product.IsAvailable = totalStock > 0;
+
+        /// <summary>
+        /// Updates reservation status and expiry
+        /// </summary>
+        public async Task<bool> UpdateReservationStatusAsync(
+            Guid reservationId,
+            ReservationStatus status,
+            int? extendMinutes = null)
+        {
+            var reservation = await _context.Reservations
+                .FirstOrDefaultAsync(r => r.Id == reservationId);
+
+            if (reservation == null)
+                return false;
+
+            if (reservation.Status == ReservationStatus.Completed ||
+                reservation.Status == ReservationStatus.Realesed)
+                return false;
+
+            reservation.Status = status;
+
+            if (status == ReservationStatus.Completed ||
+                status == ReservationStatus.Realesed)
+            {
+                reservation.ExpiredAt = DateTime.UtcNow;
+            }
+            else if (extendMinutes.HasValue && extendMinutes > 0)
+            {
+                reservation.ExpiredAt = reservation.ExpiredAt.AddMinutes(extendMinutes.Value);
             }
 
-            return await _context.SaveChangesAsync() > 0;
-        }
-
-
-        /// <summary>
-        /// Updates the quantity of a reservation.
-        /// </summary>
-        public async Task<bool> UpdateReservationQuantityAsync(Reservation reservation, int newQuantity)
-        {
-            if (reservation == null || newQuantity < 0)
-                return false;
-
-            var cartItem = await _context.CartItems
-                .Include(ci => ci.Inventory)
-                .FirstOrDefaultAsync(ci => ci.CartItemId == reservation.CartItemId);
-
-            if (cartItem?.Inventory == null)
-                return false;
-
-            var inventory = cartItem.Inventory;
-            int quantityDifference = newQuantity - reservation.QuantityReserved;
-
-            if (quantityDifference > 0 && (inventory.StockQuantity - inventory.ReservedQuantity < quantityDifference))
-                return false;
-
-            inventory.ReservedQuantity += quantityDifference;
-            reservation.QuantityReserved = newQuantity;
-            var expirationMinutes = _configuration.GetValue<int>("ReservationTimes:ForCartExpirationMinutes");
-            reservation.ExpiredAt = DateTime.UtcNow.AddMinutes(expirationMinutes);
-
-            _context.Reservations.Update(reservation);
-
-            return await _context.SaveChangesAsync() > 0;
-        }
-
-        /// <summary>
-        /// Releases all reservations for a cart.
-        /// </summary>
-        public async Task<bool> ReleaseAllReservationsForCartAsync(Guid cartId)
-        {
-            var cartItems = await _context.CartItems
-                .Include(ci => ci.Reservation)
-                .Include(ci => ci.Inventory)
-                .Where(ci => ci.CartId == cartId)
-                .ToListAsync();
-
-            foreach (var cartItem in cartItems)
+            // If released, return stock
+            if (status == ReservationStatus.Realesed)
             {
-                if (cartItem.Reservation == null || cartItem.Reservation.Status == ReservationStatus.Realesed)
-                    continue;
+                var inventory = await _context.Inventories
+                    .FirstOrDefaultAsync(i => i.Id == reservation.InventoryId);
 
-                if (cartItem.Inventory != null)
-                    cartItem.Inventory.ReservedQuantity = Math.Max(0, cartItem.Inventory.ReservedQuantity - cartItem.Reservation.QuantityReserved);
-
-                cartItem.Reservation.Status = ReservationStatus.Realesed;
-                cartItem.Reservation.ExpiredAt = DateTime.UtcNow;
-            }
-
-            return await _context.SaveChangesAsync() > 0;
-        }
-
-        /// <summary>
-        /// Removes all expired reservations.
-        /// </summary>
-        public async Task<int> RemoveAllExpiredReservationsAsync()
-        {
-            var expiredReservations = await _context.Reservations
-                .Include(r => r.CartItem)
-                .ThenInclude(ci => ci.Inventory)
-                .Where(r => r.ExpiredAt < DateTime.UtcNow && r.Status != ReservationStatus.Realesed)
-                .ToListAsync();
-
-            foreach (var reservation in expiredReservations)
-            {
-                if (reservation.CartItem?.Inventory != null)
+                if (inventory != null)
                 {
-                    reservation.CartItem.Inventory.ReservedQuantity = Math.Max(0, reservation.CartItem.Inventory.ReservedQuantity - reservation.QuantityReserved);
-                    reservation.Status = ReservationStatus.Realesed;
+                    inventory.ReservedQuantity = Math.Max(
+                        0,
+                        inventory.ReservedQuantity - reservation.QuantityReserved);
+                }
+                await _context.SaveChangesAsync();
+                var product = await _context.Products
+                    .FirstOrDefaultAsync(p => p.ProductId == reservation.ProductId);
+
+                if (product != null)
+                {
+                    product.IsAvailable = await _context.Inventories
+                        .AnyAsync(inv =>
+                            inv.ProductId == reservation.ProductId &&
+                            (inv.StockQuantity - inv.ReservedQuantity) > 0);
                 }
             }
 
-            return await _context.SaveChangesAsync();
+            return await _context.SaveChangesAsync() > 0;
         }
 
+
         /// <summary>
-        /// Gets all active reservations for a product.
+        /// Releases all reservations for a given order
         /// </summary>
-        public async Task<IEnumerable<Reservation>> GetActiveReservationsByProductAsync(Guid productId)
+        public async Task<bool> ReleaseAllReservationsForOrderAsync(Guid orderId)
         {
-            return await _context.Reservations
-                .Include(r => r.CartItem)
-                .ThenInclude(ci => ci.Inventory)
-                .Where(r => r.CartItem.Inventory.ProductId == productId &&
-                            r.ExpiredAt >= DateTime.UtcNow &&
-                            (r.Status == ReservationStatus.ReservedUntilPayment || r.Status == ReservationStatus.ReservedUntilCheckout))
-                .OrderBy(r => r.ReservedAt)
+            var reservations = await _context.Reservations
+                .Where(r => r.OrderItem.OrderId == orderId && r.Status != ReservationStatus.Realesed)
                 .ToListAsync();
-        }
 
-        /// <summary>
-        /// Gets a reservation by its cart item ID.
-        /// </summary>
-        public async Task<Reservation?> GetReservationByCartItemIdAsync(Guid cartItemId)
-        {
-            return await _context.Reservations
-                .Include(r => r.CartItem)
-                .ThenInclude(ci => ci.Inventory)
-                .FirstOrDefaultAsync(r => r.CartItemId == cartItemId &&
-                                         r.ExpiredAt >= DateTime.UtcNow &&
-                                         r.Status == ReservationStatus.ReservedUntilCheckout);
-        }
+            foreach (var r in reservations)
+            {
+                var inventory = await _context.Inventories.FirstOrDefaultAsync(i => i.Id == r.InventoryId);
+                if (inventory != null)
+                    inventory.ReservedQuantity = Math.Max(0, inventory.ReservedQuantity - r.QuantityReserved);
 
-        /// <summary>
-        /// Gets reservations that are about to expire.
-        /// </summary>
-        public async Task<IEnumerable<Reservation>> GetExpiringReservationsAsync(int minutesUntilExpiration = 5)
-        {
-            var threshold = DateTime.UtcNow.AddMinutes(minutesUntilExpiration);
-
-            return await _context.Reservations
-                .Include(r => r.CartItem)
-                .ThenInclude(ci => ci.Inventory)
-                .Where(r => r.ExpiredAt <= threshold &&
-                            r.ExpiredAt > DateTime.UtcNow &&
-                            r.Status == ReservationStatus.ReservedUntilCheckout)
-                .ToListAsync();
-        }
-
-        /// <summary>
-        /// Extends a reservation's expiration.
-        /// </summary>
-        public async Task<bool> ExtendReservationAsync(Guid reservationId, int additionalMinutes)
-        {
-            var reservation = await _context.Reservations.FirstOrDefaultAsync(r => r.Id == reservationId);
-
-            if (reservation == null || reservation.Status == ReservationStatus.Realesed)
-                return false;
-
-            reservation.ExpiredAt = reservation.ExpiredAt.AddMinutes(additionalMinutes);
-            reservation.Status = ReservationStatus.ReservedUntilCheckout;
-            _context.Reservations.Update(reservation);
+                r.Status = ReservationStatus.Realesed;
+                r.ExpiredAt = DateTime.UtcNow;
+            }
 
             return await _context.SaveChangesAsync() > 0;
         }
 
         /// <summary>
-        /// Gets total reserved quantity for a product.
+        /// Gets a reservation by ID
+        /// </summary>
+        public async Task<Reservation?> GetByIdAsync(Guid reservationId, bool tracking = false)
+        {
+            IQueryable<Reservation> query = _context.Reservations;
+            if (!tracking)
+                query = query.AsNoTracking();
+
+            return await query.FirstOrDefaultAsync(r => r.Id == reservationId);
+        }
+
+        /// <summary>
+        /// Gets total reserved quantity for a product
         /// </summary>
         public async Task<int> GetTotalReservedQuantityForProductAsync(Guid productId)
         {
             return await _context.Reservations
-                .Include(r => r.CartItem)
-                .ThenInclude(ci => ci.Inventory)
-                .Where(r => r.CartItem.Inventory.ProductId == productId &&
-                            r.ExpiredAt >= DateTime.UtcNow &&
-                            (r.Status == ReservationStatus.ReservedUntilCheckout || r.Status == ReservationStatus.ReservedUntilPayment))
+                .Where(r => r.ProductId == productId && r.Status != ReservationStatus.Realesed)
                 .SumAsync(r => r.QuantityReserved);
         }
 

@@ -19,6 +19,11 @@ namespace SmartCare.InfraStructure.Configurations
                    .WithMany()
                    .HasForeignKey(o => o.StoreId)
                    .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Property(o => o.PickupCodeHash)
+                   .IsRequired(false);
+
+            builder.HasIndex(o => o.PickupCodeHash);
         }
     }
 }

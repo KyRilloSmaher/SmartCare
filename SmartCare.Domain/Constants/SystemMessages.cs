@@ -52,6 +52,7 @@ namespace SmartCare.Domain.Constants
         public const string INVALID_CREDENTIALS = "Invalid username or password.";
         public const string ACCOUNT_LOCKED = "Your account is locked. Please contact support.";
         public const string EMAIL_NOT_CONFIRMED = "Please confirm your email before continuing.";
+        public const string EMAIL_VERIFICATION_LINK_EXPIRED = "This Email VERIFICATION Link Has been Expired , Try order New One.";
         public const string TOKEN_EXPIRED = "Your session has expired. Please log in again.";
         public const string TOKEN_GENERATED = "New Refresh Token has been generated";
         public const string LOGIN_SUCCESS = "Login successful.";
@@ -75,7 +76,7 @@ namespace SmartCare.Domain.Constants
         public const string INVENTORY_UPDATED = "Inventory updated successfully.";
         public const string INVENTORY_NOT_FOUND = "Inventory not found.";
         public const string LOW_STOCK_WARNING = "Stock level is below the safe threshold.";
-
+        public const string INSUFFICIENT_STOCK_IN_STORE = "This Quantity Of Product is Now  unAvaialble In this Store";
         // =====================
         // 🧾 Orders & Cart
         // =====================
@@ -99,6 +100,7 @@ namespace SmartCare.Domain.Constants
         public const string CART_ITEM_NOT_EXIST = "This Product Not Exists In Your Cart !";
         public const string RESERVATION_FAILED = "Failed to create reservation for the product.";
         public const string INVALID_ORDER_TYPE = "INVALID ORDER TYPE";
+        public const string ORDER_NOT_EDITABLE = "This Order is Pending For Payment And Can not be Updated";
         // =====================
         // 💳 Payments & Subscriptions
         // =====================
@@ -228,6 +230,47 @@ namespace SmartCare.Domain.Constants
                                                             </div>
                                                           </body>
                                                         </html>";
+        public const string PICKUP_ORDER_EMAIL_TEMPLATE = @"
+<html>
+  <body style='margin:0; padding:20px; background-color:#f4f4f4; font-family:Segoe UI, Arial, sans-serif;'>
+    <div style='max-width:600px; margin:auto; background-color:#ffffff; padding:30px; border-radius:10px; box-shadow:0 4px 15px rgba(0,0,0,0.1);'>
+      
+      <!-- Header -->
+      <div style='text-align:center; border-bottom:3px solid #28a745; padding-bottom:15px;'>
+        <h1 style='color:#28a745; margin:0;'>SmartCare Pharmacy</h1>
+        <p style='margin:0; font-size:16px; color:#555;'>Pickup Order Confirmation</p>
+      </div>
+
+      <!-- Body -->
+      <div style='font-size:16px; color:#333; margin-top:20px; line-height:1.6;'>
+        <p>Hi {{UserName}},</p>
+        <p>Thank you for placing your order with <strong>SmartCare Pharmacy</strong>! Your order is ready for pickup.</p>
+        
+        <h2 style='color:#28a745;'>Your Pickup Code</h2>
+        <p style='font-size:24px; font-weight:bold; text-align:center; margin:15px 0; color:#000;'>{{PickupCode}}</p>
+
+        <h3 style='margin-bottom:5px;'>Pickup Details:</h3>
+        <p>
+          Store: {{StoreName}}<br>
+          Address: {{StoreAddress}}<br>
+          Order Date: {{OrderDate}}<br>
+          Total: {{OrderTotal}} EGP.
+        </p>
+
+        <p>Please bring this code with you when you come to pick up your order. Our staff will verify it before handing over your items.</p>
+
+        <p style='margin-top:20px;'>If you have any questions, feel free to contact us at <a href='mailto:support@smartcare.com'>support@smartcare.com</a>.</p>
+
+        <p>Thank you for choosing SmartCare Pharmacy!</p>
+      </div>
+
+      <!-- Footer -->
+      <div style='margin-top:30px; font-size:12px; text-align:center; color:#888; border-top:1px solid #ddd; padding-top:15px;'>
+        &copy; {{Year}} SmartCare Pharmacy. All rights reserved.
+      </div>
+    </div>
+  </body>
+</html>";
 
         public const string ORDERCONFIRMATION_TEMPLATE = @"
                                                             <html>
@@ -239,6 +282,11 @@ namespace SmartCare.Domain.Constants
                                                                   <div style='font-size:16px; color:#333; margin-top:20px; line-height:1.6;'>
                                                                     <p>Hi {{UserName}},</p>
                                                                     <p>Thank you for your order! Your order <strong>#{{OrderId}}</strong> has been successfully placed and is now being processed.</p>
+                                                                    <p><strong>Order Details :</strong><br>
+                                                                     Order Placed Date : {{OrderDate}}<br>
+                                                                     Order Total : {{OrderTotal}} EGP.<br>
+                                                                    
+                                                                    </p>
                                                                     <p>We’ll notify you once your items are shipped.</p>
                                                                     <p>Thank you for choosing <strong>SmartCare Pharmacy</strong>!</p>
                                                                   </div>

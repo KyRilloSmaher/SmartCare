@@ -7,6 +7,7 @@ using System.Net;
 using System.Text.Json;
 using System.Collections.Generic;
 using System.Linq;
+using SmartCare.Domain.Exceptions;
 
 namespace SmartCare.API.Middlewares
 {
@@ -52,10 +53,22 @@ Stack Trace   ==> {StackTrace}
 
                 switch (error)
                 {
-                    case UnauthorizedAccessException:
+                    case System.UnauthorizedAccessException:
                         responseModel.StatusCode = HttpStatusCode.Unauthorized;
                         response.StatusCode = (int)HttpStatusCode.Unauthorized;
                         errorsBag["Authentication"] = new List<string> { "Unauthorized access." };
+                        break;
+
+                    case global::SmartCare.Domain.Exceptions.UnauthorizedException domainAuthException:
+                        responseModel.StatusCode = HttpStatusCode.Unauthorized;
+                        response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                        errorsBag["Authentication"] = new List<string> { domainAuthException.Message };
+                        break;
+
+                    case ForbiddenException forbiddenException:
+                        responseModel.StatusCode = HttpStatusCode.Forbidden;
+                        response.StatusCode = (int)HttpStatusCode.Forbidden;
+                        errorsBag["Forbidden"] = new List<string> { forbiddenException.Message };
                         break;
 
                     case ValidationException validationException:
@@ -80,6 +93,18 @@ Stack Trace   ==> {StackTrace}
                         errorsBag["NotFound"] = new List<string> { keyNotFoundEx.Message };
                         break;
 
+                    case NotFoundException notFoundException:
+                        responseModel.StatusCode = HttpStatusCode.NotFound;
+                        response.StatusCode = (int)HttpStatusCode.NotFound;
+                        errorsBag["NotFound"] = new List<string> { notFoundException.Message };
+                        break;
+
+                    case BadRequestException badRequestException:
+                        responseModel.StatusCode = HttpStatusCode.BadRequest;
+                        response.StatusCode = (int)HttpStatusCode.BadRequest;
+                        errorsBag["BadRequest"] = new List<string> { badRequestException.Message };
+                        break;
+
                     case DbUpdateException dbException:
                         responseModel.StatusCode = HttpStatusCode.BadRequest;
                         response.StatusCode = (int)HttpStatusCode.BadRequest;
@@ -87,6 +112,13 @@ Stack Trace   ==> {StackTrace}
                         var dbMsg = dbException.InnerException?.Message ?? dbException.Message;
                         errorsBag["Database"] = new List<string> { dbMsg };
                         responseModel.Message = "A database error occurred.";
+                        break;
+
+                    case DomainException domainException:
+                        responseModel.StatusCode = HttpStatusCode.BadRequest;
+                        response.StatusCode = (int)HttpStatusCode.BadRequest;
+                        errorsBag["DomainError"] = new List<string> { domainException.Message };
+                        responseModel.Message = "A domain rule was violated.";
                         break;
 
                     default:

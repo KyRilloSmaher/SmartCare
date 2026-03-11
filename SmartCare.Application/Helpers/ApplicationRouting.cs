@@ -188,7 +188,7 @@
 
             public const string CreateOnline = Prefix + "/create-online-order";
             public const string CreatePickUp = Prefix + "/create-pickup-order";
-            public const string Update = AdminPrefix + "/update";
+            public const string Update = Prefix + "/update";
             public const string UpdateStatus = AdminPrefix + "/update-status" + SingleRoute;
             public const string Delete = AdminPrefix + "/delete" + SingleRoute;
         }

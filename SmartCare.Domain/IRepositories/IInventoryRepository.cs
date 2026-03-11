@@ -14,18 +14,19 @@ namespace SmartCare.Domain.IRepositories
         Task<int> GetTotalStockForProductAsync(Guid productId);
         Task<Inventory> IncreaseProductStockAsync(Guid InventoryId , int quantityToAdd);
         Task<Inventory> DecreaseProductStockAsync(Guid InventoryId , int quantityToSubtract);
-        Task<Inventory?> GetStockOfProductInStore(Guid productId, Guid storeId);
+        Task<Inventory?> GetStockOfProductInStore(Guid productId, Guid storeId , int quantity = 1);
         Task<IQueryable<Inventory>> GetAllInventoryInStoreAsync(Guid storeId);
 
-
+        Task<bool> IsStockAvailableAsync(Guid inventoryId, Guid productId);
         /// <summary>
         /// Finalizes stock deduction for an inventory item after order confirmation
         /// This permanently deducts stock that was previously reserved
         /// </summary>
         /// <param name="inventoryId">The inventory ID to deduct from</param>
         /// <param name="quantity">The quantity to deduct</param>
+        /// <param name="PickUp">In Case its A pickUp Order</param>
         /// <returns>True if successful, false if insufficient stock or not found</returns>
-        Task<bool> FinalizeStockDeductionAsync(Guid inventoryId, int quantity);
+        Task<bool> FinalizeStockDeductionAsync(Guid inventoryId, int quantity, bool PickUp = false);
 
         /// <summary>
         /// Finalizes stock deduction for a specific product across any inventory

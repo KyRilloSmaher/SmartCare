@@ -30,6 +30,7 @@ namespace SmartCare.InfraStructure.Services
 
         public async Task PublishProductStockStatusChanged(Guid productId, bool isAvailable)
         {
+             Console.WriteLine("Publishing ProductStockStatusChangedEvent...");
             var evt = new ProductStockStatusChangedEvent(productId, isAvailable);
             await _eventBus.PublishAsync(evt);
         }

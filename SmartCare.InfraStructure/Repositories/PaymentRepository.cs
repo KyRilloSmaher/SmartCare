@@ -19,11 +19,11 @@ namespace SmartCare.InfraStructure.Repositories
             _context = context;
         }
 
-        public async Task<Payment?> GetBySessionIdAsync(string sessionId)
-        {
-            return await _context.Payments
-                .FirstOrDefaultAsync(p => p.SessionId == sessionId);
-        }
+        //public async Task<Payment?> GetBySessionIdAsync(string sessionId)
+        //{
+        //    return await _context.Payments
+        //        .FirstOrDefaultAsync(p => p.SessionId == sessionId);
+        //}
         public async Task<Payment?> GetByPaymentIntentIdAsync(string paymentIntentId)
         {
             return await _context.Payments

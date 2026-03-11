@@ -18,12 +18,11 @@ namespace SmartCare.InfraStructure.Configurations
 
             builder.HasKey(x => x.Id);
 
-
             builder.Property(p => p.Amount)
                 .IsRequired()
                 .HasPrecision(18, 2);
 
-            builder.Property(x => x.PaymentMethod)
+            builder.Property(x => x.Method)
                 .IsRequired()
                 .HasDefaultValue(Domain.Enums.PaymentMethod.Cash);
 
@@ -32,9 +31,14 @@ namespace SmartCare.InfraStructure.Configurations
                 .HasDefaultValue(Domain.Enums.PaymentStatus.Pending);
 
             builder.Property(x => x.PaymentIntentId)
-                .IsRequired(false);  
-            builder.Property(x => x.SessionId)
                 .IsRequired(false);
+
+            //builder.Property(x => x.SessionId)
+            //    .IsRequired(false);
+
+            builder.Property(x => x.Version)
+                .IsRequired()
+                .HasDefaultValue(1); // track updates
 
             builder.Property(x => x.CreatedAt)
                 .IsRequired();
@@ -44,11 +48,9 @@ namespace SmartCare.InfraStructure.Configurations
                 .HasForeignKey<Payment>(x => x.OrderId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-
             builder.HasIndex(p => p.OrderId).IsUnique();
-            builder.HasIndex(p => p.SessionId);
             builder.HasIndex(p => p.PaymentIntentId);
-
         }
     }
+
 }

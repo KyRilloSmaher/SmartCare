@@ -12,7 +12,7 @@ namespace SmartCare.Domain.Entities
         public string ClientId { get; set; }
         public string address { get; set; }
         public string Label { get; set; }
-        public string AdditionalInfo { get; set; }
+        public string? AdditionalInfo { get; set; }
         public float Latitude { get; set; }
         public float Longitude { get; set; }
         public bool IsPrimary { get; set; }

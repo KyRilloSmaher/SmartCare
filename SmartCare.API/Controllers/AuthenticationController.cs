@@ -5,10 +5,8 @@ using SmartCare.Application.DTOs.Auth.Responses;
 using SmartCare.API.Helpers;
 using SmartCare.Application.Handlers.ResponseHandler;
 using Microsoft.AspNetCore.Authorization;
-using Newtonsoft.Json.Linq;
-using System.Net;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Identity;
+using SmartCare.API.Services;
 
 
 
@@ -18,10 +16,12 @@ namespace SmartCare.API.Controllers
     public class AuthenticationController : ControllerBase
     {
         private readonly IAuthenticationService _authenticationService;
+        private readonly HtmlTemplateService _templateService;
 
-        public AuthenticationController(IAuthenticationService authenticationService)
+        public AuthenticationController(IAuthenticationService authenticationService, HtmlTemplateService templateService)
         {
             _authenticationService = authenticationService;
+            _templateService = templateService;
         }
 
         #region Auth Endpoints
@@ -84,7 +84,7 @@ namespace SmartCare.API.Controllers
         public async Task<IActionResult> ChangePasswordAsync([FromBody] ChangePasswordRequestDto dto)
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            var result = await _authenticationService.ChangePasswordAsync(userId,dto);
+            var result = await _authenticationService.ChangePasswordAsync(userId, dto);
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -138,24 +138,34 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> ConfirmEmailAsync([FromQuery] ConfirmEmailRequest dto)
         {
-
             if (string.IsNullOrEmpty(dto.Email) || string.IsNullOrEmpty(dto.Token))
-                return Content(ControllersHelperMethods.HtmlTemplate("Invalid request", "Missing email or token."), "text/html");
-
-            var result = await _authenticationService.ConfirmEmailAsync(dto);
-
-            if (result.Succeeded)
             {
-                return Content(ControllersHelperMethods.HtmlTemplate(
-                    "Email Confirmed ✅",
-                    "Your email has been successfully confirmed! You can now log in to your account."
-                ), "text/html");
+                var html = _templateService.GetHtmlTemplate("InvalidRequest", new Dictionary<string, string>
+        {
+            { "message", "Missing email or token." }
+        });
+                return Content(html, "text/html");
             }
 
-            return Content(ControllersHelperMethods.HtmlTemplate(
-                "Invalid or Expired Link ❌",
-                "The confirmation link is invalid or has expired. Please request a new verification email."
-            ), "text/html");
+            var result = await _authenticationService.ConfirmEmailAsync(dto);
+            if (result.Succeeded)
+            {
+                var html = _templateService.GetHtmlTemplate("EmailConfirmed", new Dictionary<string, string>
+        {
+            { "message", "Your email has been successfully confirmed! You can now log in to your account." },
+            { "loginUrl", $"{ApplicationRouting.Authentication.Login}" }
+        });
+                return Content(html, "text/html");
+            }
+            var request = HttpContext!.Request;
+            var baseUrl = $"{request.Scheme}://{request.Host}";
+            var resendLink = $"{baseUrl}/{ApplicationRouting.Authentication.ResendConfirmationEmail}?email={Uri.EscapeDataString(dto.Email)}";
+
+            var htmlFailed = _templateService.GetHtmlTemplate("InvalidConfirmationLink", new Dictionary<string, string>
+    {
+        { "resendLink", resendLink }
+    });
+            return Content(htmlFailed, "text/html");
         }
 
         /// <summary>
@@ -165,21 +175,22 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> ReSendConfirmationEmailAsync([FromQuery] ReSendConfirmationEmailRequest dto)
         {
-
             var result = await _authenticationService.ReSendConfirmEmailAsync(dto);
 
             if (result.Succeeded)
             {
-                return Content(ControllersHelperMethods.HtmlTemplate(
-                    "Email Confirmed ✅",
-                    "Your email has been successfully confirmed! You can now log in to your account."
-                ), "text/html");
+                var html = _templateService.GetHtmlTemplate("VerificationEmailSent", new Dictionary<string, string>
+        {
+            { "email", dto.Email }
+        });
+                return Content(html, "text/html");
             }
 
-            return Content(ControllersHelperMethods.HtmlTemplate(
-                "Invalid or Expired Link ❌",
-                "The confirmation link is invalid or has expired. Please request a new verification email."
-            ), "text/html");
+            var htmlFailed = _templateService.GetHtmlTemplate("InvalidRequest", new Dictionary<string, string>
+    {
+        { "message", $"We couldn't send a verification email to {dto.Email}. Please try again or contact support." }
+    });
+            return Content(htmlFailed, "text/html");
         }
         #endregion
     }

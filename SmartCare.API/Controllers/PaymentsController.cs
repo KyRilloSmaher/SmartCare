@@ -1,138 +1,115 @@
-﻿// API/Controllers/PaymentsController.cs
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartCare.API.Helpers;
 using SmartCare.Application.DTOs.Payment;
-using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.IServices;
-using SmartCare.Domain.Constants;
+using Stripe;
 
 namespace SmartCare.API.Controllers
 {
     [ApiController]
-    [Route("api/Payments")]
-    public class PaymentsController : ControllerBase
+    [Route("api/payments")]
+    public sealed class PaymentsController : ControllerBase
     {
         private readonly IPaymentService _paymentService;
-        private readonly IPaymentGetway _paymentGateway;
-        private readonly IConfiguration _config;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IConfiguration _configuration;
         private readonly ILogger<PaymentsController> _logger;
 
         public PaymentsController(
             IPaymentService paymentService,
-            IPaymentGetway paymentGateway,
-            IConfiguration config,
-            IHttpContextAccessor httpContextAccessor,
+            IConfiguration configuration,
             ILogger<PaymentsController> logger)
         {
             _paymentService = paymentService;
-            _paymentGateway = paymentGateway;
-            _config = config;
-            _httpContextAccessor = httpContextAccessor;
+            _configuration = configuration;
             _logger = logger;
         }
 
-        [HttpPost("webhook")]
-        public async Task<IActionResult> HandleWebhook()
+        // ------------------------------------------------------
+        // ONLINE PAYMENT (PAYMENT INTENT)
+        // ------------------------------------------------------
+
+        /// <summary>
+        /// Creates or updates a PaymentIntent for an order.
+        /// Frontend uses returned client_secret with Stripe Elements.
+        /// </summary>
+        [HttpPost("intent/{orderId:guid}")]
+        [Authorize]
+        public async Task<IActionResult> CreatePaymentIntent(Guid orderId)
         {
-            var json = await new StreamReader(Request.Body).ReadToEndAsync();
-            var signature = Request.Headers["Stripe-Signature"];
-            var webhookSecret = _config["StripeSettings:WebhookSecret"];
-            _logger.LogInformation("Webhook received: {Json}", json);
-            _logger.LogInformation("Signature: {Signature}", signature);
-            _logger.LogInformation("Webhook Secret: {WebhookSecret}", webhookSecret);
-
-            Stripe.Event stripeEvent;
-
-            try
-            {
-                // Verify signature and handle API version mismatch
-                stripeEvent = Stripe.EventUtility.ConstructEvent(
-                    json,
-                    signature,
-                    webhookSecret!,
-                    throwOnApiVersionMismatch: false
-                );
-            }
-            catch (Stripe.StripeException)
-            {
-                Console.WriteLine("Invalid Stripe webhook signature");
-                return BadRequest("Invalid signature");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error parsing Stripe webhook: {ex.Message}");
-                return BadRequest($"Error: {ex.Message}");
-            }
-
-            try
-            {
-                //only process important events
-                if (stripeEvent.Type == "payment_intent.succeeded" || stripeEvent.Type == "charge.succeeded"|| stripeEvent.Type == "payment_intent.payment_failed" || stripeEvent.Type =="charge.failed")
-
-                {
-                    await _paymentService.HandleWebhookEventAsync(stripeEvent);
-                }
-                
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Failed to process Stripe webhook event: {stripeEvent.Type}, Error: {ex.Message}");
-                return StatusCode(500);
-            }
-
-            return Ok();
-        }
-
-        [HttpPost("process/{orderId}")]
-        public async Task<IActionResult> ProcessPayment(Guid orderId)
-        {
-            var request = _httpContextAccessor.HttpContext.Request;
-            var baseUrl = $"{request.Scheme}://{request.Host}";
-            var returnUrl = $"{baseUrl}/api/Payments";
-            var requestdto = new CreateCheckoutSessionRequest
-            {
-                OrderId = orderId,
-                ReturnUrl = returnUrl
-            };
-            var result = await _paymentService.ProcessPaymentAsync(requestdto);
-
+            var result = await _paymentService.CreateOrUpdatePaymentAsync(orderId);
             return ControllersHelperMethods.FinalResponse(result);
         }
-        [HttpGet("stripe-session")]
-        public async Task<IActionResult> Session([FromQuery]Guid orderId)
+        /// <summary>
+        ///  Mark Order As Cash Payment
+        /// Frontend uses this when User Choose to Pay with Cash
+        /// </summary>
+        [HttpPost("mark-as-cash-payment/{orderId:guid}")]
+        [Authorize]
+        public async Task<IActionResult> MarkAsCashPaymentAsync(Guid orderId)
         {
-            var session = await _paymentService.GetPaymentByOrderIdAsync(orderId);
-
-            if (session == null)
-                return NotFound();
-
-            if (DateTime.UtcNow > session.ExpiredAt)
-                return BadRequest("Payment link has expired.");
-
-            return Redirect(session.url);
+            var result = await _paymentService.MarkOrderPaymentAsCash(orderId);
+            return ControllersHelperMethods.FinalResponse(result);
         }
-
-
-        [HttpGet("success/{orderId}")]
-        public async Task<IActionResult> Success(Guid orderId)
+        // ------------------------------------------------------
+        // STRIPE WEBHOOK (SOURCE OF TRUTH)
+        // ------------------------------------------------------
+        [HttpPost("webhook")]
+        [AllowAnonymous]
+        public async Task<IActionResult> StripeWebhookAsync()
         {
-            var result = await _paymentService.MarkPaymentSuccessAsync(orderId);
-            if (result.Succeeded)
+            _logger.LogWarning("IInside WebHook");
+            var json = await new StreamReader(Request.Body).ReadToEndAsync();
+            var signature = Request.Headers["Stripe-Signature"];
+            var secret = _configuration["StripeSettings:WebhookSecret"];
+
+            try
             {
-                return Content(SystemMessages.PaymentSuccessPage, "text/html");
+                var stripeEvent = EventUtility.ConstructEvent(
+                    json,
+                    signature,
+                    secret!,
+                    throwOnApiVersionMismatch: false
+                );
+
+                await _paymentService.HandleWebhookEventAsync(stripeEvent);
+                return Ok();
             }
-            return Content(SystemMessages.PaymentFailurePage, "text/html");
+            catch (StripeException ex)
+            {
+                _logger.LogWarning(ex, "Invalid Stripe webhook signature");
+                return BadRequest();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unhandled webhook processing error");
+                return Ok();
+            }
         }
 
-        [HttpGet("fail/{orderId}")]
-        public async Task<IActionResult> Fail(Guid orderId)
+
+        // ------------------------------------------------------
+        // OFFLINE PAYMENT (CASH / PICKUP)
+        // ------------------------------------------------------
+
+        [HttpPost("offline")]
+        [Authorize(Roles = "Admin,Store")]
+        public async Task<IActionResult> PayOfflineAsync([FromBody] string pickupCode)
         {
-            var result = await _paymentService.MarkPaymentFailureAsync(orderId);
-            //return ControllersHelperMethods.FinalResponse(result);
-            return Content(SystemMessages.PaymentFailurePage, "text/html");
+            var result = await _paymentService.PayOfflineAsync(pickupCode);
+            return ControllersHelperMethods.FinalResponse(result);
         }
 
-       
+        // ------------------------------------------------------
+        // CANCEL / REFUND
+        // ------------------------------------------------------
+
+        //[HttpPost("cancel-or-refund/{orderId:guid}")]
+        //[Authorize]
+        //public async Task<IActionResult> CancelOrRefundAsync(Guid orderId)
+        //{
+        //    var result = await _paymentService.TryCancelOrRefundAsync(orderId);
+        //    return ControllersHelperMethods.FinalResponse(result);
+        //}
     }
 }

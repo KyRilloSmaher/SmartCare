@@ -24,7 +24,7 @@ namespace SmartCare.Application.IServices
         Task<Response<IEnumerable<OrderResponseDto>>> GetRecentOrdersAsync(int days, Guid? storeId = null);
 
         Task<Response<Dictionary<OrderStatus, int>>> GetOrderCountByStatusAsync(Guid? storeId = null);
-
+        Task<Response<OrderResponseDto>> UpdateOrderAsync(string clientId, UpdateOrderRequestDto dto);
         Task<Response<OrderResponseDto>> UpdateOrderStatusAsync(Guid orderId, OrderStatus newStatus);
         Task<Response<OrderResponseDto?>> CreateOnlineOrderFromCartAsync(string ClientId,CreateOnlineOrderRequestDto dto);
         Task<Response<PickUpOrderResponseDto?>> CreatePickupOrderFromCartAsync(string ClientId, CreatePickUpOrderRequestDto dto);

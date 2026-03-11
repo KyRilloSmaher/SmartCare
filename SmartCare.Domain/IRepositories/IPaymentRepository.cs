@@ -11,7 +11,7 @@ namespace SmartCare.Domain.IRepositories
 {
     public interface IPaymentRepository : IGenericRepository<Payment>
     {
-        Task<Payment?> GetBySessionIdAsync(string sessionId);
+        //Task<Payment?> GetBySessionIdAsync(string sessionId);
         Task<Payment?> GetByPaymentIntentIdAsync(string paymentIntentId);
         Task<Payment?> GetByOrderIdAsync(Guid orderId);
         Task UpdatePaymentStatusAsync(Guid paymentId, PaymentStatus status, string paymentIntentId);

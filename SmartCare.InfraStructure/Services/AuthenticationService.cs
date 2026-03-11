@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using CloudinaryDotNet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
@@ -7,7 +6,6 @@ using SmartCare.Application.DTOs.Auth.Requests;
 using SmartCare.Application.DTOs.Auth.Responses;
 using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.Handlers.ResponseHandler;
-using SmartCare.Application.Handlers.ResponsesHandler;
 using SmartCare.Application.IServices;
 using SmartCare.Domain.Constants;
 using SmartCare.Domain.Entities;
@@ -15,9 +13,7 @@ using SmartCare.Domain.Enums;
 using SmartCare.Domain.Interfaces.IServices;
 using SmartCare.Domain.IRepositories;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Identity;
 using System.Net;
-using System.Web;
 using SmartCare.API.Helpers;
 using SmartCare.Domain.Helpers;
 
@@ -104,6 +100,13 @@ namespace SmartCare.InfraStructure.Services
 
         public async Task<Response<bool>> ConfirmEmailAsync(ConfirmEmailRequest dto)
         {
+            var user = await _clientRepository.GetByEmailAsync(dto.Email);
+            if (user == null)
+                return _responseHandler.Failed<bool>(SystemMessages.USER_NOT_FOUND);
+            if (user.EmailConfirmed)
+                return _responseHandler.Failed<bool>(SystemMessages.EMAIL_ALREADY_VERIFIED);
+            if (user.VerificationURLExpiresAt < DateTime.UtcNow)
+                return _responseHandler.Failed<bool>(SystemMessages.EMAIL_VERIFICATION_LINK_EXPIRED);
 
             var success = await _clientRepository.ConfirmEmailAsync(dto.Email, dto.Token);
             var message = success ? SystemMessages.VERIFICATION_SUCCESS : SystemMessages.VERIFICATION_FAILED;
@@ -123,6 +126,8 @@ namespace SmartCare.InfraStructure.Services
             var request = _httpContextAccessor.HttpContext!.Request;
             var baseUrl = $"{request.Scheme}://{request.Host}";
             var confirmEmailUrl = $"{baseUrl}/{ApplicationRouting.Authentication.ConfirmEmail}?email={user.Email}&token={encodedToken}";
+            user.EmailConfirmationLink = confirmEmailUrl;
+            user.VerificationURLExpiresAt = DateTime.UtcNow.AddHours(24);
             bool success = await _emailService.SendConfirmationEmailAsync(user.Email, confirmEmailUrl);
             return success ? _responseHandler.Success(success,SystemMessages.FAILED) : _responseHandler.Failed<bool>(SystemMessages.FAILED);
         }
@@ -139,14 +144,14 @@ namespace SmartCare.InfraStructure.Services
                 var user = await _clientRepository.GetByEmailAsync(dto.Email, true);
                 if (user == null)
                     return _responseHandler.Failed<bool>(SystemMessages.USER_NOT_FOUND);
-
-                user.Code = new Random().Next(0, 1_000_000).ToString("D6");
+                var OTP = new Random().Next(0, 1_000_000).ToString("D6");
+                user.OTP = BCrypt.Net.BCrypt.HashPassword(OTP);
                 await _clientRepository.UpdateAsync(user);
 
                 await _emailService.SendPasswordResetEmailAsync(
                     user.Email,
                     SystemMessages.SUBJECT_PASSWORD_RESET,
-                    user.Code);
+                    OTP);
 
                 await _clientRepository.CommitTransactionAsync();
 
@@ -165,12 +170,13 @@ namespace SmartCare.InfraStructure.Services
             var user = await _clientRepository.GetByEmailAsync(dto.Email, true);
             if (user == null)
                 return _responseHandler.Failed<bool>(SystemMessages.USER_NOT_FOUND);
-            user.Code = new Random().Next(0, 1_000_000).ToString("D6");
+            var OTP = new Random().Next(0, 1_000_000).ToString("D6");
+            user.OTP = BCrypt.Net.BCrypt.HashPassword(OTP);
             await _clientRepository.UpdateAsync(user);
             await _emailService.SendPasswordResetEmailAsync(
                 user.Email,
                 SystemMessages.SUBJECT_PASSWORD_RESET,
-                user.Code);
+                OTP);
 
             return _responseHandler.Success(true, SystemMessages.RESET_PASSWORD_CODE_SENT);
         }
@@ -180,8 +186,8 @@ namespace SmartCare.InfraStructure.Services
             var user = await _clientRepository.GetByEmailAsync(dto.Email);
             if (user == null)
                 return _responseHandler.Failed<bool>(SystemMessages.USER_NOT_FOUND);
-
-            var isValidCode = user.Code == dto.Code;
+            var Hashed_OTP = BCrypt.Net.BCrypt.HashPassword(dto.Code);
+            var isValidCode = BCrypt.Net.BCrypt.Verify(dto.Code, user.OTP);
             var message = isValidCode
                 ? SystemMessages.PASSWORD_RESET_CODE_CONFIRMED
                 : SystemMessages.INVALID_RESET_CODE;
@@ -302,18 +308,9 @@ namespace SmartCare.InfraStructure.Services
 
                 var address = _mapper.Map<Address>(dto.Address);
                 user.Addresses = new List<Address> { address };
-
                 //Create user account
                 var createResult = await _clientRepository.CreateClientAsync(user, dto.Password);
-                if (!createResult.Succeeded)
-                {
-                    await _clientRepository.RollbackTransactionAsync();
-                    return _responseHandler.Failed<bool>(
-                        string.Join(", ", createResult.Errors.Select(e => e.Description))
-                    );
-                }
 
-                await _clientRepository.AddToRoleAsync(user, "CLIENT");
 
                 //Generate email confirmation token and link
                 var token = await _clientRepository.GenerateEmailConfirmationTokenAsync(user);
@@ -321,6 +318,18 @@ namespace SmartCare.InfraStructure.Services
                 var request = _httpContextAccessor.HttpContext!.Request;
                 var baseUrl = $"{request.Scheme}://{request.Host}";
                 var confirmEmailUrl = $"{baseUrl}/{ApplicationRouting.Authentication.ConfirmEmail}?email={user.Email}&token={encodedToken}";
+                user.EmailConfirmationLink = confirmEmailUrl;
+                user.VerificationURLExpiresAt = DateTime.UtcNow.AddHours(24);
+                
+                if (!createResult.Succeeded)
+                {
+                    await _clientRepository.RollbackTransactionAsync();
+                    return _responseHandler.Failed<bool>(
+                        string.Join(", ", createResult.Errors.Select(e => e.Description))
+                    );
+                }
+                await _clientRepository.AddToRoleAsync(user, "CLIENT");
+                await _clientRepository.UpdateAsync(user);
                 await _emailService.SendConfirmationEmailAsync(user.Email, confirmEmailUrl);
                 await _clientRepository.CommitTransactionAsync();
 
