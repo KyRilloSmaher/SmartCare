@@ -43,7 +43,7 @@ namespace SmartCare.Application.CQRs.Payments.Commands.HandlePaymentSucceededCom
             Guid OrderId = (Guid)request.paymentwebHookEventResult.OrderId;
             var paymentResult = request.paymentwebHookEventResult;
             // Load order
-            var order = await _unitOfWork.Orders.GetOrderWithDetailsByIdAsync(OrderId);
+            var order = await _unitOfWork.Orders.GetOrderWithDetailsByIdAsync(OrderId,true);
 
             if (order is null)
             {
@@ -93,7 +93,7 @@ namespace SmartCare.Application.CQRs.Payments.Commands.HandlePaymentSucceededCom
             order.Status = OrderStatus.Confirmed;
             existingPayment.MarkCompleted();
             // Clear cart
-            var cart = await _unitOfWork.Carts.GetActiveCartAsync(order.ClientId);
+            var cart = await _unitOfWork.Carts.GetActiveCartAsync(order.ClientId,true);
             if (cart != null)
             {
                 await _unitOfWork.Carts.DeleteAsync(cart);

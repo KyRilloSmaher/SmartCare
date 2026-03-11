@@ -1,11 +1,11 @@
-﻿
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SmartCare.Application.DTOs.Payment;
 using SmartCare.Application.ExternalServiceInterfaces.Payments;
 using SmartCare.Domain.Enums;
 using SmartCare.Domain.Helpers;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading;
@@ -21,122 +21,178 @@ namespace SmartCare.InfraStructure.ExternalServices.Payments
         private readonly ILogger<PaymobService> _logger;
         private readonly HttpClient _httpClient;
 
-        public PaymobService(IOptions<PaymobSettings> settings, ILogger<PaymobService> logger, HttpClient httpClient)
+        public PaymobService(
+            IOptions<PaymobSettings> settings,
+            ILogger<PaymobService> logger,
+            HttpClient httpClient)
         {
             _settings = settings.Value;
             _logger = logger;
             _httpClient = httpClient;
         }
 
-        public async Task<PaymentSessionResult> CreateSessionAsync(CreatePaymentSessionCommand command, CancellationToken cancellationToken = default)
+        public async Task<PaymentSessionResult> CreateSessionAsync(CreatePaymentSessionCommand command,CancellationToken cancellationToken = default)
         {
-            // 1️⃣ Authenticate with Paymob to get a token
-            var authResponse = await _httpClient.PostAsJsonAsync(
-                $"{_settings.BaseUrl}/auth/tokens",
-                new { api_key = _settings.ApiKey },
-                cancellationToken
-            );
-
-            var authJson = await authResponse.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: cancellationToken);
-            string token = authJson.GetProperty("token").GetString();
-
-            // 2️⃣ Create an order
-            var orderRequest = new
+            var billingData = new
             {
-                auth_token = token,
-                amount_cents = (int)(command.Amount * 100),
-                currency = command.Currency.ToUpper(),
-                items = new object[] { },
-                merchant_order_id = command.OrderId.ToString()
+                apartment = "NA",
+                first_name = "Guest",
+                last_name = "User",
+                street = "NA",
+                building = "NA",
+                phone_number = "01000000000",
+                country = "EG",
+                email = "guest@test.com",
+                floor = "NA",
+                state = "Cairo",
+                city = "Cairo"
             };
 
-            var orderResponse = await _httpClient.PostAsJsonAsync(
-                $"{_settings.BaseUrl}/ecommerce/orders",
-                orderRequest,
-                cancellationToken
-            );
-
-            var orderJson = await orderResponse.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: cancellationToken);
-            int orderId = orderJson.GetProperty("id").GetInt32();
-
-            // 3️⃣ Get a payment key
-            var paymentKeyRequest = new
+            var payload = new
             {
-                auth_token = token,
-                amount_cents = (int)(command.Amount * 100),
+                amount = (int)(command.Amount * 100),
+                currency = command.Currency?.ToUpper() ?? "EGP",
+                payment_methods = new[] { _settings.IntegrationId },
+                billing_data = billingData,
+
+                items = new[]
+                {
+                    new
+                    {
+                        name = "Test Product",
+                        amount = (int)(command.Amount * 100),
+                        quantity = 1
+                    }
+                },
+
+                customer = new
+                {
+                    first_name = billingData.first_name,
+                    last_name = billingData.last_name,
+                    email = billingData.email
+                },
+
+                special_reference = $"{command.OrderId}",
                 expiration = 3600,
-                order_id = orderId,
-                integration_id = _settings.IntegrationId,
+                merchantOrderId = $"{command.OrderId}"
             };
+            // Create HTTP request for Paymob's intention API
+            var requestMessage = new HttpRequestMessage(System.Net.Http.HttpMethod.Post, "https://accept.paymob.com/v1/intention/");
+            requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Token", _settings.SecretKey);
+            requestMessage.Content = JsonContent.Create(payload);
+            // Send the request and process response
+            var response = await _httpClient.SendAsync(requestMessage);
+            var responseContent = await response.Content.ReadAsStringAsync();
 
-            var paymentKeyResponse = await _httpClient.PostAsJsonAsync(
-                $"{_settings.BaseUrl}/acceptance/payment_keys",
-                paymentKeyRequest,
-                cancellationToken
-            );
-
-            var paymentKeyJson = await paymentKeyResponse.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: cancellationToken);
-            string paymentToken = paymentKeyJson.GetProperty("token").GetString();
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception($"Paymob Intention API call failed with status {response.StatusCode}: {responseContent}");
+            }
+            _logger.LogDebug($"Response :{response}");
+            // Parse the response to get client_secret
+            var resultJson = JsonDocument.Parse(responseContent);
+            var clientSecret = resultJson.RootElement.GetProperty("client_secret").GetString();
 
             return new PaymentSessionResult
             {
                 Provider = PaymentMethod.Paymob,
-                ProviderReferenceId = orderId.ToString(),
-                ClientPaymentToken = paymentToken
+                ProviderReferenceId = command.OrderId.ToString(),
+                ClientPaymentToken = clientSecret
             };
         }
 
-        public Task CancelSessionAsync(string providerReferenceId, CancellationToken cancellationToken = default)
+        public Task CancelSessionAsync(
+            string providerReferenceId,
+            CancellationToken cancellationToken = default)
         {
-            // Paymob does not provide direct session cancel; optionally implement refunds here
             _logger.LogWarning("CancelSessionAsync is not implemented for Paymob.");
             return Task.CompletedTask;
         }
 
-        public PaymentWebhookResult ParseWebhook(PaymentMethod provider, string payload, IReadOnlyDictionary<string, string> headers)
+        public PaymentWebhookResult ParseWebhook(PaymentMethod provider,string payload,IReadOnlyDictionary<string, string> headers)
         {
             if (provider != PaymentMethod.Paymob)
                 throw new InvalidOperationException("Invalid provider for Paymob gateway");
 
             try
             {
-                var json = JsonDocument.Parse(payload).RootElement;
+                var root = JsonDocument.Parse(payload).RootElement;
 
-                // Optionally verify secret header if Paymob provides one
+                // Signature validation (optional)
                 if (headers.TryGetValue("X-Paymob-Signature", out var signature))
                 {
-                    if (!string.IsNullOrEmpty(_settings.WebhookSecret) && signature != _settings.WebhookSecret)
+                    if (!string.IsNullOrEmpty(_settings.WebhookSecret) &&
+                        signature != _settings.WebhookSecret)
                     {
                         _logger.LogWarning("Paymob webhook signature mismatch.");
                         return new PaymentWebhookResult { IsValid = false };
                     }
                 }
 
-                bool success = json.GetProperty("success").GetBoolean();
-                int amountCents = json.GetProperty("amount_cents").GetInt32();
+                // Paymob wraps transaction inside "obj"
+                if (!root.TryGetProperty("obj", out var obj))
+                {
+                    _logger.LogWarning("Paymob webhook missing 'obj'.");
+                    return new PaymentWebhookResult { IsValid = false };
+                }
+
+                bool success = obj.TryGetProperty("success", out var successEl) && successEl.GetBoolean();
+                bool pending = obj.TryGetProperty("pending", out var pendingEl) && pendingEl.GetBoolean();
+                bool refunded = obj.TryGetProperty("is_refunded", out var refundEl) && refundEl.GetBoolean();
+                bool voided = obj.TryGetProperty("is_voided", out var voidEl) && voidEl.GetBoolean();
+
+                int amountCents = obj.TryGetProperty("amount_cents", out var amountEl)
+                    ? amountEl.GetInt32()
+                    : 0;
+
                 decimal amount = amountCents / 100m;
 
-                var orderElement = json.GetProperty("order");
-                string providerOrderId = orderElement.GetProperty("id").GetInt32().ToString();
+                if (!obj.TryGetProperty("order", out var orderElement))
+                {
+                    _logger.LogWarning("Paymob webhook missing order.");
+                    return new PaymentWebhookResult { IsValid = false };
+                }
+
+                string providerOrderId = orderElement.TryGetProperty("id", out var idEl)
+                    ? idEl.GetInt32().ToString()
+                    : string.Empty;
 
                 Guid? orderId = null;
-                string merchantOrderId = orderElement.GetProperty("merchant_order_id").GetString();
-                if (Guid.TryParse(merchantOrderId, out var guid))
-                    orderId = guid;
+
+                if (orderElement.TryGetProperty("merchant_order_id", out var merchantIdEl))
+                {
+                    var merchantOrderId = merchantIdEl.GetString();
+
+                    if (Guid.TryParse(merchantOrderId, out var parsed))
+                        orderId = parsed;
+                }
+
+                PaymentStatus status;
+
+                if (pending)
+                    status = PaymentStatus.Pending;
+                else if (refunded)
+                    status = PaymentStatus.Refunded;
+                else if (voided)
+                    status = PaymentStatus.Cancelled;
+                else if (success)
+                    status = PaymentStatus.Completed;
+                else
+                    status = PaymentStatus.Failed;
 
                 return new PaymentWebhookResult
                 {
                     IsValid = true,
                     Provider = PaymentMethod.Paymob,
-                    ProviderReferenceId = providerOrderId,
-                    Status = success ? PaymentStatus.Completed : PaymentStatus.Failed,
+                    ProviderReferenceId = orderId.ToString()/*providerOrderId*/,
+                    Status = status,
                     Amount = amount,
                     OrderId = orderId
                 };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error parsing Paymob webhook payload");
+                _logger.LogError(ex, "Error parsing Paymob webhook payload: {Payload}", payload);
                 return new PaymentWebhookResult { IsValid = false };
             }
         }

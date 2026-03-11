@@ -184,7 +184,7 @@ namespace SmartCare.Application.Features.Orders.Commands.CreateOnlineOrder
                   return;
 
             // Idempotency: don't re-expire an already finalized order
-            if (order.Status is OrderStatus.Expired or OrderStatus.Cancelled or OrderStatus.Completed)
+            if (order.Status is OrderStatus.Expired or OrderStatus.Cancelled or OrderStatus.Completed or OrderStatus.Confirmed)
                 return ;
 
             if (order.Items is null || !order.Items.Any())

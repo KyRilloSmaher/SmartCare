@@ -200,10 +200,8 @@ namespace SmartCare.InfraStructure.Repositories
             });
         }
 
-        public Task<bool> FinalizeStockDeductionAsync(Guid inventoryId, int quantity, bool pickUp = false)
+        public async Task<bool> FinalizeStockDeductionAsync(Guid inventoryId, int quantity, bool pickUp = false)
         {
-            return Task.Run(async () =>
-            {
                 var inventory = await _context.Inventories
                     .FirstOrDefaultAsync(i => i.Id == inventoryId);
 
@@ -221,7 +219,6 @@ namespace SmartCare.InfraStructure.Repositories
                     inventory.ReservedQuantity -= quantity;
 
                 return true;
-            });
         }
 
         public Task<bool> TransferStockAsync(Guid fromInventoryId, Guid toInventoryId, int quantity)

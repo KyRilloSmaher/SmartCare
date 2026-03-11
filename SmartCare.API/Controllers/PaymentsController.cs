@@ -10,6 +10,7 @@ using SmartCare.Application.CQRs.Payments.Commands.RequestpaymentSession;
 using SmartCare.Application.ExternalServiceInterfaces.Payments;
 
 using SmartCare.Domain.Enums;
+using System.Text.Json;
 
 
 namespace SmartCare.API.Controllers
@@ -38,7 +39,7 @@ namespace SmartCare.API.Controllers
         /// <summary>
         /// Creates or updates a PaymentIntent for an order.
         /// </summary>
-        [HttpPost("{Provider}/Pruches/{orderId:guid}")]
+        [HttpPost("{Provider}/Purchase/{orderId:guid}")]
         [Authorize]
         public async Task<IActionResult> CreatePaymentIntent([FromRoute]PaymentMethod Provider,[FromRoute]Guid orderId)
         {
@@ -61,12 +62,11 @@ namespace SmartCare.API.Controllers
         // ------------------------------------------------------
         // Payment WEBHOOK (SOURCE OF TRUTH)
         // ------------------------------------------------------
+        [HttpGet("{provider}-webhook")]
         [HttpPost("{provider}-webhook")]
         [AllowAnonymous]
         public async Task<IActionResult> WebhookAsync(string provider)
         {
-
-            // Try parse provider dynamically
             if (!Enum.TryParse<PaymentMethod>(provider, true, out var paymentProvider))
             {
                 _logger.LogWarning("Unknown payment provider webhook: {Provider}", provider);
@@ -75,12 +75,14 @@ namespace SmartCare.API.Controllers
 
             var paymentService = _paymentGatewayFactory.Resolve(paymentProvider);
 
-            _logger.LogInformation("Processing {Provider} webhook", paymentProvider);
-
             var payload = await new StreamReader(Request.Body).ReadToEndAsync();
 
-            // Convert headers to dictionary
+            if (string.IsNullOrWhiteSpace(payload))
+                payload = JsonSerializer.Serialize(Request.Query.ToDictionary(q => q.Key, q => q.Value.ToString()));
+
             var headers = Request.Headers.ToDictionary(h => h.Key, h => h.Value.ToString());
+
+            _logger.LogInformation("Processing {Provider} webhook. Payload: {Payload}", paymentProvider, payload);
 
             try
             {
@@ -91,16 +93,13 @@ namespace SmartCare.API.Controllers
                     _logger.LogWarning("Webhook validation failed: {Error}", result.Status);
                     return BadRequest(result.Status);
                 }
+
                 if (result.Status == PaymentStatus.Failed)
-                {
-                    var response = await _mediator.Send(new HandlePaymentIntentFailedAsyncCommand(result));
-                    return ControllersHelperMethods.FinalResponse(response); ;
-                }
-                else if (result.Status == PaymentStatus.Completed)
-                {
-                    var response = await _mediator.Send(new HandlePaymentSucceededAsyncCommand(result));
-                    return ControllersHelperMethods.FinalResponse(response);
-                }
+                    return ControllersHelperMethods.FinalResponse(await _mediator.Send(new HandlePaymentIntentFailedAsyncCommand(result)));
+
+                if (result.Status == PaymentStatus.Completed)
+                    return ControllersHelperMethods.FinalResponse(await _mediator.Send(new HandlePaymentSucceededAsyncCommand(result)));
+
                 return Ok();
             }
             catch (Exception ex)
@@ -108,7 +107,6 @@ namespace SmartCare.API.Controllers
                 _logger.LogError(ex, "Unhandled webhook processing error for {Provider}", paymentProvider);
                 return Ok();
             }
-        
         }
 
 

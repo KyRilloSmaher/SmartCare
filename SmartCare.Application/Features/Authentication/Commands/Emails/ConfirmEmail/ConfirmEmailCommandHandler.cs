@@ -84,8 +84,13 @@ namespace SmartCare.Application.Features.Authentication.Commands.Email.ConfirmEm
                     user.EmailConfirmed = true;
                     verification.markUsed();
                     await _unitOfWork.UserManager.UpdateAsync(user);
-                    // Create A Cart For Client
-                    await _unitOfWork.Carts.CreateCartAsync(user.Id);
+                    var UserRoles = await _unitOfWork.UserManager.GetRolesAsync(user);
+                    if (UserRoles is not null && UserRoles.Contains("CLIENT"))
+                    {
+                        // Create A Cart For Client
+                        await _unitOfWork.Carts.CreateCartAsync(user.Id);
+                    }
+                   
                     // Save all changes atomically
                     await _unitOfWork.SaveChangesAsync(cancellationToken);
 
