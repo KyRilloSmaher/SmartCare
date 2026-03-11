@@ -85,7 +85,15 @@ namespace SmartCare.Domain.Entities
             IsPrimary = isPrimary;
             IsDeleted = false;
         }
+<<<<<<< HEAD
         public Address() { } 
+=======
+        public Address()
+        {
+            
+        }
+
+>>>>>>> c3c90de8b23e23142f77cdd187b7f12bcb3819df
         #endregion
 
         #region Methods

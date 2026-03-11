@@ -1,0 +1,195 @@
+2026-01-09 09:41:43.825 | Order 8d266fd6-3384-4b00-a2cc-08de4ce227e0 | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 09:41:43.936 | Order 4581458e-9140-47bb-a2cd-08de4ce227e0 | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 09:41:43.939 | Order 0c1a6c4d-fede-4d97-2587-08de4d08f5e1 | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 09:41:44.005 | Order 3190f1f4-df4e-431d-f8d6-08de4f599094 | Pending -> Confirmed
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 09:41:44.185 | Order 3255afe5-bd6c-43df-5fe9-08de4c75bbd0 | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 09:41:44.270 | Order e85ba8f3-aa9e-4d3e-b3fe-08de4c791092 | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 09:42:24.612 | Order e85ba8f3-aa9e-4d3e-b3fe-08de4c791092 | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:10:51.073 | Order 1ecd1131-ba55-465d-df48-08de4fd43d41 | Pending -> Confirmed
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34) <- <MarkOrderPaymentAsCash>d__19.MoveNext (PaymentService.cs:330) <- <GetByIdAsync>d__11.MoveNext (GenericRepository.cs:86)
+---
+2026-01-09 23:16:54.893 | Order f5eb2c4c-423b-40e7-df49-08de4fd43d41 | Pending -> Confirmed
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.046 | Order 2c244d98-5e10-4313-7913-08de4fd3474d | Pending -> Confirmed
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.063 | Order 23a36de5-5744-48c9-fc9d-08de4fcfc9c0 | Pending -> Confirmed
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.077 | Order 341facec-5ae6-4a8e-da63-08de4ef20aef | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.080 | Order e86bf052-b41d-4c26-6be3-08de4eee0924 | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.138 | Order 20aa2356-0ac2-4597-a10d-08de4e99e4df | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.143 | Order d2d71ec8-f432-4d14-a10c-08de4e99e4df | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.158 | Order 96f616cb-1288-4b20-e8fe-08de4e958755 | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.184 | Order f868326f-d466-4a0b-0a44-08de4e9464a1 | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.217 | Order 8dc9916d-7265-49b3-d5a0-08de4e8fd1cb | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.221 | Order cfb8247a-1f8a-4d07-0c52-08de4e8d9775 | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.236 | Order 1378c069-6b68-4164-f38b-08de4e24080a | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.238 | Order b39489da-3c52-44a5-dd33-08de4e1c59d9 | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.296 | Order a38766d6-0fc6-468f-3fa5-08de4e184099 | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.314 | Order 1f95bf4b-4998-44d5-dd4a-08de4e09171d | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.316 | Order 5fcca9d1-4541-420f-dd49-08de4e09171d | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.376 | Order cd15886e-eadb-4968-a509-08de4e05b8e9 | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.379 | Order e532773f-d913-4a4d-34bd-08de4dfacbe2 | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.392 | Order 0fab78d3-f8b5-4a04-34bc-08de4dfacbe2 | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.395 | Order 71ea1161-be04-43d4-f648-08de4de916fc | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.454 | Order a5149096-573e-49bb-66e2-08de4d401c11 | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.457 | Order e26bc6cb-38b0-4ec0-c9b0-08de4d3bc5dc | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.471 | Order 17b133b5-27d7-4104-5477-08de4d35e2eb | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.473 | Order 00aadc06-5967-4884-cbe0-08de4d29fc8c | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.534 | Order 39c80f5c-dfdf-40be-cbdf-08de4d29fc8c | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.551 | Order f4d6cb34-6fb2-49ac-a4ff-08de4d22e468 | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.553 | Order ca3a144c-db99-4357-a4fe-08de4d22e468 | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.613 | Order 1fb0a0bf-80a9-4db6-dfe0-08de4d1b5d47 | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.619 | Order 53e76431-7530-47a0-2ed4-08de4d1723c9 | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.630 | Order 5087dc73-1a2a-4f22-582b-08de4d11c390 | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.635 | Order c07d5b89-6360-49b8-2585-08de4d08f5e1 | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.693 | Order d5debb58-9b91-4c35-3ce2-08de4bacab75 | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.697 | Order 2e5692d3-0749-487a-ebe9-08de4ba016e6 | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.862 | Order f5eb2c4c-423b-40e7-df49-08de4fd43d41 | Pending -> Confirmed
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.863 | Order 1ecd1131-ba55-465d-df48-08de4fd43d41 | Pending -> Confirmed
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.865 | Order b159c26f-6e55-4654-da65-08de4ef20aef | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:23:46.866 | Order aaf93a8d-051c-4e53-1d60-08de4aff9704 | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:25:37.271 | Order bb144662-5196-45f2-df4a-08de4fd43d41 | Pending -> Confirmed
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:31:01.952 | Order 9d6dce9b-8e1d-4c57-df4b-08de4fd43d41 | Pending -> Confirmed
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:43:42.357 | Order f2c8e394-c509-458d-4e8c-08de4fd8d6cb | Pending -> Confirmed
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:49:39.570 | Order 0bb7f1fd-5a7f-4556-4e8d-08de4fd8d6cb | Pending -> Confirmed
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-09 23:52:20.472 | Order 47798027-c306-497d-4e8e-08de4fd8d6cb | Pending -> Confirmed
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-10 00:05:53.603 | Order 02c54164-b234-41e7-c2d4-08de4fdbf6aa | Pending -> Confirmed
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34) <- <MarkOrderPaymentAsCash>d__19.MoveNext (PaymentService.cs:330) <- <GetOrderWithDetailsByIdAsync>d__3.MoveNext (OrderRepository.cs:64)
+---
+2026-01-10 00:09:46.123 | Order 0b8bc778-328b-42fa-c2d5-08de4fdbf6aa | Pending -> Confirmed
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-10 00:12:10.710 | Order b221e50d-45f1-4e92-c2d6-08de4fdbf6aa | Pending -> Confirmed
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-10 00:17:23.137 | Order 5418a855-e2f1-44a9-c2d7-08de4fdbf6aa | Pending -> Confirmed
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-01-10 00:19:37.149 | Order f238c07f-e987-4e4e-c2d8-08de4fdbf6aa | Pending -> Confirmed
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34)
+---
+2026-03-08 13:33:18.719 | Order 59d0c2b2-1877-44fe-dbf0-08de7d173636 | Pending -> PaymentFailed
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34) <- <Handle>d__6.MoveNext (HandlePaymentIntentFailedCommandHandler.cs:55) <- <GetPendingPaymentByOrderIdAsync>d__3.MoveNext (PaymentRepository.cs:32)
+---
+2026-03-08 13:38:07.894 | Order 59d0c2b2-1877-44fe-dbf0-08de7d173636 | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34) <- <CancelReservationAsync>d__8.MoveNext (ReservationRepository.cs:115)
+---
+2026-03-08 13:42:13.603 | Order e630df54-92ce-4e13-dbf1-08de7d173636 | Pending -> Confirmed
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34) <- <UpdateReservationStatusAsync>d__9.MoveNext (ReservationRepository.cs:134)
+---
+2026-03-08 13:45:41.020 | Order e630df54-92ce-4e13-dbf1-08de7d173636 | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34) <- <CancelReservationAsync>d__8.MoveNext (ReservationRepository.cs:115)
+---
+2026-03-08 14:02:32.981 | Order 202c5a8d-dcba-415d-66ad-08de7d1b41be | Pending -> PaymentFailed
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34) <- <Handle>d__6.MoveNext (HandlePaymentIntentFailedCommandHandler.cs:55) <- <GetPendingPaymentByOrderIdAsync>d__3.MoveNext (PaymentRepository.cs:32)
+---
+2026-03-08 14:50:21.953 | Order 697af4c5-a655-4b90-4ca8-08de7d21f74e | Pending -> PaymentFailed
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34) <- <Handle>d__6.MoveNext (HandlePaymentIntentFailedCommandHandler.cs:55) <- <GetPendingPaymentByOrderIdAsync>d__3.MoveNext (PaymentRepository.cs:32)
+---
+2026-03-08 15:07:40.144 | Order df7206d8-38e3-49bb-93f8-08de7d2407d1 | Pending -> Confirmed
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34) <- <Handle>d__7.MoveNext (HandlePaymentIntentSucceededHandler.cs:93) <- <UpdateReservationStatusAsync>d__9.MoveNext (ReservationRepository.cs:134)
+---
+2026-03-08 16:12:21.403 | Order 85bfcc9a-c88b-4b7f-afac-08de7d2cf164 | Pending -> PaymentFailed
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34) <- <Handle>d__6.MoveNext (HandlePaymentIntentFailedCommandHandler.cs:55) <- <GetPendingPaymentByOrderIdAsync>d__3.MoveNext (PaymentRepository.cs:32)
+---
+2026-03-09 13:40:33.080 | Order 85bfcc9a-c88b-4b7f-afac-08de7d2cf164 | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34) <- <RealseOrder>d__9.MoveNext (CreateOrUpdatePaymentHandler.cs:142) <- <CancelReservationAsync>d__8.MoveNext (ReservationRepository.cs:115)
+---
+2026-03-10 18:16:16.182 | Order 023835da-a71f-4753-b193-08de7ed0682f | Pending -> Expired
+Order.GetFilteredStackTrace (Order.cs:58) <- Order.set_Status (Order.cs:34) <- <RealseOrder>d__13.MoveNext (CreatePickupOrderFromCartAsyncHandler.cs:208) <- <CancelReservationAsync>d__8.MoveNext (ReservationRepository.cs:115)
+---

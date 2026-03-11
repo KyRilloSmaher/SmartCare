@@ -59,44 +59,43 @@ namespace SmartCare.Application.Features.Authentication.Commands.Email.ConfirmEm
                     return _responseHandler.Failed<bool>(SystemMessages.EMAIL_ALREADY_VERIFIED);
                 }
 
+
                 // Get valid verification from EmailVerifications table
                 var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(dto.Token));
+                var rawToken = dto.Token.Replace(" ", "+");
 
-                var verification = await _unitOfWork.EmailVerifications.GetValidVerificationAsync(dto.Email, decodedToken);
+                var verification = await _unitOfWork.EmailVerifications.GetValidVerificationAsync(dto.Email, rawToken);
                 if (verification == null)
                 {
                     _logger.LogWarning("Invalid or expired verification token for email: {Email}", dto.Email);
                     return _responseHandler.Failed<bool>(SystemMessages.INVALID_TOKEN);
                 }
 
-                    // Confirm email using Identity
-                    var result = await _unitOfWork.UserManager.ConfirmEmailAsync(user, decodedToken);
+                // Confirm email using Identity
+                var result = await _unitOfWork.UserManager.ConfirmEmailAsync(user, rawToken);
 
-                    if (!result.Succeeded)
-                    {
-                        var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                        _logger.LogError("Email confirmation failed for user {UserId}. Errors: {Errors}",
-                            user.Id, errors);
+                if (!result.Succeeded)
+                {
+                    var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                    _logger.LogError("Email confirmation failed for user {UserId}. Errors: {Errors}",
+                        user.Id, errors);
 
-                        throw new Exception(errors);
-                    }
-                    // Update user
-                    user.EmailConfirmed = true;
-                    verification.markUsed();
-                    await _unitOfWork.UserManager.UpdateAsync(user);
-                    var UserRoles = await _unitOfWork.UserManager.GetRolesAsync(user);
-                    if (UserRoles is not null && UserRoles.Contains("CLIENT"))
-                    {
-                        // Create A Cart For Client
-                        await _unitOfWork.Carts.CreateCartAsync(user.Id);
-                    }
-                   
-                    // Save all changes atomically
-                    await _unitOfWork.SaveChangesAsync(cancellationToken);
+                    throw new Exception(errors);
+                }
+                // Update user
+                user.EmailConfirmed = true;
+                verification.markUsed();
+                await _unitOfWork.UserManager.UpdateAsync(user);
+                // Create A Cart For Client
+                var roles = await _unitOfWork.UserManager.GetRolesAsync(user);
+                if (roles.Contains("CLIENT"))
+                    await _unitOfWork.Carts.CreateCartAsync(user.Id);
+                // Save all changes atomically
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-                    _logger.LogInformation("Email confirmed successfully for user: {UserId}", user.Id);
+                _logger.LogInformation("Email confirmed successfully for user: {UserId}", user.Id);
 
-                    return _responseHandler.Success(true, SystemMessages.VERIFICATION_SUCCESS);
+                return _responseHandler.Success(true, SystemMessages.VERIFICATION_SUCCESS);
             }
             catch (Exception ex)
             {
