@@ -57,7 +57,7 @@ namespace SmartCare.Application.CQRs.Client.Handlers
             }
             catch (Exception) { /* Redis logic shouldn't break the app */ }
 
-            var client = await _unitOfWork.Clients.GetByIdAsync(id);
+            var client = await _unitOfWork.Clients.GetByIdWithDetailsAsync(id);
             if (client == null)
                 return _responseHandler.NotFound<ClientResponseDto?>(SystemMessages.USER_NOT_FOUND);
 
