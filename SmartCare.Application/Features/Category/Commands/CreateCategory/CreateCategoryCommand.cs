@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.CQRs.Category.Commands
+namespace SmartCare.Application.Features.Category.Commands.CreateCategory
 {
-    public record CreateCategoryAsyncCommand(CreateCategoryRequestDto CategoryDto) : IRequest<Response<CategoryResponseForAdminDto>>;
+    public record CreateCategoryCommand(CreateCategoryRequestDto CategoryDto) : IRequest<Response<CategoryResponseForAdminDto>>;
 }

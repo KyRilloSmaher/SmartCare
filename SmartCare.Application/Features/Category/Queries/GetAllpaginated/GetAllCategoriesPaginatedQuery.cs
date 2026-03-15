@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.CQRs.Category.Queries
+namespace SmartCare.Application.Features.Category.Queries.GetAllpaginated
 {
-    public record GetCategoryByIdAsyncQuery(Guid Id) : IRequest<Response<CategoryResponseDto>>;
+    public record GetAllCategoriesPaginatedQuery(int pageNumber, int pageSize) : IRequest<Response<PaginatedResult<CategoryResponseDto>>>;
 }

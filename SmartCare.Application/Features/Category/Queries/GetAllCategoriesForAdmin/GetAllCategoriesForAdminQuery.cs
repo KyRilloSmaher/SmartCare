@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.CQRs.Category.Queries
+namespace SmartCare.Application.Features.Category.Queries.GetAllCategoriesForAdmin
 {
-    public record GetAllCategorysAsyncQuery : IRequest<Response<IEnumerable<CategoryResponseDto>>>;
+    public record GetAllCategoriesForAdminQuery : IRequest<Response<IEnumerable<CategoryResponseForAdminDto>>>;
 }

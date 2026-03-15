@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.CQRs.Category.Commands
+namespace SmartCare.Application.Features.Category.Commands.ChangeCategoryLogo
 {
-    public record ChangeCategoryLogoAsyncCommand(Guid Id, ChangeCategoryLogoRequestDto CategoryDto) : IRequest<Response<string>>;
+    public record ChangeCategoryLogoCommand(ChangeCategoryLogoRequestDto CategoryDto) : IRequest<Response<string>>;
 }

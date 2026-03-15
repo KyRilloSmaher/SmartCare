@@ -17,6 +17,11 @@ namespace SmartCare.Domain.Constants
         public const string Pharmacist = "pharmacist_tag";
         public const string Favourite = "Favourites_tag";
         public const string Rates = "Rates_tag";
+
+
+        public const string CategoriesAllAdmin = "categories_all_admin";
+        public const string CategoriesClient = "categories_all_client";
+        public const string Category = "category";
     }
 
     public static class Time

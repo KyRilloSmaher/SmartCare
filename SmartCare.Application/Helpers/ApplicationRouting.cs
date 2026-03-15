@@ -46,7 +46,8 @@
             public const string Create = AdminPrefix + "/create";
             public const string Update = AdminPrefix + "/update";
             public const string ChangeImage = AdminPrefix + "/change-image";
-            public const string Delete = AdminPrefix + "/delete" + SingleRoute;
+            public const string Delete = AdminPrefix + SingleRoute +"/delete";
+            public const string Restore = AdminPrefix + SingleRoute + "/restore";
         }
         #endregion
 
@@ -239,5 +240,13 @@
 
         #endregion
 
+        #region Analytics
+        public class Analytics
+        {
+            private const string Prefix = Rule + "admin/analytics";
+
+            public const string Categories = Prefix + "/categories";
+        }
+        #endregion
     }
 }

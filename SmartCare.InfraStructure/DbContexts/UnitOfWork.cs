@@ -37,6 +37,7 @@ namespace SmartCare.Infrastructure.Data
         public IPaymentRepository Payments { get; }
         public IPharmacistRepository Pharmacists { get; }
         public IEmailVerificationRepository EmailVerifications { get; }
+        public ISalesRepository Sales { get; }
 
         // Identity Management
         public UserManager<ApplictionUser> UserManager { get; }

@@ -1,8 +1,7 @@
 ﻿using AutoMapper;
 using MediatR;
-using SmartCare.Application.CQRs.Category.Queries;
+using Microsoft.Extensions.Logging;
 using SmartCare.Application.DTOs.Caregory.Response;
-using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Application.IServices;
 using SmartCare.Domain.Constants;
@@ -11,56 +10,67 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.CQRs.Category.Handlers
+namespace SmartCare.Application.Features.Category.Queries.GetCategoryById
 {
-    public class GetCategoryByIdHandler : IRequestHandler<GetCategoryByIdAsyncQuery, Response<CategoryResponseDto>>
+    public class GetCategoryByIdQueryHandler
+        : IRequestHandler<GetCategoryByIdQuery, Response<CategoryResponseDto>>
     {
         #region Fields
         private readonly IResponseHandler _responseHandler;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IRedisCacheService _redisCacheService;
-        private readonly IImageUploaderService _imageUploaderService;
         private readonly IMapper _mapper;
+        private readonly ILogger<GetCategoryByIdQueryHandler> _logger;
         private readonly string tag = CacheConstants.Categories;
         #endregion
 
-        public GetCategoryByIdHandler(
+        public GetCategoryByIdQueryHandler(
             IResponseHandler responseHandler,
             IUnitOfWork unitOfWork,
             IRedisCacheService redisCacheService,
-            IImageUploaderService imageUploaderService,
-            IMapper mapper)
+            IMapper mapper,
+            ILogger<GetCategoryByIdQueryHandler> logger)
         {
             _responseHandler = responseHandler;
             _unitOfWork = unitOfWork;
             _redisCacheService = redisCacheService;
-            _imageUploaderService = imageUploaderService;
             _mapper = mapper;
+            _logger = logger;
         }
 
-        public async Task<Response<CategoryResponseDto>> Handle(GetCategoryByIdAsyncQuery request, CancellationToken cancellationToken)
+        public async Task<Response<CategoryResponseDto>> Handle(
+            GetCategoryByIdQuery request,
+            CancellationToken cancellationToken)
         {
-            var Id = request.Id;
-            if (Id == Guid.Empty)
+            var id = request.Id;
+
+            if (id == Guid.Empty)
                 return _responseHandler.BadRequest<CategoryResponseDto>(SystemMessages.INVALID_INPUT);
 
-            string cacheKey = $"category_{Id}";
+            string cacheKey = $"{CacheConstants.Category}_{id}";
 
             try
             {
-                var cachedCategory = await _redisCacheService.GetDataAsync<CategoryResponseDto>(cacheKey, tag);
+                var cachedCategory = await _redisCacheService
+                    .GetDataAsync<CategoryResponseDto>(cacheKey, tag);
+
                 if (cachedCategory != null)
                     return _responseHandler.Success(cachedCategory);
             }
-            catch (Exception) { /* Fallback to DB */ }
+            catch
+            {
+                _logger.LogError("Error Occured Will Retrieving Catgeory By id through Cahce");
+            }
 
-            var category = await _unitOfWork.Categories.GetByIdAsync(Id);
+            var category = await _unitOfWork.Categories.GetByIdAsync(id);
+
             if (category == null)
                 return _responseHandler.Failed<CategoryResponseDto>(SystemMessages.NOT_FOUND);
 
             var categoryDto = _mapper.Map<CategoryResponseDto>(category);
 
-            await _redisCacheService.SetDataAsync(cacheKey, categoryDto, tag, Time.Default);
+            await _redisCacheService
+                .SetDataAsync(cacheKey, categoryDto, tag, Time.Default);
 
             return _responseHandler.Success(categoryDto);
         }

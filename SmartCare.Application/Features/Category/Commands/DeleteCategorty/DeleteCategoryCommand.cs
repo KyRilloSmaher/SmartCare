@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.CQRs.Category.Commands
+namespace SmartCare.Application.Features.Category.Commands
 {
-    public record DeleteCategoryAsyncCommand(Guid Id) : IRequest<Response<bool>>;
+    public record DeleteCategoryCommand(Guid Id) : IRequest<Response<bool>>;
 }
