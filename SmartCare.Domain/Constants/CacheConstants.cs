@@ -22,6 +22,10 @@ namespace SmartCare.Domain.Constants
         public const string CategoriesAllAdmin = "categories_all_admin";
         public const string CategoriesClient = "categories_all_client";
         public const string Category = "category";
+
+        public const string CompanyiesAllAdmin = "companies_list_admin";
+        public const string CompaniesClient = "companies_list_client";
+        public const string Company= "company";
     }
 
     public static class Time

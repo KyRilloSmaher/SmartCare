@@ -64,8 +64,9 @@
             public const string GetAllForAdmin = AdminPrefix;
             public const string Create = AdminPrefix + "/create";
             public const string Update = AdminPrefix + "/update";
-            public const string ChangeImage = AdminPrefix + "/change-logo";
-            public const string Delete = AdminPrefix + "/delete" + SingleRoute;
+            public const string ChangeImage = AdminPrefix + "/change-image";
+            public const string Delete = AdminPrefix + SingleRoute + "/delete";
+            public const string Restore = AdminPrefix + SingleRoute + "/restore";
         }
         #endregion
 
@@ -246,6 +247,7 @@
             private const string Prefix = Rule + "admin/analytics";
 
             public const string Categories = Prefix + "/categories";
+            public const string Companies = Prefix + "/companies";
         }
         #endregion
     }

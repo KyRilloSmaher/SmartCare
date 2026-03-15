@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.CQRs.Company.Queries
+namespace SmartCare.Application.Features.Company.Queries.GetAllForAdmin
 {
-    public record GetAllCompaniesPaginatedAsyncQuery(int pageNumber, int pageSize) : IRequest<Response<PaginatedResult<CompanyResponseDto>>>;
+    public record GetAllCompaniesForAdminQuery : IRequest<Response<IEnumerable<CompanyResponseForAdminDto>>>;
 }

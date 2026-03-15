@@ -58,6 +58,49 @@ namespace SmartCare.InfraStructure.Repositories
 
             return result;
         }
+        public async Task<IEnumerable<CompanyRevenue>> GetCompanyRevenueAsync(Guid? branchId = null,DateTime? startDate = null,DateTime? endDate = null)
+        {
+            var query = _context.OrderItems
+                .Include(oi => oi.Product)
+                    .ThenInclude(p => p.Company)
+                .Include(oi => oi.Order)
+                .Where(oi => !oi.Order.IsDeleted &&
+                             oi.Order.Status == Domain.Enums.OrderStatus.Completed);
+
+            // Apply branch filter if provided
+            if (branchId.HasValue && branchId.Value != Guid.Empty)
+            {
+                query = query.Where(oi => oi.Inventory.StoreId == branchId.Value);
+            }
+
+            // Apply date filters if provided
+            if (startDate.HasValue)
+            {
+                query = query.Where(oi => oi.Order.CreatedAt >= startDate.Value);
+            }
+
+            if (endDate.HasValue)
+            {
+                // Add one day to endDate to include the entire end date
+                var endDateInclusive = endDate.Value.Date.AddDays(1);
+                query = query.Where(oi => oi.Order.CreatedAt < endDateInclusive);
+            }
+
+            var result = await query
+                .GroupBy(oi => new {
+                    CompanyId = oi.Product.Company.Id,
+                    CompanyName = oi.Product.Company.Name
+                })
+                .Select(g => new CompanyRevenue
+                {
+                    CompanyId = g.Key.CompanyId,
+                    CompanyName = g.Key.CompanyName,
+                    Revenue = g.Sum(x => x.SubTotal)
+                })
+                .ToListAsync();
+
+            return result;
+        }
     }
 
 }

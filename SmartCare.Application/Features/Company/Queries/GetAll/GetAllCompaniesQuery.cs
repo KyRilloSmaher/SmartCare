@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.CQRs.Company.Queries
+namespace SmartCare.Application.Features.Company.Queries.GetAll
 {
-    public record SearchCompaniesByNameAsyncQuery(string name) : IRequest<Response<IEnumerable<CompanyResponseDto>>>;
+    public record GetAllCompaniesQuery : IRequest<Response<IEnumerable<CompanyResponseDto>>>;
 }

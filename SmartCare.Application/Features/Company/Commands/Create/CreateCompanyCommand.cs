@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using SmartCare.Application.Companies.Requests;
 using SmartCare.Application.DTOs.Companies.Responses;
 using SmartCare.Application.Handlers.ResponseHandler;
 using System;
@@ -7,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.CQRs.Company.Queries
+namespace SmartCare.Application.Features.Company.Commands.Create
 {
-    public record GetAllCompaniesForAdminAsyncQuery : IRequest<Response<IEnumerable<CompanyResponseForAdminDto>>>;
+    public record CreateCompanyCommand(CreateCompanyRequestDto companyDto) : IRequest<Response<CompanyResponseForAdminDto>>;
 }

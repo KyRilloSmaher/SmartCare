@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using SmartCare.Application.Companies.Requests;
 using SmartCare.Application.DTOs.Companies.Responses;
 using SmartCare.Application.Handlers.ResponseHandler;
 using System;
@@ -8,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.CQRs.Company.Commands
+namespace SmartCare.Application.Features.Company.Queries.SearchByName
 {
-    public record UpdateCompanyAsyncCommand(Guid Id, UpdateCompanyRequest CompanyDto) : IRequest<Response<CompanyResponseDto>>;
+    public record SearchCompaniesByNameQuery(string name) : IRequest<Response<IEnumerable<CompanyResponseDto>>>;
 }
