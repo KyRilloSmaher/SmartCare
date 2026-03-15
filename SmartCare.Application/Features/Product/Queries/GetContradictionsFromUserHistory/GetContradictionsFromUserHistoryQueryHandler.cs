@@ -1,20 +1,16 @@
-﻿using AutoMapper;
-using MediatR;
+﻿using MediatR;
 using Microsoft.Extensions.Logging;
-using SmartCare.Application.DTOs.Product.Responses;
 using SmartCare.Application.ExternalServiceInterfaces.AI;
 using SmartCare.Application.Features.Product.Queries.RecommendSimilarProducts;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Domain.IRepositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using SmartCare.Domain.Entities;
+using SmartCare.Application.DTOs.Contradictions.Response;
+using AutoMapper;
 
 namespace SmartCare.Application.Features.Product.Queries.GetContradictionsFromUserHistory
 {
-    public class GetContradictionsFromUserHistoryQueryHandler : IRequestHandler<GetContradictionsFromUserHistoryQuery, Response<ICollection<ProductResponseDtoForClient>>>
+    public class GetContradictionsFromUserHistoryQueryHandler : IRequestHandler<GetContradictionsFromUserHistoryQuery, Response<List<ContradictionDetail>>>
     {
         private readonly IResponseHandler _responseHandler;
         private readonly IMediator _mediator;
@@ -23,7 +19,13 @@ namespace SmartCare.Application.Features.Product.Queries.GetContradictionsFromUs
         private readonly IUnitOfWork _unitOfWork;
         private readonly IAiServices _aiServices;
 
-        public GetContradictionsFromUserHistoryQueryHandler(IResponseHandler responseHandler, IMediator mediator, ILogger<GetContradictionsFromUserHistoryQueryHandler> logger, IUnitOfWork unitOfWork, IMapper mapper, IAiServices aiServices)
+        public GetContradictionsFromUserHistoryQueryHandler(
+            IResponseHandler responseHandler,
+            IMediator mediator,
+            ILogger<GetContradictionsFromUserHistoryQueryHandler> logger,
+            IUnitOfWork unitOfWork,
+            IMapper mapper,
+            IAiServices aiServices)
         {
             _responseHandler = responseHandler;
             _mediator = mediator;
@@ -33,53 +35,133 @@ namespace SmartCare.Application.Features.Product.Queries.GetContradictionsFromUs
             _aiServices = aiServices;
         }
 
-        public async Task<Response<ICollection<ProductResponseDtoForClient>>> Handle(GetContradictionsFromUserHistoryQuery request,CancellationToken cancellationToken)
+        public async Task<Response<List<ContradictionDetail>>> Handle(
+            GetContradictionsFromUserHistoryQuery request,
+            CancellationToken cancellationToken)
         {
-            // 1. Fetch purchase history
-            var userHistory = await _unitOfWork.Clients
-                .GetClientPurchasesHistoryAsync(request.UserId);
-
-            if (userHistory is null || !userHistory.Any())
+            try
             {
+                // 1. Fetch purchase history with dates
+                var userHistory = await _unitOfWork.Clients
+                    .GetClientPurchasesHistoryWithDatesAsync(request.UserId);
+
+                if (userHistory is null || !userHistory.Any())
+                {
+                    _logger.LogInformation(
+                        "No purchase history found for client {UserId}", request.UserId);
+
+                    return _responseHandler.Success<List<ContradictionDetail>>(
+                        [],
+                        "No previous purchases found for this client.");
+                }
+
+                // 2. Get the requested product with its ingredients
+                var requestedProduct = await _unitOfWork.Products.GetByIdAsync(request.ProductId);
+                if (requestedProduct == null)
+                {
+                    return _responseHandler.NotFound<List<ContradictionDetail>>(
+                        "Product not found.");
+                }
+
+                // Parse active ingredients from the product
+                var requestedIngredients = ParseIngredients(requestedProduct.ActiveIngredients);
+
+                // 3. Check each history product for contradictions
+                var contradictionDetails = new List<ContradictionDetail>();
+                var processedProductIds = new HashSet<Guid>();
+
+                foreach (var historyItem in userHistory)
+                {
+                    var historyProduct = await _unitOfWork.Products.GetByIdAsync(historyItem.ProductId);
+                    if (historyProduct == null || processedProductIds.Contains(historyProduct.ProductId))
+                        continue;
+
+                    var historyIngredients = ParseIngredients(historyProduct.ActiveIngredients);
+
+                    // Check for contradictions between ingredients
+                    foreach (var reqIngredient in requestedIngredients)
+                    {
+                        foreach (var histIngredient in historyIngredients)
+                        {
+                            var contradiction = await _unitOfWork.Contradictions
+                                .ContradictionExistsAsync(reqIngredient, histIngredient);
+
+                            if (contradiction != null)
+                            {
+                                // Use AutoMapper to create the base DTO from Product
+                                var contradictionDetail = _mapper.Map<ContradictionDetail>(historyProduct);
+
+                                // Manually set the contradiction-specific properties
+                                contradictionDetail.IngredientA = reqIngredient;
+                                contradictionDetail.IngredientB = histIngredient;
+                                contradictionDetail.Reason = contradiction.Reason;
+                                contradictionDetail.Severity = contradiction.Severity;
+                                contradictionDetail.SeverityLevel = MapSeverityToLevel(contradiction.Severity);
+                                contradictionDetail.PurchaseDate = historyItem.PurchaseDate;
+
+                                contradictionDetails.Add(contradictionDetail);
+                                processedProductIds.Add(historyProduct.ProductId);
+                                break; // Found contradiction for this product, move to next
+                            }
+                        }
+
+                        if (processedProductIds.Contains(historyProduct.ProductId))
+                            break;
+                    }
+                }
+
+       
+
+                if (!contradictionDetails.Any())
+                {
+                    _logger.LogInformation(
+                        "No contradictions found for product {ProductId} against {Count} history item(s)",
+                        request.ProductId, userHistory.Count);
+
+                    return _responseHandler.Success<List<ContradictionDetail>>(
+                        [],
+                        "No contradictions found with your previous purchases.");
+                }
+
                 _logger.LogInformation(
-                    "No purchase history found for client {UserId}", request.UserId);
+                    "Product {ProductId} contradicts {Count} item(s) in client {UserId} history",
+                    request.ProductId, contradictionDetails.Count, request.UserId);
 
-                return _responseHandler.Success<ICollection<ProductResponseDtoForClient>>(
-                    [],
-                    "No previous purchases found for this client.");
+                return _responseHandler.Success(
+                    contradictionDetails,
+                    "Some of your previous purchases have a medical contradiction with this product.");
             }
-
-            // 2. Ask AI which history IDs contradict the requested product
-            var contradictingIds = await _aiServices.CheckContradictionsAsync(request.ProductId, userHistory.ToList());
-
-            if (contradictingIds is null || !contradictingIds.Contradictions.Any())
+            catch (Exception ex)
             {
-                _logger.LogInformation(
-                    "No contradictions found for product {ProductId} against {Count} history item(s)",
-                    request.ProductId, userHistory.Count);
+                _logger.LogError(ex,
+                    "Error checking contradictions for product {ProductId} and user {UserId}",
+                    request.ProductId, request.UserId);
 
-                return _responseHandler.Success<ICollection<ProductResponseDtoForClient>>(
-                    [],
-                    "No contradictions found with your previous purchases.");
+                return _responseHandler.Failed<List<ContradictionDetail>>(
+                    "An error occurred while checking for contradictions.");
             }
+        }
 
-            // 3. Hydrate products in parallel — avoids N serial DB round-trips
-            var products = await Task.WhenAll(
-                contradictingIds.Contradictions.Select(c => _unitOfWork.Products.GetByIdAsync(Guid.Parse(c.Id))));
+        private List<string> ParseIngredients(string? ingredients)
+        {
+            if (string.IsNullOrWhiteSpace(ingredients))
+                return new List<string>();
 
-            // 4. Filter nulls (AI may reference stale IDs no longer in DB) then map
-            ICollection<ProductResponseDtoForClient> result = products
-                .Where(p => p is not null)
-                .Select(p => _mapper.Map<ProductResponseDtoForClient>(p!))
+            return ingredients.Split(new[] { ',', ';', '+' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(i => i.Trim())
+                .Where(i => !string.IsNullOrWhiteSpace(i))
                 .ToList();
+        }
 
-            _logger.LogInformation(
-                "Product {ProductId} contradicts {Count} item(s) in client {UserId} history",
-                request.ProductId, result.Count, request.UserId);
-
-            return _responseHandler.Success(
-                result,
-                "Some of your previous purchases have a medical contradiction with this product.");
+        private int MapSeverityToLevel(string? severity)
+        {
+            return severity?.ToLower() switch
+            {
+                "high" => 3,
+                "medium" => 2,
+                "low" => 1,
+                _ => 0
+            };
         }
     }
 }

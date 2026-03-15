@@ -1,5 +1,5 @@
 ﻿using MediatR;
-using SmartCare.Application.DTOs.Product.Responses;
+using SmartCare.Application.DTOs.Contradictions.Response;
 using SmartCare.Application.Handlers.ResponseHandler;
 using System;
 using System.Collections.Generic;
@@ -9,5 +9,5 @@ using System.Threading.Tasks;
 
 namespace SmartCare.Application.Features.Product.Queries.GetContradictionsFromUserHistory
 {
-    public record GetContradictionsFromUserHistoryQuery(string UserId, Guid ProductId) : IRequest<Response<ICollection<ProductResponseDtoForClient>>>;
+    public record GetContradictionsFromUserHistoryQuery(string UserId, Guid ProductId) : IRequest<Response<List<ContradictionDetail>>>;
 }

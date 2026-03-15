@@ -11,6 +11,7 @@ namespace SmartCare.Domain.IRepositories
         IAddressRepository Addresses { get; }
         ICategoryRepository Categories { get; }
         ICompanyRepository Companies { get; }
+        IContradictionRepository Contradictions { get; }
         IStoreRepository Stores { get; }
         IRateRepository Rates { get; }
         IProductRepository Products { get; }

@@ -22,5 +22,12 @@ namespace SmartCare.InfraStructure.Repositories
                     (c.Ingredient_A == ingredientB && c.Ingredient_B == ingredientA)
                 );
         }
+
+        public async Task<List<Contradiction>> GetContradictionsForIngredientAsync(string ingredient)
+        {
+            return await _context.Contradictions
+                .Where(c => c.Ingredient_A == ingredient || c.Ingredient_B == ingredient)
+                .ToListAsync();
+        }
     }
 }

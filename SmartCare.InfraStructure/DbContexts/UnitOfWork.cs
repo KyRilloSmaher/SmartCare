@@ -26,6 +26,7 @@ namespace SmartCare.Infrastructure.Data
         public IAddressRepository Addresses { get; }
         public ICategoryRepository Categories { get; }
         public ICompanyRepository Companies { get; }
+        public IContradictionRepository Contradictions { get; }
         public IStoreRepository Stores { get; }
         public IRateRepository Rates { get; }
         public IProductRepository Products { get; }

@@ -11,5 +11,6 @@ namespace SmartCare.Domain.IRepositories
     public interface IContradictionRepository : IGenericRepository<Contradiction>
     {
        Task<Contradiction?> ContradictionExistsAsync(string ingredientA, string ingredientB);
+       Task<List<Contradiction>> GetContradictionsForIngredientAsync(string ingredient);
     }
 }
