@@ -74,7 +74,7 @@ namespace SmartCare.Application.Features.Carts.Commands.AddToCart
             cartItem.UnitPrice = product.Price;
             cartItem.SubTotal = product.Price * cartItem.Quantity;
             cartItem.InventoryId = inventory.Id;
-            cart.Items.Add(cartItem);
+            await _unitOfWork.Carts.AddCartItemAsync(cartItem);
             cart.ReCalculateTotalPrice();
             await _unitOfWork.SaveChangesAsync();
             var responseDto = _mapper.Map<CartItemResponseDto?>(cartItem);
