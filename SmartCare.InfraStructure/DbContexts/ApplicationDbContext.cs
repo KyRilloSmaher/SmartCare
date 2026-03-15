@@ -24,6 +24,7 @@ namespace SmartCare.InfraStructure.DbContexts
         public DbSet<CartItem> CartItems { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Client> Clients { get; set; }
+        public DbSet<Contradiction> Contradictions { get; set; }
         public DbSet<Admin> Admins { get; set; }
         public DbSet<Pharmacist> Pharmacists { get; set; }
         public DbSet<Company> Companies { get; set; }
