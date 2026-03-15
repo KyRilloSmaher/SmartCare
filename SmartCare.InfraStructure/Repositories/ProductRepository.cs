@@ -37,7 +37,7 @@ namespace SmartCare.InfraStructure.Repositories
         public async Task<List<Product>> FilterListAsync(
     Expression<Func<Product, bool>>? searchPredicate = null)
         {
-            IQueryable<Product> query = _context.Products;
+            IQueryable<Product> query = _context.Products.Include(p=>p.Images).Include(p=>p.Company);
 
             if (searchPredicate != null)
                 query = query.Where(searchPredicate);
