@@ -62,9 +62,7 @@ namespace SmartCare.Application.Features.Authentication.Commands.Email.ConfirmEm
 
                 // Get valid verification from EmailVerifications table
                 var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(dto.Token));
-                var rawToken = dto.Token.Replace(" ", "+");
-
-                var verification = await _unitOfWork.EmailVerifications.GetValidVerificationAsync(dto.Email, rawToken);
+                var verification = await _unitOfWork.EmailVerifications.GetValidVerificationAsync(dto.Email, decodedToken);
                 if (verification == null)
                 {
                     _logger.LogWarning("Invalid or expired verification token for email: {Email}", dto.Email);
@@ -72,7 +70,7 @@ namespace SmartCare.Application.Features.Authentication.Commands.Email.ConfirmEm
                 }
 
                 // Confirm email using Identity
-                var result = await _unitOfWork.UserManager.ConfirmEmailAsync(user, rawToken);
+                var result = await _unitOfWork.UserManager.ConfirmEmailAsync(user, decodedToken);
 
                 if (!result.Succeeded)
                 {
