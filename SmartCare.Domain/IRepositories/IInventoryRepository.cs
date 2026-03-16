@@ -47,6 +47,13 @@ namespace SmartCare.Domain.IRepositories
         /// </summary>
         Task<List<Inventory>> GetLowStockItemsInStoreAsync(int threshold, Guid storeId);
 
+        /// <summary>
+        /// Get Inventory By ProductId and storeId
+        /// </summary>
+        /// <param name="storeId"></param>
+        /// <param name="productId"></param>
+        /// <returns></returns>
+        Task<Inventory?> GetInventoryByStoreAndProductAsync(Guid storeId, Guid productId);
         #endregion
 
         #region Business Logic Methods
