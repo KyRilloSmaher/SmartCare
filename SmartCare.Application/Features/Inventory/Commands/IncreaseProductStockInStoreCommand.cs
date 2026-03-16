@@ -1,4 +1,6 @@
-﻿using System;
+﻿using MediatR;
+using SmartCare.Application.Handlers.ResponseHandler;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +8,5 @@ using System.Threading.Tasks;
 
 namespace SmartCare.Application.Features.Inventory.Commands
 {
-    internal class IncreaseProductStockInStoreCommand
-    {
-    }
+    public record IncreaseProductStockInStoreCommand(Guid productId, Guid storeId, int quantityToAdd) : IRequest<Response<bool>>;
 }
