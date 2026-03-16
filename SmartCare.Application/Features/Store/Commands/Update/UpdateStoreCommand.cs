@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.CQRs.Store.Commands
+namespace SmartCare.Application.Features.Store.Commands.Update
 {
-    public record CreateStoreAsyncCommand(CreateStoreRequestDto StoreDto) : IRequest<Response<StoreResponseForAdminDto>>;
+    public record UpdateStoreCommand(UpdateStoreRequestDto StoreDto) : IRequest<Response<StoreResponseForAdminDto>>;
 }

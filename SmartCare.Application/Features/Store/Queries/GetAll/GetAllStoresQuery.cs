@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.CQRs.Store.Queries
+namespace SmartCare.Application.Features.Store.Queries.GetAll
 {
-    public record GetAllStoresAsyncQuery : IRequest<Response<IEnumerable<StoreResponseDto>>>;
+    public record GetAllStoresQuery : IRequest<Response<IEnumerable<StoreResponseDto>>>;
 }

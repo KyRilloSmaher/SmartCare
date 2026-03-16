@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using SmartCare.Application.DTOs.Stores.Requests;
 using SmartCare.Application.DTOs.Stores.Responses;
 using SmartCare.Application.Handlers.ResponseHandler;
 using System;
@@ -8,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.CQRs.Store.Queries
+namespace SmartCare.Application.Features.Store.Queries.Search
 {
-    public record GetNearestStoreAsyncQuery(AddressValuesDto dto) : IRequest<Response<StoreResponseDto>>;
+    public record SearchStoresByNameQuery(string name) : IRequest<Response<IEnumerable<StoreResponseDto>>>;
 }

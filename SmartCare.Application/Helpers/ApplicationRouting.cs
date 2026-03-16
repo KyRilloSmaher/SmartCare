@@ -97,7 +97,8 @@
             public const string GetAllForAdmin = AdminPrefix;
             public const string Create = AdminPrefix + "/create";
             public const string Update = AdminPrefix + "/update";
-            public const string Delete = AdminPrefix + "/delete" + SingleRoute;
+            public const string Restore = AdminPrefix+ SingleRoute + "/restore" ;
+            public const string Delete = AdminPrefix + SingleRoute+ "/delete";
         }
         #endregion
 
@@ -248,6 +249,9 @@
 
             public const string Categories = Prefix + "/categories";
             public const string Companies = Prefix + "/companies";
+            public const string Stores = Prefix + "/stores";
+            public const string SalesChannels = Prefix + "/sales-channels";
+            public const string Revenue = Prefix + "/revenue";
         }
         #endregion
     }

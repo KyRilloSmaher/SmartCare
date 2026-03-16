@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.CQRs.Store.Commands
+namespace SmartCare.Application.Features.Store.Commands.Delete
 {
-    public record DeleteStoreAsyncCommand(Guid Id) : IRequest<Response<bool>>;
+    public record DeleteStoreCommand(Guid Id) : IRequest<Response<bool>>;
 }

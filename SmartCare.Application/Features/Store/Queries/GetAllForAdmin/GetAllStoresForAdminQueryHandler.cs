@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using MediatR;
-using SmartCare.Application.CQRs.Store.Queries;
 using SmartCare.Application.DTOs.Stores.Responses;
 using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.Handlers.ResponseHandler;
@@ -12,9 +11,9 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.CQRs.Store.Handlers
+namespace SmartCare.Application.Features.Store.Queries.GetAllForAdmin
 {
-    public class SearchStoresByNameHandler : IRequestHandler<SearchStoresByNameAsyncQuery, Response<IEnumerable<StoreResponseDto>>>
+    public class GetAllStoresForAdminQueryHandler : IRequestHandler<GetAllStoresForAdminQuery, Response<IEnumerable<StoreResponseForAdminDto>>>
     {
         #region Fields
         private readonly IUnitOfWork _unitOfWork;
@@ -25,7 +24,7 @@ namespace SmartCare.Application.CQRs.Store.Handlers
         private readonly string tag = CacheConstants.Stories;
         #endregion
 
-        public SearchStoresByNameHandler(
+        public GetAllStoresForAdminQueryHandler(
             IUnitOfWork unitOfWork,
             IRedisCacheService redisCacheService,
             IMapper mapper,
@@ -39,16 +38,22 @@ namespace SmartCare.Application.CQRs.Store.Handlers
             _responseHandler = responseHandler;
         }
 
-        public async Task<Response<IEnumerable<StoreResponseDto>>> Handle(SearchStoresByNameAsyncQuery request, CancellationToken cancellationToken)
+        public async Task<Response<IEnumerable<StoreResponseForAdminDto>>> Handle(GetAllStoresForAdminQuery request, CancellationToken cancellationToken)
         {
-            var name = request.name;
+            string cacheKey = "stores_admin_all";
 
-            if (string.IsNullOrWhiteSpace(name))
-                return _responseHandler.BadRequest<IEnumerable<StoreResponseDto>>(SystemMessages.INVALID_INPUT);
+            try
+            {
+                var cachedData = await _redisCacheService.GetDataAsync<IEnumerable<StoreResponseForAdminDto>>(cacheKey, tag);
+                if (cachedData != null)
+                    return _responseHandler.Success(cachedData);
+            }
+            catch (Exception) { /* Log error if needed */ }
 
-            var stores = await _unitOfWork.Stores.SearchStoresAsync(name);
-            var storeDtos = _mapper.Map<IEnumerable<StoreResponseDto>>(stores);
+            var stores = await _unitOfWork.Stores.GetAllAsync();
+            var storeDtos = _mapper.Map<IEnumerable<StoreResponseForAdminDto>>(stores);
 
+            await _redisCacheService.SetDataAsync(cacheKey, storeDtos, tag, Time.Default);
             return _responseHandler.Success(storeDtos);
         }
     }

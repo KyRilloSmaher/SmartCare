@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using MediatR;
-using SmartCare.Application.CQRs.Store.Commands;
 using SmartCare.Application.DTOs.Stores.Responses;
 using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.Handlers.ResponseHandler;
@@ -11,9 +10,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.CQRs.Store.Handlers
+namespace SmartCare.Application.Features.Store.Commands.Create
 {
-    public class UpdateStoreHandler : IRequestHandler<UpdateStoreAsyncCommand, Response<StoreResponseForAdminDto>>
+    public class CreateStoreCommandHandler : IRequestHandler<CreateStoreCommand, Response<StoreResponseForAdminDto>>
     {
         #region Fields
         private readonly IUnitOfWork _unitOfWork;
@@ -24,7 +23,7 @@ namespace SmartCare.Application.CQRs.Store.Handlers
         private readonly string tag = CacheConstants.Stories;
         #endregion
 
-        public UpdateStoreHandler(
+        public CreateStoreCommandHandler(
             IUnitOfWork unitOfWork,
             IRedisCacheService redisCacheService,
             IMapper mapper,
@@ -38,19 +37,12 @@ namespace SmartCare.Application.CQRs.Store.Handlers
             _responseHandler = responseHandler;
         }
 
-        public async Task<Response<StoreResponseForAdminDto>> Handle(UpdateStoreAsyncCommand request, CancellationToken cancellationToken)
+        public async Task<Response<StoreResponseForAdminDto>> Handle(CreateStoreCommand request, CancellationToken cancellationToken)
         {
-            var Id = request.Id;
             var StoreDto = request.StoreDto;
+            var store = _mapper.Map<Domain.Entities.Store>(StoreDto);
 
-            if (Id == Guid.Empty || StoreDto == null)
-                return _responseHandler.BadRequest<StoreResponseForAdminDto>(SystemMessages.INVALID_INPUT);
-
-            var store = await _unitOfWork.Stores.GetByIdAsync(Id);
-            if (store == null)
-                return _responseHandler.NotFound<StoreResponseForAdminDto>(SystemMessages.NOT_FOUND);
-
-            _mapper.Map(StoreDto, store);
+            await _unitOfWork.Stores.AddAsync(store);
 
             // Save changes through UnitOfWork
             await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -58,8 +50,8 @@ namespace SmartCare.Application.CQRs.Store.Handlers
             // Remove cache for store
             await _redisCacheService.DeleteKeysByTag(tag);
 
-            var updatedStoreDto = _mapper.Map<StoreResponseForAdminDto>(store);
-            return _responseHandler.Success(updatedStoreDto);
+            var createdStoreDto = _mapper.Map<StoreResponseForAdminDto>(store);
+            return _responseHandler.Success(createdStoreDto);
         }
     }
 }

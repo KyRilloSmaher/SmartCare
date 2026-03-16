@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using MediatR;
-using SmartCare.Application.CQRs.Store.Queries;
 using SmartCare.Application.DTOs.Stores.Responses;
 using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.Handlers.ResponseHandler;
@@ -11,9 +10,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.CQRs.Store.Handlers
+namespace SmartCare.Application.Features.Store.Queries.GetNearest
 {
-    public class GetStoreByIdHandler : IRequestHandler<GetStoreByIdAsyncQuery, Response<StoreResponseDto>>
+    public class GetNearestStoreQueryHandler : IRequestHandler<GetNearestStoreQuery, Response<StoreResponseDto>>
     {
         #region Fields
         private readonly IUnitOfWork _unitOfWork;
@@ -24,7 +23,7 @@ namespace SmartCare.Application.CQRs.Store.Handlers
         private readonly string tag = CacheConstants.Stories;
         #endregion
 
-        public GetStoreByIdHandler(
+        public GetNearestStoreQueryHandler(
             IUnitOfWork unitOfWork,
             IRedisCacheService redisCacheService,
             IMapper mapper,
@@ -38,31 +37,32 @@ namespace SmartCare.Application.CQRs.Store.Handlers
             _responseHandler = responseHandler;
         }
 
-        public async Task<Response<StoreResponseDto>> Handle(GetStoreByIdAsyncQuery request, CancellationToken cancellationToken)
+        public async Task<Response<StoreResponseDto>> Handle(GetNearestStoreQuery request, CancellationToken cancellationToken)
         {
-            var Id = request.Id;
+            var dto = request.dto;
+            var stores = await _unitOfWork.Stores.GetAllStoresAsync();
 
-            if (Id == Guid.Empty)
-                return _responseHandler.BadRequest<StoreResponseDto>(SystemMessages.INVALID_INPUT);
+            Domain.Entities.Store? nearestStore = null;
+            double minDistance = double.MaxValue; // Changed to double for better precision
 
-            string cacheKey = $"store_{Id}";
-
-            try
+            foreach (var store in stores)
             {
-                var cachedStore = await _redisCacheService.GetDataAsync<StoreResponseDto>(cacheKey, tag);
-                if (cachedStore != null)
-                    return _responseHandler.Success(cachedStore);
-            }
-            catch (Exception) { }
+                var dist = _mapService.CalculateDistanceKm(dto.Latitude, dto.Longitude,
+                                                             store.Latitude, store.Longitude);
 
-            var store = await _unitOfWork.Stores.GetByIdAsync(Id);
-            if (store == null)
+                if (dist < minDistance)
+                {
+                    minDistance = dist;
+                    nearestStore = store;
+                }
+            }
+
+            if (nearestStore == null)
                 return _responseHandler.NotFound<StoreResponseDto>(SystemMessages.NOT_FOUND);
 
-            var storeDto = _mapper.Map<StoreResponseDto>(store);
+            var nearestStoreDto = _mapper.Map<StoreResponseDto>(nearestStore);
 
-            await _redisCacheService.SetDataAsync(cacheKey, storeDto, tag, Time.Default);
-            return _responseHandler.Success(storeDto);
+            return _responseHandler.Success(nearestStoreDto);
         }
     }
 }

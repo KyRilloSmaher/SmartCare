@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using MediatR;
-using SmartCare.Application.CQRs.Store.Queries;
 using SmartCare.Application.DTOs.Stores.Responses;
 using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.Handlers.ResponseHandler;
@@ -8,13 +7,12 @@ using SmartCare.Application.IServices;
 using SmartCare.Domain.Constants;
 using SmartCare.Domain.IRepositories;
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.CQRs.Store.Handlers
+namespace SmartCare.Application.Features.Store.Queries.GetById
 {
-    public class GetAllStoresHandler : IRequestHandler<GetAllStoresAsyncQuery, Response<IEnumerable<StoreResponseDto>>>
+    public class GetStoreByIdQueryHandler : IRequestHandler<GetStoreByIdQuery, Response<StoreResponseDto>>
     {
         #region Fields
         private readonly IUnitOfWork _unitOfWork;
@@ -25,7 +23,7 @@ namespace SmartCare.Application.CQRs.Store.Handlers
         private readonly string tag = CacheConstants.Stories;
         #endregion
 
-        public GetAllStoresHandler(
+        public GetStoreByIdQueryHandler(
             IUnitOfWork unitOfWork,
             IRedisCacheService redisCacheService,
             IMapper mapper,
@@ -39,23 +37,31 @@ namespace SmartCare.Application.CQRs.Store.Handlers
             _responseHandler = responseHandler;
         }
 
-        public async Task<Response<IEnumerable<StoreResponseDto>>> Handle(GetAllStoresAsyncQuery request, CancellationToken cancellationToken)
+        public async Task<Response<StoreResponseDto>> Handle(GetStoreByIdQuery request, CancellationToken cancellationToken)
         {
-            string cacheKey = "stores_client_all";
+            var Id = request.Id;
+
+            if (Id == Guid.Empty)
+                return _responseHandler.BadRequest<StoreResponseDto>(SystemMessages.INVALID_INPUT);
+
+            string cacheKey = $"store_{Id}";
 
             try
             {
-                var cachedData = await _redisCacheService.GetDataAsync<IEnumerable<StoreResponseDto>>(cacheKey, tag);
-                if (cachedData != null)
-                    return _responseHandler.Success(cachedData);
+                var cachedStore = await _redisCacheService.GetDataAsync<StoreResponseDto>(cacheKey, tag);
+                if (cachedStore != null)
+                    return _responseHandler.Success(cachedStore);
             }
             catch (Exception) { }
 
-            var stores = await _unitOfWork.Stores.GetAllAsync();
-            var storeDtos = _mapper.Map<IEnumerable<StoreResponseDto>>(stores);
+            var store = await _unitOfWork.Stores.GetByIdAsync(Id);
+            if (store == null)
+                return _responseHandler.NotFound<StoreResponseDto>(SystemMessages.NOT_FOUND);
 
-            await _redisCacheService.SetDataAsync(cacheKey, storeDtos, tag, Time.Default);
-            return _responseHandler.Success(storeDtos);
+            var storeDto = _mapper.Map<StoreResponseDto>(store);
+
+            await _redisCacheService.SetDataAsync(cacheKey, storeDto, tag, Time.Default);
+            return _responseHandler.Success(storeDto);
         }
     }
 }
