@@ -9,6 +9,7 @@ namespace SmartCare.Application.Companies.Requests
 {
     public class ChangeCompanyLogoRequestDto
     {
+        public Guid Id { get; set; }  
         public IFormFile Image { get; set; } = null!;
     }
 }

@@ -38,6 +38,7 @@ namespace SmartCare.Infrastructure.Data
         public IPaymentRepository Payments { get; }
         public IPharmacistRepository Pharmacists { get; }
         public IEmailVerificationRepository EmailVerifications { get; }
+        public ISalesRepository Sales { get; }
 
         // Identity Management
         public UserManager<ApplictionUser> UserManager { get; }
@@ -74,7 +75,8 @@ namespace SmartCare.Infrastructure.Data
             IEmailVerificationRepository emailVerificationRepository,
             IContradictionRepository contradictionRepository,
             UserManager<ApplictionUser> userManager,
-            RoleManager<IdentityRole> roleManager)
+            RoleManager<IdentityRole> roleManager,
+            ISalesRepository salesRepository)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _repositories = new Dictionary<Type, object>();
@@ -97,6 +99,7 @@ namespace SmartCare.Infrastructure.Data
             EmailVerifications = emailVerificationRepository ?? throw new ArgumentNullException(nameof(emailVerificationRepository));
             Contradictions = contradictionRepository ?? throw new ArgumentNullException(nameof(contradictionRepository));
 
+            Sales = salesRepository ?? throw new ArgumentNullException(nameof(salesRepository));
             // Initialize Identity managers
             UserManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             RoleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));

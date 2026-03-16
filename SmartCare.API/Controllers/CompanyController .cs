@@ -3,12 +3,18 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartCare.API.Helpers;
 using SmartCare.Application.Companies.Requests;
-using SmartCare.Application.CQRs.Company.Commands;
-using SmartCare.Application.CQRs.Company.Queries;
-using SmartCare.Application.DTOs.Caregory.Response;
 using SmartCare.Application.DTOs.Companies.Responses;
+using SmartCare.Application.Features.Company.Commands.ChangeLogo;
+using SmartCare.Application.Features.Company.Commands.Create;
+using SmartCare.Application.Features.Company.Commands.Delete;
+using SmartCare.Application.Features.Company.Commands.Restore;
+using SmartCare.Application.Features.Company.Commands.Update;
+using SmartCare.Application.Features.Company.Queries.GetAll;
+using SmartCare.Application.Features.Company.Queries.GetAllByPaginated;
+using SmartCare.Application.Features.Company.Queries.GetAllForAdmin;
+using SmartCare.Application.Features.Company.Queries.GetById;
+using SmartCare.Application.Features.Company.Queries.SearchByName;
 using SmartCare.Application.Handlers.ResponseHandler;
-using SmartCare.Application.IServices;
 
 namespace SmartCare.API.Controllers
 {
@@ -16,19 +22,12 @@ namespace SmartCare.API.Controllers
     [Authorize]
     public class CompanyController : ControllerBase
     {
-        //private readonly ICompanyService _CompanyService;
         private readonly IMediator _mediator;
 
         public CompanyController(IMediator mediator)
         {
             _mediator = mediator;
         }
-
-        //public CompanyController(ICompanyService CompanyService)
-        //{
-        //    _CompanyService = CompanyService;
-        //}
-
         /// <summary>
         /// Get Company By Id
         /// </summary>
@@ -36,8 +35,7 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<CompanyResponseDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetCompanyByIdAsync(Guid id)
         {
-            //var result = await _CompanyService.GetCompanyByIdAsync(id);
-            var result = await _mediator.Send(new GetCompanyByIdAsyncQuery(id));
+            var result = await _mediator.Send(new GetCompanyByIdQuery(id));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -48,8 +46,7 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<IEnumerable<CompanyResponseDto>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> SearchCompaniesByNameAsync([FromQuery]string name)
         {
-            //var result = await _CompanyService.SearchCompaniesByNameAsync(name);
-            var result = await _mediator.Send(new  SearchCompaniesByNameAsyncQuery(name));
+            var result = await _mediator.Send(new SearchCompaniesByNameQuery(name));
             return ControllersHelperMethods.FinalResponse(result);
         }
         /// <summary>
@@ -59,19 +56,17 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<IEnumerable<CompanyResponseDto>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllCompaniesAsync()
         {
-            //var result = await _CompanyService.GetAllCompaniesAsync();
-            var result = await _mediator.Send(new  GetAllCompaniesAsyncQuery());
+            var result = await _mediator.Send(new GetAllCompaniesQuery());
             return ControllersHelperMethods.FinalResponse(result);
         }
         /// <summary>
         /// Get All Companies By Pagination
         /// </summary>
         [HttpGet(ApplicationRouting.Company.GetAllPaginated)]
-        [ProducesResponseType(typeof(Response<IEnumerable<CategoryResponseDto>>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAllPaginatedAsync([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        [ProducesResponseType(typeof(Response<IEnumerable<CompanyResponseDto>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAllPaginatedAsync([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 50)
         {
-            //var result = await _CompanyService.GetAllCompaniesPaginatedAsync(pageNumber, pageSize);
-            var result = await _mediator.Send(new GetAllCompaniesPaginatedAsyncQuery(pageNumber, pageSize));
+            var result = await _mediator.Send(new GetAllCompaniesPaginatedQuery(pageNumber, pageSize));
             return ControllersHelperMethods.FinalResponse(result);
         }
         /// <summary>
@@ -82,8 +77,7 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<IEnumerable<CompanyResponseForAdminDto>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllCompaniesForAdminAsync()
         {
-            //var result = await _CompanyService.GetAllCompaniesForAdminAsync();
-            var result = await _mediator.Send(new GetAllCompaniesForAdminAsyncQuery());
+            var result = await _mediator.Send(new GetAllCompaniesForAdminQuery());
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -95,21 +89,19 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<CompanyResponseForAdminDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> CreateCompanyAsync([FromForm] CreateCompanyRequestDto dto)
         {
-            //var result = await _CompanyService.CreateCompanyAsync(dto);
-            var result = await _mediator.Send(new CreateCompanyAsyncCommand(dto));
+            var result = await _mediator.Send(new CreateCompanyCommand(dto));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
         /// <summary>
         /// Update a Company
         /// </summary>
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "DASHBOARD_ADMIN")]
         [HttpPut(ApplicationRouting.Company.Update)]
         [ProducesResponseType(typeof(Response<CompanyResponseDto>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> UpdateCompanyAsync(Guid id, [FromBody] UpdateCompanyRequest dto)
-        {
-            //var result = await _CompanyService.UpdateCompanyAsync(id, dto);
-            var result = await _mediator.Send(new UpdateCompanyAsyncCommand(id,dto));
+        public async Task<IActionResult> UpdateCompanyAsync([FromBody] UpdateCompanyRequest dto)
+        {;
+            var result = await _mediator.Send(new UpdateCompanyCommand(dto));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -119,13 +111,22 @@ namespace SmartCare.API.Controllers
         [Authorize(Roles = "DASHBOARD_ADMIN")]
         [HttpPatch(ApplicationRouting.Company.ChangeImage)]
         [ProducesResponseType(typeof(Response<string>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> ChangeCompanyLogoAsync(Guid id, [FromForm] ChangeCompanyLogoRequestDto dto)
+        public async Task<IActionResult> ChangeCompanyLogoAsync([FromForm] ChangeCompanyLogoRequestDto dto)
         {
-            //var result = await _CompanyService.ChangeCompanyLogoAsync(id, dto);
-            var result = await _mediator.Send(new ChangeCompanyLogoAsyncCommand(id,dto));
+            var result = await _mediator.Send(new ChangeCompanyLogoCommand(dto));
             return ControllersHelperMethods.FinalResponse(result);
         }
-
+        /// <summary>
+        /// Restore Company
+        /// </summary>
+        [Authorize(Roles = "DASHBOARD_ADMIN")]
+        [HttpPatch(ApplicationRouting.Company.Restore)]
+        [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> RestoreCompanyAsync(Guid id)
+        {
+            var result = await _mediator.Send(new RestoreCompanyCommand(id));
+            return ControllersHelperMethods.FinalResponse(result);
+        }
         /// <summary>
         /// Delete Company
         /// </summary>
@@ -134,8 +135,7 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> DeleteCompanyAsync(Guid id)
         {
-            //var result = await _CompanyService.DeleteCompanyAsync(id);
-            var result = await _mediator.Send(new  DeleteCompanyAsyncCommand(id));
+            var result = await _mediator.Send(new  DeleteCompanyCommand(id));
             return ControllersHelperMethods.FinalResponse(result);
         }
     }

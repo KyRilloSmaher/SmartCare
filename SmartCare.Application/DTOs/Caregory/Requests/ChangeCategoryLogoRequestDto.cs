@@ -9,6 +9,7 @@ namespace SmartCare.Application.DTOs.Caregory.Requests
 {
     public class ChangeCategoryLogoRequestDto
     {
+        public Guid Id { get; set; }
         public IFormFile Image { get; set; } = null!;
     }
 }

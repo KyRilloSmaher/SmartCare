@@ -75,7 +75,7 @@ namespace SmartCare.Domain.Entities
         /// <summary>
         /// Calculates the total price of all items.
         /// </summary>
-         public void ReCalculateTotalPrice()
+        public void ReCalculateTotalPrice()
         {
             TotalPrice = Items?.Sum(i => i.SubTotal) ?? 0m;
         }

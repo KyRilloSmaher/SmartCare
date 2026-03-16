@@ -1,14 +1,19 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SmartCare.API.Helpers;
-using SmartCare.Application.CQRs.Category.Commands;
-using SmartCare.Application.CQRs.Category.Queries;
 using SmartCare.Application.DTOs.Caregory.Requests;
 using SmartCare.Application.DTOs.Caregory.Response;
+using SmartCare.Application.Features.Category.Commands;
+using SmartCare.Application.Features.Category.Commands.ChangeCategoryLogo;
+using SmartCare.Application.Features.Category.Commands.CreateCategory;
+using SmartCare.Application.Features.Category.Commands.RestoreCategory;
+using SmartCare.Application.Features.Category.Queries.GetAll;
+using SmartCare.Application.Features.Category.Queries.GetAllCategoriesForAdmin;
+using SmartCare.Application.Features.Category.Queries.GetAllpaginated;
+using SmartCare.Application.Features.Category.Queries.GetCategoryById;
+using SmartCare.Application.Features.Category.Queries.SearchForCatgeory;
 using SmartCare.Application.Handlers.ResponseHandler;
-using SmartCare.Application.IServices;
 
 namespace SmartCare.API.Controllers
 {
@@ -16,19 +21,12 @@ namespace SmartCare.API.Controllers
     [Authorize]
     public class CategoryController : ControllerBase
     {
-        // private readonly ICategoryService _categoryService;
         private readonly IMediator _mediator;
 
         public CategoryController(IMediator mediator)
         {
             _mediator = mediator;
         }
-
-
-        //public CategoryController(ICategoryService categoryService)
-        //{
-        //    _categoryService = categoryService;
-        //}
 
         /// <summary>
         /// Get Category By Id
@@ -37,8 +35,7 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<CategoryResponseDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetCategoryByIdAsync(Guid id)
         {
-            //var result = await _categoryService.GetCategoryByIdAsync(id);
-            var result = await _mediator.Send(new GetCategoryByIdAsyncQuery(id));
+            var result = await _mediator.Send(new GetCategoryByIdQuery(id));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -49,8 +46,7 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<IEnumerable<CategoryResponseDto>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> SearchCategoriesByNameAsync([FromQuery]string name)
         {
-            //var result = await _categoryService.SearchCategoriesByNameAsync(name);
-            var result = await _mediator.Send(new SearchCategoriesByNameAsyncQuery(name));
+            var result = await _mediator.Send(new SearchCategoriesByNameQuery(name));
             return ControllersHelperMethods.FinalResponse(result);
         }
         /// <summary>
@@ -60,8 +56,7 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<IEnumerable<CategoryResponseDto>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllCategoriesAsync()
         {
-            //var result = await _categoryService.GetAllCategorysAsync();
-            var result = await _mediator.Send(new GetAllCategorysAsyncQuery());
+            var result = await _mediator.Send(new GetAllCategoryiesQuery());
             return ControllersHelperMethods.FinalResponse(result);
         }
         /// <summary>
@@ -71,8 +66,7 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<IEnumerable<CategoryResponseDto>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllPaginatedAsync([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            //var result = await _categoryService.GetAllCategoriesPaginatedAsync(pageNumber, pageSize);
-            var result = await _mediator.Send(new GetAllCategoriesPaginatedAsyncQuery(pageNumber, pageSize));
+            var result = await _mediator.Send(new GetAllCategoriesPaginatedQuery(pageNumber, pageSize));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -84,8 +78,7 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<IEnumerable<CategoryResponseForAdminDto>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllCategoriesForAdminAsync()
         {
-            //var result = await _categoryService.GetAllCategorysForAdminAsync();
-            var result = await _mediator.Send(new GetAllCategorysForAdminAsyncQuery());
+            var result = await _mediator.Send(new GetAllCategoriesForAdminQuery());
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -97,8 +90,7 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<CategoryResponseForAdminDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> CreateCategoryAsync([FromForm] CreateCategoryRequestDto dto)
         {
-            //var result = await _categoryService.CreateCategoryAsync(dto);
-            var result = await _mediator.Send(new CreateCategoryAsyncCommand(dto));
+            var result = await _mediator.Send(new CreateCategoryCommand(dto));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -108,10 +100,9 @@ namespace SmartCare.API.Controllers
         [Authorize(Roles = "DASHBOARD_ADMIN")]
         [HttpPut(ApplicationRouting.Category.Update)]
         [ProducesResponseType(typeof(Response<CategoryResponseDto>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> UpdateCategoryAsync(Guid id, [FromBody] UpdateCategoryRequest dto)
+        public async Task<IActionResult> UpdateCategoryAsync([FromBody] UpdateCategoryRequest dto)
         {
-            //var result = await _categoryService.UpdateCategoryAsync(id, dto);
-            var result = await _mediator.Send(new UpdateCategoryAsyncCommand(id,dto)); 
+            var result = await _mediator.Send(new UpdateCategoryCommand(dto)); 
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -121,10 +112,20 @@ namespace SmartCare.API.Controllers
         [Authorize(Roles = "DASHBOARD_ADMIN")]
         [HttpPatch(ApplicationRouting.Category.ChangeImage)]
         [ProducesResponseType(typeof(Response<string>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> ChangeCategoryLogoAsync(Guid id, [FromForm] ChangeCategoryLogoRequestDto dto)
+        public async Task<IActionResult> ChangeCategoryLogoAsync([FromForm] ChangeCategoryLogoRequestDto dto)
         {
-            //var result = await _categoryService.ChangeCategoryLogoAsync(id, dto);
-            var result = await _mediator.Send(new ChangeCategoryLogoAsyncCommand(id,dto));
+            var result = await _mediator.Send(new ChangeCategoryLogoCommand(dto));
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+        /// <summary>
+        /// Restore Category
+        /// </summary>
+        [Authorize(Roles = "DASHBOARD_ADMIN")]
+        [HttpPatch(ApplicationRouting.Category.Restore)]
+        [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> RestoreCategoryAsync(Guid id)
+        {
+            var result = await _mediator.Send(new RestoreCategoryCommand(id));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -136,8 +137,7 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> DeleteCategoryAsync(Guid id)
         {
-            //var result = await _categoryService.DeleteCategoryAsync(id);
-            var result = await _mediator.Send(new DeleteCategoryAsyncCommand(id));
+            var result = await _mediator.Send(new DeleteCategoryCommand(id));
             return ControllersHelperMethods.FinalResponse(result);
         }
     }

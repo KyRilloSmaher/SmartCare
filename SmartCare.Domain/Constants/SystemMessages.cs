@@ -14,6 +14,7 @@ namespace SmartCare.Domain.Constants
         public const string RECORD_UPDATED = "Record updated successfully.";
         public const string RECORD_DELETED = "Record deleted successfully.";
         public const string SETTINGS_SAVED = "Settings saved successfully.";
+        public const string ALREADY_ACTIVE = "Already Active.";
         // =====================
         // ⚠️ Common Validation / Errors
         // =====================

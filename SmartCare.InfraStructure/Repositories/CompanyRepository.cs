@@ -25,7 +25,7 @@ namespace SmartCare.InfraStructure.Repositories
         {
             return await _context.Companies
                 .Where(c => !c.IsDeleted)
-                .AsNoTracking()
+                .AsNoTracking().OrderByDescending(c => c.ProductsCount)
                 .ToListAsync();
         }
 
@@ -34,7 +34,7 @@ namespace SmartCare.InfraStructure.Repositories
             var query = _context.Companies.AsQueryable();
 
             if (!includeDeleted)
-                query = query.Where(c => !c.IsDeleted);
+                query = query.Where(c => !c.IsDeleted).OrderByDescending(c => c.ProductsCount);
 
             return query.AsNoTracking();
         }
@@ -69,7 +69,7 @@ namespace SmartCare.InfraStructure.Repositories
         public async Task<IEnumerable<Company>> GetAllCompaniesForAdminAsync()
         {
             return await _context.Companies
-                .AsNoTracking()
+                .AsNoTracking().OrderByDescending(c => c.ProductsCount)
                 .ToListAsync();
         }
 

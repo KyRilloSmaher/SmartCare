@@ -57,6 +57,9 @@ namespace SmartCare.InfraStructure.Extensions
             services.AddScoped<IPaymentRepository, PaymentRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IPaymentGatewayFactory, PaymentGatewayFactory>();
+
+            services.AddScoped<ISalesRepository, SalesRepository>();
+
             // ---------- Identity ----------
             services.AddIdentity<ApplictionUser, IdentityRole>(options =>
             {
