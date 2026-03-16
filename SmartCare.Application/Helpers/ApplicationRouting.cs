@@ -204,12 +204,15 @@
         {
             private const string Prefix = Rule + "Inventories";
             private const string AdminPrefix = Rule + "admin/Inventories";
+            private const string PharmacistPerfix = Rule + "Pharmacist/Inventories";
 
             public const string GetBestByProductId = Prefix + "/GetBestInventory";
             public const string GetAvailableByProductId = Prefix + "/GetAvailableInventory";
             public const string GetTotalStockByProductId = Prefix + "/GetTotalStockByProductId";
             public const string IncreaseStock = AdminPrefix + "/IncreaseStock";
             public const string DecreaseStock = AdminPrefix + "/DecreaseStock";
+            public const string IncreaseStockInStore = PharmacistPerfix + "/IncreaseStockInStore";
+            public const string DecreaseStockInStore = PharmacistPerfix + "/DecreaseStockInStore";
             public const string GetStockInStore = Prefix + "/GetStockInStore";
             public const string GetAllInStore = AdminPrefix + "/GetAllInStore";
             public const string Create = AdminPrefix + "/Create";
