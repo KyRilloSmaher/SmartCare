@@ -13,11 +13,7 @@ namespace SmartCare.InfraStructure.Configurations
         public void Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<Contradiction> builder)
         {
             builder.ToTable("Contradictions");
-
-            builder.Property(e => e.Id)
-                .HasColumnName("Id")
-                .ValueGeneratedOnAdd();
-
+            builder.HasKey(i => new { i.Ingredient_A, i.Ingredient_B });
             builder.Property(e => e.Ingredient_A)
                 .HasColumnName("Ingredient_A")
                 .HasMaxLength(100)

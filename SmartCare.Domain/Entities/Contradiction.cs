@@ -11,8 +11,6 @@ namespace SmartCare.Domain.Entities
     [Table("Contradictions")]
     public class Contradiction
     {
-        [Key]
-        public int Id { get; set; }
 
         [Required]
         [Column("Ingredient_A")]

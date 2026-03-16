@@ -72,6 +72,7 @@ namespace SmartCare.Infrastructure.Data
             IPaymentRepository paymentRepository,
             IPharmacistRepository pharmacistRepository,
             IEmailVerificationRepository emailVerificationRepository,
+            IContradictionRepository contradictionRepository,
             UserManager<ApplictionUser> userManager,
             RoleManager<IdentityRole> roleManager)
         {
@@ -94,6 +95,7 @@ namespace SmartCare.Infrastructure.Data
             Payments = paymentRepository ?? throw new ArgumentNullException(nameof(paymentRepository));
             Pharmacists = pharmacistRepository ?? throw new ArgumentNullException(nameof(pharmacistRepository));
             EmailVerifications = emailVerificationRepository ?? throw new ArgumentNullException(nameof(emailVerificationRepository));
+            Contradictions = contradictionRepository ?? throw new ArgumentNullException(nameof(contradictionRepository));
 
             // Initialize Identity managers
             UserManager = userManager ?? throw new ArgumentNullException(nameof(userManager));

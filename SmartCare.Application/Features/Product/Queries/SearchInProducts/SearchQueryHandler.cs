@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace SmartCare.Application.Features.Product.Queries.SearchInProducts
 {
-    public class SearchQueryHandler : IRequestHandler<SearchQuery, Response<ICollection<ProductResponseDtoForClient>>>
+    public class SearchQueryHandler : IRequestHandler<SearchQuery, Response<IEnumerable<ProductResponseDtoForClient>>>
     {
         private readonly IResponseHandler _responseHandler;
         private readonly IMediator _mediator;
@@ -33,60 +33,53 @@ namespace SmartCare.Application.Features.Product.Queries.SearchInProducts
             _mapper = mapper;
         }
 
-        public async Task<Response<ICollection<ProductResponseDtoForClient>>> Handle( SearchQuery request,CancellationToken cancellationToken)
+        public async Task<Response<IEnumerable<ProductResponseDtoForClient>>> Handle( SearchQuery request,CancellationToken cancellationToken)
         {
-            // 1. Fire AI semantic search and DB text search in parallel
-            var semanticTask = _aiServices.SemanticSearchAsync(request.query);
+            // AI semantic search
+            var semanticResponse = await _aiServices.SemanticSearchAsync(request.query);
 
-            var dbTask = _unitOfWork.Products.FilterListAsync(
-                        p => EF.Functions.Like(p.NameEn, $"%{request.query}%") ||
-                             EF.Functions.Like(p.Description, $"%{request.query}%")
-                    );
-            await Task.WhenAll(semanticTask, dbTask);
+            var semanticResults = semanticResponse?.Results ?? [];
 
-            var semanticResults = (await semanticTask)?.Results ?? [];
-            var dbProducts = await dbTask;
-
-            var semanticIdSet = semanticResults
-                .Select(r => r.Id)
-                .ToHashSet();
-
-            var candidates = semanticIdSet.Any()
-                ? dbProducts.Where(p => semanticIdSet.Contains(p.ProductId.ToString())).ToList()
-                : dbProducts.ToList();
-
-            if (!candidates.Any())
+            if (!semanticResults.Any())
             {
-                return _responseHandler.Success<ICollection<ProductResponseDtoForClient>>(
+                return _responseHandler.Success<IEnumerable<ProductResponseDtoForClient>>(
                     [],
                     "No products found matching your search.");
             }
 
-            ICollection<ProductResponseDtoForClient> result;
+            
+            var semanticIds = semanticResults
+                .Select(r => Guid.Parse(r.Id))
+                .ToList();
 
-            if (semanticResults.Any())
-            {
-                var rankMap = semanticResults
-                    .Select((r, index) => new { r.Id, index })
-                    .ToDictionary(x => x.Id, x => x.index);
 
-                result = candidates
-                    .OrderBy(p => rankMap.TryGetValue(p.ProductId.ToString(), out var rank)
-                                    ? rank
-                                    : int.MaxValue)
-                    .Select(p => _mapper.Map<ProductResponseDtoForClient>(p))
-                    .ToList();
-            }
-            else
+            var products = await _unitOfWork.Products.FilterListAsync(
+                p => semanticIds.Contains(p.ProductId)
+            );
+
+            if (!products.Any())
             {
-                result = candidates
-                    .Select(p => _mapper.Map<ProductResponseDtoForClient>(p))
-                    .ToList();
+                return _responseHandler.Success<IEnumerable<ProductResponseDtoForClient>>(
+                    [],
+                    "No products found matching your search.");
             }
 
-            _logger.LogInformation(
-                "Search '{Query}' => {Total} result(s) | semantic hits={S} db candidates={D}",
-                request.query, result.Count, semanticResults.Count, dbProducts.Count());
+            //Build score map for ranking
+            var scoreMap = semanticResults.ToDictionary(
+                r => Guid.Parse(r.Id),
+                r => r.Score
+            );
+
+            //Rank products by AI score
+            var rankedProducts = products
+                .OrderByDescending(p => scoreMap.TryGetValue(p.ProductId, out var score) ? score : 0)
+                .ToList();
+
+            //Map to DTO
+            var result = rankedProducts
+                .Select(p => _mapper.Map<ProductResponseDtoForClient>(p));
+
+            _logger.LogInformation("Search '{Query}' => {Total} results | semantic hits={S}", request.query, result.Count(),semanticResults.Count);
 
             return _responseHandler.Success(result);
         }

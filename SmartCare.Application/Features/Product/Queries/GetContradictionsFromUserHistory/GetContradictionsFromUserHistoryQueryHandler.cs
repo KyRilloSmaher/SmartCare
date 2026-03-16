@@ -1,12 +1,10 @@
-﻿using MediatR;
+﻿using AutoMapper;
+using MediatR;
 using Microsoft.Extensions.Logging;
+using SmartCare.Application.DTOs.Contradictions.Response;
 using SmartCare.Application.ExternalServiceInterfaces.AI;
-using SmartCare.Application.Features.Product.Queries.RecommendSimilarProducts;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Domain.IRepositories;
-using SmartCare.Domain.Entities;
-using SmartCare.Application.DTOs.Contradictions.Response;
-using AutoMapper;
 
 namespace SmartCare.Application.Features.Product.Queries.GetContradictionsFromUserHistory
 {

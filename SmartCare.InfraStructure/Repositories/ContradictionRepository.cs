@@ -16,10 +16,13 @@ namespace SmartCare.InfraStructure.Repositories
 
         public async Task<Contradiction?> ContradictionExistsAsync(string ingredientA, string ingredientB)
         {
+            string a = ingredientA.Trim().ToLower();
+            string b = ingredientB.Trim().ToLower();
+
             return await _context.Contradictions
                 .FirstOrDefaultAsync(c =>
-                    (c.Ingredient_A == ingredientA && c.Ingredient_B == ingredientB) ||
-                    (c.Ingredient_A == ingredientB && c.Ingredient_B == ingredientA)
+                    (c.Ingredient_A.ToLower().Contains(a) && c.Ingredient_B.ToLower().Contains(b)) ||
+                    (c.Ingredient_A.ToLower().Contains(b) && c.Ingredient_B.ToLower().Contains(a))
                 );
         }
 

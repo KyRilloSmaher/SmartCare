@@ -50,6 +50,7 @@ namespace SmartCare.InfraStructure.Repositories
                 .Include(p => p.Images)
                 .Include(p => p.Company)
                 .Include(p => p.Category)
+                .OrderByDescending(p=>p.CreatedAt)
                 .AsQueryable();
 
             if (!includeDeleted)
