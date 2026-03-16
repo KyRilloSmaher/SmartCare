@@ -268,6 +268,13 @@ namespace SmartCare.InfraStructure.Repositories
             return await base.AddAsync(inventory);
         }
 
+        public async Task<Inventory?> GetInventoryByStoreAndProductAsync(Guid storeId, Guid productId)
+        {
+            return await _context.Inventories
+                            .Include(i => i.Product)
+                            .Include(i => i.Store)
+                            .FirstOrDefaultAsync(i => i.StoreId == storeId && i.ProductId == productId);
+        }
         #endregion
     }
 }
