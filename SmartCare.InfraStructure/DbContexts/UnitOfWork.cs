@@ -73,7 +73,8 @@ namespace SmartCare.Infrastructure.Data
             IPharmacistRepository pharmacistRepository,
             IEmailVerificationRepository emailVerificationRepository,
             UserManager<ApplictionUser> userManager,
-            RoleManager<IdentityRole> roleManager)
+            RoleManager<IdentityRole> roleManager,
+            ISalesRepository salesRepository)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _repositories = new Dictionary<Type, object>();
@@ -95,6 +96,7 @@ namespace SmartCare.Infrastructure.Data
             Pharmacists = pharmacistRepository ?? throw new ArgumentNullException(nameof(pharmacistRepository));
             EmailVerifications = emailVerificationRepository ?? throw new ArgumentNullException(nameof(emailVerificationRepository));
 
+            Sales = salesRepository ?? throw new ArgumentNullException(nameof(salesRepository));
             // Initialize Identity managers
             UserManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             RoleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));

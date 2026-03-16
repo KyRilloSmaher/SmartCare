@@ -40,7 +40,7 @@ namespace SmartCare.Application.Features.Company.Commands
             if (request.Id == Guid.Empty)
                 return _responseHandler.BadRequest<bool>(SystemMessages.INVALID_INPUT);
 
-            var Company = await _unitOfWork.Categories.GetByIdAsync(request.Id);
+            var Company = await _unitOfWork.Companies.GetByIdAsync(request.Id);
             if (Company == null)
                 return _responseHandler.Failed<bool>(SystemMessages.NOT_FOUND);
 
@@ -61,7 +61,7 @@ namespace SmartCare.Application.Features.Company.Commands
                         _logger.LogWarning(ex, "Error deleting Company logo for {CompanyId}", request.Id);
                     }
                 }
-                await _unitOfWork.Categories.DeleteAsync(Company);
+                await _unitOfWork.Companies.DeleteAsync(Company);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 
                 // Clear related cache

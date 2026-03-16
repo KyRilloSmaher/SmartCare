@@ -24,7 +24,7 @@ namespace SmartCare.InfraStructure.Repositories
         public async Task<IEnumerable<Category>> GetAllActiveCategoriesAsync()
         {
             return await _context.Categories
-                .Where(c => !c.IsDeleted)
+                .Where(c => !c.IsDeleted).OrderByDescending(c => c.ProductsCount)
                 .AsNoTracking()
                 .ToListAsync();
         }
@@ -34,7 +34,7 @@ namespace SmartCare.InfraStructure.Repositories
             var query = _context.Categories.AsQueryable();
 
             if (!includeDeleted)
-                query = query.Where(c => !c.IsDeleted);
+                query = query.Where(c => !c.IsDeleted).OrderByDescending(c => c.ProductsCount);
 
             return query.AsNoTracking();
         }

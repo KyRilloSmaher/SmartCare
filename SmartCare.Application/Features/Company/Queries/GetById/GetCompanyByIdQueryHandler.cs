@@ -56,7 +56,7 @@ namespace SmartCare.Application.Features.Company.Queries.GetById
                 _logger.LogError("Error Occured Will Retrieving Company By id through Cahce");
             }
 
-            var Company = await _unitOfWork.Categories.GetByIdAsync(id);
+            var Company = await _unitOfWork.Companies.GetByIdAsync(id);
 
             if (Company == null)
                 return _responseHandler.Failed<CompanyResponseDto>(SystemMessages.NOT_FOUND);
