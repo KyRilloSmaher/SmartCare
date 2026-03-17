@@ -236,7 +236,56 @@ namespace SmartCare.InfraStructure.Repositories
 
             return await result.OrderBy(r => r.Date).ToListAsync();
         }
+        public async Task<DashboardSummaryDto> GetDashboardSummaryAsync(Guid? branchId,DateTime? startDate, DateTime? endDate)
+        {
+            var ordersQuery = _context.Orders
+                .Where(o => !o.IsDeleted &&
+                            o.Status == Domain.Enums.OrderStatus.Completed);
 
+            if (branchId.HasValue && branchId.Value != Guid.Empty)
+            {
+                ordersQuery = ordersQuery.Where(o => o.StoreId == branchId.Value);
+            }
+
+            if (startDate.HasValue)
+            {
+                ordersQuery = ordersQuery.Where(o => o.CreatedAt >= startDate.Value);
+            }
+
+            if (endDate.HasValue)
+            {
+                var endDateInclusive = endDate.Value.Date.AddDays(1);
+                ordersQuery = ordersQuery.Where(o => o.CreatedAt < endDateInclusive);
+            }
+
+            // Aggregate Orders
+            var totalRevenue = await ordersQuery.SumAsync(o => (decimal?)o.TotalPrice) ?? 0;
+            var totalOrders = await ordersQuery.CountAsync();
+
+            var avgOrderValue = totalOrders == 0
+                ? 0
+                : totalRevenue / totalOrders;
+
+            // Clients (distinct users who made orders)
+            var totalClients = await ordersQuery
+                .Select(o => o.UserId)
+                .Distinct()
+                .CountAsync();
+
+            // Global counts (not filtered)
+            var totalBranches = await _context.Stores.CountAsync();
+            var totalAids = await _context.Products.CountAsync(); // or your Aids table
+
+            return new DashboardSummaryDto
+            {
+                TotalRevenue = totalRevenue,
+                TotalOrders = totalOrders,
+                TotalClients = totalClients,
+                AvgOrderValue = Math.Round(avgOrderValue, 2),
+                TotalBranches = totalBranches,
+                TotalAids = totalAids
+            };
+        }
     }
 
 }

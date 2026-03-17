@@ -252,6 +252,8 @@
             public const string Stores = Prefix + "/stores";
             public const string SalesChannels = Prefix + "/sales-channels";
             public const string Revenue = Prefix + "/revenue";
+            public const string Summary = Prefix + "/summary";
+
         }
         #endregion
     }

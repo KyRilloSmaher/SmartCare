@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using SmartCare.API.Helpers;
 using SmartCare.Application.Features.Analytics.Categories;
 using SmartCare.Application.Features.Analytics.Companies;
+using SmartCare.Application.Features.Analytics.DashBoard;
 using SmartCare.Application.Features.Analytics.Sales;
 using SmartCare.Application.Features.Analytics.Sales.Revenue;
 using SmartCare.Application.Features.Analytics.Sales.SalesChannel;
@@ -73,6 +74,13 @@ namespace SmartCare.API.Controllers
                  end_date
             ));
 
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+
+        [HttpGet(ApplicationRouting.Analytics.Summary)]
+        public async Task<IActionResult> GetDashboardSummary([FromQuery] Guid? branch_id,[FromQuery] DateTime? start_date,[FromQuery] DateTime? end_date)
+        {
+            var result = await _mediator.Send(new GetDashboardSummaryQuery(branch_id, start_date,end_date));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
