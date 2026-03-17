@@ -24,7 +24,7 @@ namespace SmartCare.InfraStructure.Configurations
 
             builder.Property(x => x.Method)
                 .IsRequired()
-                .HasDefaultValue(Domain.Enums.PaymentMethod.Cash);
+                .HasDefaultValue(Domain.Enums.PaymentMethod.Stripe);
 
             builder.Property(x => x.Status)
                 .IsRequired()
