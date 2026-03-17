@@ -76,6 +76,11 @@ namespace SmartCare.InfraStructure.Repositories
                 .ToList();
         }
 
+        public async Task<IEnumerable<Pharmacist>> GetStorePharmacistsAsync(Guid storeId)
+        {
+            return await _context.Pharmacists.Include(p=>p.User).Where(p=>p.StoreId == storeId).ToListAsync();
+        }
+
         #endregion
     }
 }

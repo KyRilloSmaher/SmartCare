@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.Features.Analytics.DashBoard
+namespace SmartCare.Application.Features.Analytics.DashBoard.Summary
 {
     public record GetDashboardSummaryQuery(Guid? BranchId , DateTime? StartDate , DateTime? EndDate): IRequest<Response<DashboardSummaryDto>>;
     

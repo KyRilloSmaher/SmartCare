@@ -1,12 +1,12 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SmartCare.API.Helpers;
 using SmartCare.Application.Features.Analytics.Categories;
+using SmartCare.Application.Features.Analytics.Clients;
 using SmartCare.Application.Features.Analytics.Companies;
 using SmartCare.Application.Features.Analytics.DashBoard;
-using SmartCare.Application.Features.Analytics.Sales;
+using SmartCare.Application.Features.Analytics.DashBoard.Summary;
 using SmartCare.Application.Features.Analytics.Sales.Revenue;
 using SmartCare.Application.Features.Analytics.Sales.SalesChannel;
 using SmartCare.Application.Features.Analytics.Stores;
@@ -83,7 +83,12 @@ namespace SmartCare.API.Controllers
             var result = await _mediator.Send(new GetDashboardSummaryQuery(branch_id, start_date,end_date));
             return ControllersHelperMethods.FinalResponse(result);
         }
-
+        [HttpGet(ApplicationRouting.Analytics.Clients)]
+        public async Task<IActionResult> GetClientAnalytics([FromQuery] Guid? branch_id,[FromQuery] string interval = "monthly",[FromQuery] DateTime? start_date = null,[FromQuery] DateTime? end_date = null)
+        {
+            var result = await _mediator.Send(new GetClientAnalyticsQuery( branch_id,interval, start_date, end_date));
+             return ControllersHelperMethods.FinalResponse(result);
+        }
 
     }
 }

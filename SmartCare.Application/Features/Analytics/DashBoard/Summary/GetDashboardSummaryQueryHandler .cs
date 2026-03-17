@@ -1,11 +1,9 @@
 ﻿using MediatR;
 using Microsoft.Extensions.Logging;
-using SmartCare.Application.DTOs.Dashboard;
-using SmartCare.Application.Features.Analytics.DashBoard;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Domain.IRepositories;
 
-namespace SmartCare.Application.Features.Dashboard
+namespace SmartCare.Application.Features.Analytics.DashBoard.Summary
 {
     public class GetDashboardSummaryQueryHandler
         : IRequestHandler<GetDashboardSummaryQuery, Response<DashboardSummaryDto>>

@@ -1,4 +1,6 @@
-﻿namespace SmartCare.API.Helpers
+﻿using SmartCare.Domain.Entities;
+
+namespace SmartCare.API.Helpers
 {
     /// <summary>
     /// Defines the API route constants used throughout the application.
@@ -95,10 +97,13 @@
             public const string SearchByName = Prefix + "/search";
             public const string GetAll = Prefix;
             public const string GetAllForAdmin = AdminPrefix;
+            public const string GetStorePharmcists = AdminPrefix+SingleRoute+"/pharmacists";
             public const string Create = AdminPrefix + "/create";
             public const string Update = AdminPrefix + "/update";
             public const string Restore = AdminPrefix+ SingleRoute + "/restore" ;
             public const string Delete = AdminPrefix + SingleRoute+ "/delete";
+            public const string ChangePharmacist = AdminPrefix + "/pharmacists/{pharmacist_id}/change-branch/{NewBranchId}";
+            public const string AssignPharmacist = AdminPrefix + "/{store_id}/pharmacists";
         }
         #endregion
 
@@ -253,6 +258,7 @@
             public const string SalesChannels = Prefix + "/sales-channels";
             public const string Revenue = Prefix + "/revenue";
             public const string Summary = Prefix + "/summary";
+            public const string Clients = Prefix + "/clients";
 
         }
         #endregion
