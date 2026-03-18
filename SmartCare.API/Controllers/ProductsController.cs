@@ -8,6 +8,7 @@ using SmartCare.Application.DTOs.Product.Requests;
 using SmartCare.Application.DTOs.Product.Responses;
 using SmartCare.Application.Features.Product.Commands.Create;
 using SmartCare.Application.Features.Product.Commands.Delete;
+using SmartCare.Application.Features.Product.Commands.Restore;
 using SmartCare.Application.Features.Product.Queries.GetContradictionsFromUserHistory;
 using SmartCare.Application.Features.Product.Queries.RecommendSimilarProducts;
 using SmartCare.Application.Features.Product.Queries.SearchInProducts;
@@ -274,6 +275,18 @@ namespace SmartCare.API.Controllers
         }
 
 
+        /// <summary>
+        /// Update Product
+        /// </summary>
+        /// <param name="id"></param>
+        [Authorize(Roles = "DASHBOARD_ADMIN")]
+        [HttpPatch(ApplicationRouting.Product.Restore)]
+        [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> RestoreProductAsync(Guid id)
+        {
+            var result = await _mediator.Send(new RestoreProductCommand(id));
+            return ControllersHelperMethods.FinalResponse(result);
+        }
         /// <summary>
         /// Update Product
         /// </summary>
