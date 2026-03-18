@@ -50,6 +50,15 @@ namespace SmartCare.Domain.Entities
         public ICollection<Favorite> Favorites { get; set; }
         public ICollection<ProductImage> Images { get; set; }
         public ICollection<Rate> Rates { get; set; }
+
+        public void Delete()
+        {
+            IsDeleted = true;
+        }
+        public void Restore()
+        {
+            IsDeleted = false;
+        }
     }
 }
 

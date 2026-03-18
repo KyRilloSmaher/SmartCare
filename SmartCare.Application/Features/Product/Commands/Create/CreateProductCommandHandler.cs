@@ -42,8 +42,8 @@ namespace SmartCare.Application.Features.Product.Commands.Create
         {
             var dto = request.ProductDto;
 
-            var category = await _unitOfWork.Categories.GetByIdAsync(dto.CategoryId);
-            var company = await _unitOfWork.Companies.GetByIdAsync(dto.CompanyId);
+            var category = await _unitOfWork.Categories.GetByIdAsync(dto.CategoryId,true);
+            var company = await _unitOfWork.Companies.GetByIdAsync(dto.CompanyId,true);
 
             if (category is null || company is null)
                 return _responseHandler.BadRequest<ProductResponseDtoForAdmin>("Invalid category or company");
@@ -94,6 +94,8 @@ namespace SmartCare.Application.Features.Product.Commands.Create
                 product.Images = images;
 
                 var created = await _unitOfWork.Products.AddAsync(product);
+                category.IncreaseProductCount();
+                company.IncreaseProductCount();
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
                 await _redisCacheService.DeleteKeysByTag(tag);
                 var responseDto = _mapper.Map<ProductResponseDtoForAdmin>(created);

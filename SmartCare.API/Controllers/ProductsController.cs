@@ -7,6 +7,7 @@ using SmartCare.Application.CQRs.Product.Queries;
 using SmartCare.Application.DTOs.Product.Requests;
 using SmartCare.Application.DTOs.Product.Responses;
 using SmartCare.Application.Features.Product.Commands.Create;
+using SmartCare.Application.Features.Product.Commands.Delete;
 using SmartCare.Application.Features.Product.Queries.GetContradictionsFromUserHistory;
 using SmartCare.Application.Features.Product.Queries.RecommendSimilarProducts;
 using SmartCare.Application.Features.Product.Queries.SearchInProducts;
@@ -268,7 +269,6 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<ProductResponseDtoForAdmin>), StatusCodes.Status200OK)]
         public async Task<IActionResult> CreateProductAsync([FromForm] CreateProductRequestDto ProductDto)
         {
-            //var result = await _ProductService.CreateProductAsync(ProductDto);
             var result = await _mediator.Send(new CreateProductCommand(ProductDto));
             return ControllersHelperMethods.FinalResponse(result);
         }
@@ -299,8 +299,7 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> DeleteProductAsync(Guid id)
         {
-            //var result = await _ProductService.DeleteProductAsync(id);
-            var result = await _mediator.Send(new DeleteProductAsyncCommand(id));
+            var result = await _mediator.Send(new DeleteProductCommand(id));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
