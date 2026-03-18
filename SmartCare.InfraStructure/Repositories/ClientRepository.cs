@@ -22,7 +22,7 @@ namespace SmartCare.InfraStructure.Repositories
         #region Methods
         public async Task<Client?> GetByIdAsync(string clientId, bool asTracking = false)
         {
-            return await _context.Clients
+            return await _context.Clients.Include(c=>c.User)
                                 .FirstOrDefaultAsync(u => u.Id == clientId);
         }
         public async Task<Client?> GetByIdWithDetailsAsync(string clientId, bool trackChanges = false)

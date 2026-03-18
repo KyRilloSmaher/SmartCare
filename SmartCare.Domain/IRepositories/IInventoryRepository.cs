@@ -1,4 +1,5 @@
 ﻿using SmartCare.Domain.Entities;
+using SmartCare.Domain.Projection_Models;
 using System.Linq.Expressions;
 
 namespace SmartCare.Domain.IRepositories
@@ -77,6 +78,7 @@ namespace SmartCare.Domain.IRepositories
         Task<bool> SetStockLevelAsync(Guid inventoryId, int newQuantity);
 
         void CreateInventoryRecordsForBranchBulkAsync(Guid storeId);
+        IQueryable<LowStockProductDto> GetLowStockProductsAsync(Guid? storeId,int threshold);
         #endregion
     }
 }

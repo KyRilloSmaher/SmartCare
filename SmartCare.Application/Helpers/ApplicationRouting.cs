@@ -264,5 +264,14 @@ namespace SmartCare.API.Helpers
 
         }
         #endregion
+        #region Dashboard
+        public class Dashboard
+        {
+            private const string Prefix = Rule + "admin/dashboard";
+
+            public const string LowStock = Prefix + "/stores-Low-stock";
+
+        }
+        #endregion
     }
 }

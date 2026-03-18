@@ -6,6 +6,7 @@ using SmartCare.API.Helpers;
 using SmartCare.Application.DTOs.Stores.Requests;
 using SmartCare.Application.Features.DashBoard.Commands.ChangePharmacistBranch;
 using SmartCare.Application.Features.DashBoard.Commands.Create_AssignPharamsict;
+using SmartCare.Application.Features.DashBoard.Queries.GetLowStockProducts;
 
 namespace SmartCare.API.Controllers
 {
@@ -19,7 +20,12 @@ namespace SmartCare.API.Controllers
         {
             _mediator = mediator;
         }
-
+        [HttpGet(ApplicationRouting.Dashboard.LowStock)]
+        public async Task<IActionResult> GetLowStockProducts([FromQuery] GetLowStockProductsQuery query)
+        {
+            var result = await _mediator.Send(query);
+            return ControllersHelperMethods.FinalResponse(result);
+        }
         [HttpPost(ApplicationRouting.Store.AssignPharmacist)]
         public async Task<IActionResult> AssignPharmacist([FromRoute] Guid store_id, [FromForm] AssignPharmacistRequest request)
         {

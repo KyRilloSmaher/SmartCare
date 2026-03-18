@@ -1,8 +1,10 @@
 ﻿using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
+using SmartCare.Application.DTOs.Inventory.Response;
 using SmartCare.Domain.Entities;
 using SmartCare.Domain.Exceptions;
 using SmartCare.Domain.IRepositories;
+using SmartCare.Domain.Projection_Models;
 using SmartCare.InfraStructure.DbContexts;
 
 namespace SmartCare.InfraStructure.Repositories
@@ -305,6 +307,29 @@ namespace SmartCare.InfraStructure.Repositories
                 transaction.Rollback();
                 throw new DomainException("Exception Ocuured While Proccessing Bulk INSERTION from Inventory Repo");
             }
+        }
+        public IQueryable<LowStockProductDto> GetLowStockProductsAsync(Guid? storeId,int threshold)
+        {
+            var query = _context.Inventories
+                                    .Include(ps => ps.Product)
+                                    .Include(ps => ps.Store)
+                                    .AsQueryable();
+
+            if (storeId.HasValue && storeId != default)
+                query = query.Where(ps => ps.StoreId == storeId.Value);
+
+            return query
+                .Where(ps => Math.Abs(ps.StockQuantity - ps.ReservedQuantity) <= threshold)
+                .Select(ps => new LowStockProductDto
+                {
+                    ProductId = ps.ProductId,
+                    ProductName = ps.Product.NameEn,
+                    StoreId = ps.StoreId,
+                    StoreName = ps.Store.Name,
+                    CurrentStock = ps.StockQuantity,
+                    Threshold = threshold
+                })
+                .OrderBy(ps => ps.CurrentStock);
         }
         #endregion
     }
