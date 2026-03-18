@@ -6,6 +6,7 @@ using SmartCare.Application.CQRs.Product.Commands;
 using SmartCare.Application.CQRs.Product.Queries;
 using SmartCare.Application.DTOs.Product.Requests;
 using SmartCare.Application.DTOs.Product.Responses;
+using SmartCare.Application.Features.Product.Queries;
 using SmartCare.Application.Features.Product.Queries.GetContradictionsFromUserHistory;
 using SmartCare.Application.Features.Product.Queries.RecommendSimilarProducts;
 using SmartCare.Application.Features.Product.Queries.SearchInProducts;
@@ -256,7 +257,44 @@ namespace SmartCare.API.Controllers
 
         }
 
+        [HttpGet(ApplicationRouting.Product.GetProductsByCompanyInStore)]
+        [Authorize(Roles = "PHARMACIST")]
+        [ProducesResponseType(typeof(Response<IEnumerable<ProductResponseDtoForPharmacist>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetProductsByCompanyInStore(Guid companyId, int pageNumber, int pageSize)
+        {
+            var storeIdClaim = User.FindFirst("StoreId")?.Value;
+            if (string.IsNullOrEmpty(storeIdClaim) || !Guid.TryParse(storeIdClaim, out Guid storeId))
+                return Unauthorized("StoreId claim not found.");
 
+            var result = await _mediator.Send(new GetProductsByCompanyInStoreQuery(companyId, storeId , pageNumber , pageSize));
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+
+        [HttpGet(ApplicationRouting.Product.GetProductsByCategoryInStore)]
+        [Authorize(Roles = "PHARMACIST")]
+        [ProducesResponseType(typeof(Response<PaginatedResult<ProductResponseDtoForPharmacist>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetProductsByCategoryInStore( Guid categoryId, int pageNumber = 1,  int pageSize = 10)
+        {
+            var storeIdClaim = User.FindFirst("StoreId")?.Value;
+            if (string.IsNullOrEmpty(storeIdClaim) || !Guid.TryParse(storeIdClaim, out Guid storeId))
+                return Unauthorized("StoreId claim not found.");
+
+            var result = await _mediator.Send(new GetProductsByCategoryInStoreQuery(categoryId, storeId, pageNumber, pageSize));
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+
+        [HttpGet(ApplicationRouting.Product.SearchProductsByNameInStore)]
+        [Authorize(Roles = "PHARMACIST")]
+        [ProducesResponseType(typeof(Response<IEnumerable<ProductResponseDtoForPharmacist>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> SearchProductsByNameInStore([FromQuery] string productName)
+        {
+            var storeIdClaim = User.FindFirst("StoreId")?.Value;
+            if (string.IsNullOrEmpty(storeIdClaim) || !Guid.TryParse(storeIdClaim, out Guid storeId))
+                return Unauthorized("StoreId claim not found.");
+
+            var result = await _mediator.Send(new SearchProductsByNameInStoreQuery(productName, storeId));
+            return ControllersHelperMethods.FinalResponse(result);
+        }
 
         /// <summary>
         /// Create Product
