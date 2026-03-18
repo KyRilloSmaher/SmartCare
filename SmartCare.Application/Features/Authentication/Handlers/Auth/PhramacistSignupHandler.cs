@@ -80,6 +80,9 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Auth
             if (!isPhoneNumberExists)
                 return _responseHandler.Failed<bool>(SystemMessages.PHONE_ALREADY_EXISTS);
 
+            var isLicenseNumberUnique = await _unitOfWork.Pharmacists.IsPharmacistLicenseNumberUniqueAsync(dto.LicenseNumber);
+            if (!isLicenseNumberUnique)
+                return _responseHandler.Failed<bool>(SystemMessages.LICENSE_NUMBER_ALREADY_EXISTS);
             if (dto.ProfileImage is not null)
              {
                 var uploadResult = await _imageUploaderService.UploadImageAsync(dto.ProfileImage, ImageFolder.UserProfiles);
