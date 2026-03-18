@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.AspNetCore.Identity;
 using SmartCare.Application.CQRs.Authentication.Commands.Auth;
 using SmartCare.Application.DTOs.Auth.Responses;
+using SmartCare.Application.DTOs.Stores.Responses;
 using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Domain.Constants;
@@ -56,7 +57,15 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Auth
 
                 return _responseHandler.Unauthorized<TokenResponseDto>(SystemMessages.INVALID_CREDENTIALS);
             }
+            var roles = await _unitOfWork.UserManager.GetRolesAsync(user);
+            if (roles != null) {
+                if (roles.Contains("PHARMACIST"))
+                {
+                    var pharmacist = await _unitOfWork.Pharmacists.GetByUserIdAsync(user.Id);
 
+                    user.Pharmacist = pharmacist;
+                }
+            }
             // Check if email is confirmed
             if (!user.EmailConfirmed)
                 return _responseHandler.Unauthorized<TokenResponseDto>(SystemMessages.EMAIL_NOT_CONFIRMED);

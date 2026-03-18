@@ -1,10 +1,7 @@
 ﻿using FluentValidation;
+using Microsoft.AspNetCore.Http;
 using SmartCare.Application.DTOs.Product.Requests;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using SmartCare.Domain.Constants;
 
 namespace SmartCare.Application.Validators.Products
 {
@@ -13,61 +10,60 @@ namespace SmartCare.Application.Validators.Products
         public UpdateProductRequestDtoValidation()
         {
             RuleFor(x => x.NameEn)
-            .NotEmpty().WithMessage("English name is required.")
-            .MaximumLength(100);
-
+                .MaximumLength(100)
+                .When(x => x.NameEn != null);
             RuleFor(x => x.NameAr)
-                .MaximumLength(100).When(x => !string.IsNullOrWhiteSpace(x.NameAr));
-
+                .MaximumLength(100)
+                .When(x => !string.IsNullOrWhiteSpace(x.NameAr));
             RuleFor(x => x.Description)
-                .NotEmpty().WithMessage("Description is required.");
-
+                .NotEmpty().WithMessage("Description cannot be empty.")
+                .When(x => x.Description != null);
             RuleFor(x => x.MedicalDescription)
-                .NotEmpty().WithMessage("Medical description is required.");
-
+                .NotEmpty()
+                .When(x => x.MedicalDescription != null);
             RuleFor(x => x.Tags)
-                .NotEmpty().WithMessage("Tags are required.");
-
+                .NotEmpty()
+                .When(x => x.Tags != null);
             RuleFor(x => x.ActiveIngredients)
-                .NotEmpty().WithMessage("Active ingredients are required.");
+                .NotEmpty()
+                .When(x => x.ActiveIngredients != null);
 
             RuleFor(x => x.SideEffects)
-                .MaximumLength(500).When(x => !string.IsNullOrWhiteSpace(x.SideEffects));
+                .MaximumLength(500)
+                .When(x => !string.IsNullOrWhiteSpace(x.SideEffects));
 
             RuleFor(x => x.Contraindications)
-                .MaximumLength(500).When(x => !string.IsNullOrWhiteSpace(x.Contraindications));
+                .MaximumLength(500)
+                .When(x => !string.IsNullOrWhiteSpace(x.Contraindications));
 
             RuleFor(x => x.DosageForm)
-                .MaximumLength(100).When(x => !string.IsNullOrWhiteSpace(x.DosageForm));
-
+                .MaximumLength(100)
+                .When(x => !string.IsNullOrWhiteSpace(x.DosageForm));
             RuleFor(x => x.CategoryId)
-                .NotEmpty().WithMessage("CategoryId is required.");
-
+                .NotEmpty()
+                .When(x => x.CategoryId.HasValue);
             RuleFor(x => x.CompanyId)
-                .NotEmpty().WithMessage("CompanyId is required.");
-
+                .NotEmpty()
+                .When(x => x.CompanyId.HasValue);
             RuleFor(x => x.Price)
-                .GreaterThanOrEqualTo(0).WithMessage("Price must be non-negative.");
-
+                .GreaterThanOrEqualTo(0)
+                .When(x => x.Price.HasValue);
             RuleFor(x => x.DiscountPercentage)
-                .InclusiveBetween(0, 100).WithMessage("Discount must be between 0 and 100.");
+                .InclusiveBetween(0, 100)
+                .When(x => x.DiscountPercentage.HasValue);
+            RuleFor(x => x.NewMainImage)
+                .Must(Constants.BeAValidImage)
+                .When(x => x.NewMainImage != null)
+                .WithMessage("Invalid main image format");
+            RuleForEach(x => x.NewImages)
+                .Must(Constants.BeAValidImage)
+                .When(x => x.NewImages != null)
+                .WithMessage("Invalid image format");
 
-            RuleFor(x => x.ExpirationDate)
-                .GreaterThan(DateTime.UtcNow).When(x => x.ExpirationDate.HasValue)
-                .WithMessage("Expiration date must be in the future.");
-
-            RuleFor(x => x.IsDeleted)
-                .Must((dto, isDeleted) => !(isDeleted && dto.IsAvailable))
-                .WithMessage("A deleted product cannot be marked as available.");
-
-            RuleFor(x => x.mainImage)
-                .NotNull().WithMessage("Main image is required.");
-
-            RuleFor(x => x.Images)
-                .NotNull().WithMessage("Images list is required.")
-                .Must(images => images.Count > 0).WithMessage("At least one additional image is required.");
-
-
+            RuleFor(x => x.RemoveImageIds)
+                .Must(ids => ids.Distinct().Count() == ids.Count)
+                .When(x => x.RemoveImageIds != null)
+                .WithMessage("Duplicate image IDs are not allowed");
         }
     }
 }

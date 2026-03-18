@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.CQRs.Product.Commands
+namespace SmartCare.Application.Features.Product.Commands.Restore
 {
-    public record DeleteProductAsyncCommand(Guid productId) : IRequest<Response<bool>>;
+    public record RestoreProductCommand(Guid productId) : IRequest<Response<bool>>;
 }

@@ -2,10 +2,13 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartCare.API.Helpers;
-using SmartCare.Application.CQRs.Product.Commands;
 using SmartCare.Application.CQRs.Product.Queries;
 using SmartCare.Application.DTOs.Product.Requests;
 using SmartCare.Application.DTOs.Product.Responses;
+using SmartCare.Application.Features.Product.Commands.Create;
+using SmartCare.Application.Features.Product.Commands.Delete;
+using SmartCare.Application.Features.Product.Commands.Restore;
+using SmartCare.Application.Features.Product.Commands.Update;
 using SmartCare.Application.Features.Product.Queries;
 using SmartCare.Application.Features.Product.Queries.GetContradictionsFromUserHistory;
 using SmartCare.Application.Features.Product.Queries.RecommendSimilarProducts;
@@ -305,8 +308,7 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<ProductResponseDtoForAdmin>), StatusCodes.Status200OK)]
         public async Task<IActionResult> CreateProductAsync([FromForm] CreateProductRequestDto ProductDto)
         {
-            //var result = await _ProductService.CreateProductAsync(ProductDto);
-            var result = await _mediator.Send(new CreateProductAsyncCommand(ProductDto));
+            var result = await _mediator.Send(new CreateProductCommand(ProductDto));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -315,14 +317,24 @@ namespace SmartCare.API.Controllers
         /// Update Product
         /// </summary>
         /// <param name="id"></param>
+        [Authorize(Roles = "DASHBOARD_ADMIN")]
+        [HttpPatch(ApplicationRouting.Product.Restore)]
+        [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> RestoreProductAsync(Guid id)
+        {
+            var result = await _mediator.Send(new RestoreProductCommand(id));
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+        /// <summary>
+        /// Update Product
+        /// </summary>
         /// <param name="ProductDto"></param>
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "DASHBOARD_ADMIN")]
         [HttpPut(ApplicationRouting.Product.Update)]
         [ProducesResponseType(typeof(Response<ProductResponseDtoForAdmin>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> UpdateProductAsync(Guid id, [FromBody] UpdateProductRequestDto ProductDto)
+        public async Task<IActionResult> UpdateProductAsync([FromForm] UpdateProductRequestDto ProductDto)
         {
-            //var result = await _ProductService.UpdateProductAsync(id, ProductDto);
-            var result = await _mediator.Send(new UpdateProductAsyncCommand(id, ProductDto));
+            var result = await _mediator.Send(new UpdateProductCommand(ProductDto));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -336,8 +348,7 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> DeleteProductAsync(Guid id)
         {
-            //var result = await _ProductService.DeleteProductAsync(id);
-            var result = await _mediator.Send(new DeleteProductAsyncCommand(id));
+            var result = await _mediator.Send(new DeleteProductCommand(id));
             return ControllersHelperMethods.FinalResponse(result);
         }
 

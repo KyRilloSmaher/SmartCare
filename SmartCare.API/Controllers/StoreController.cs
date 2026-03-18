@@ -4,16 +4,17 @@ using Microsoft.AspNetCore.Mvc;
 using SmartCare.API.Helpers;
 using SmartCare.Application.DTOs.Stores.Requests;
 using SmartCare.Application.DTOs.Stores.Responses;
+using SmartCare.Application.Features.Store.Commands.Create;
+using SmartCare.Application.Features.Store.Commands.Delete;
+using SmartCare.Application.Features.Store.Commands.Restore;
+using SmartCare.Application.Features.Store.Commands.Update;
+using SmartCare.Application.Features.Store.Queries.GetAll;
+using SmartCare.Application.Features.Store.Queries.GetAllForAdmin;
 using SmartCare.Application.Features.Store.Queries.GetById;
 using SmartCare.Application.Features.Store.Queries.GetNearest;
-using SmartCare.Application.Features.Store.Queries.GetAllForAdmin;
-using SmartCare.Application.Features.Store.Queries.GetAll;
-using SmartCare.Application.Handlers.ResponseHandler;
+using SmartCare.Application.Features.Store.Queries.GetStorePharmcists;
 using SmartCare.Application.Features.Store.Queries.Search;
-using SmartCare.Application.Features.Store.Commands.Create;
-using SmartCare.Application.Features.Store.Commands.Update;
-using SmartCare.Application.Features.Store.Commands.Restore;
-using SmartCare.Application.Features.Store.Commands.Delete;
+using SmartCare.Application.Handlers.ResponseHandler;
 
 
 namespace SmartCare.API.Controllers
@@ -73,6 +74,17 @@ namespace SmartCare.API.Controllers
             return ControllersHelperMethods.FinalResponse(result);
         }
 
+        /// <summary>
+        /// Get All Store's Pharamcist
+        /// </summary>
+        [Authorize(Roles = "DASHBOARD_ADMIN")]
+        [HttpGet(ApplicationRouting.Store.GetStorePharmcists)]
+        [ProducesResponseType(typeof(Response<IEnumerable<PharmacistResponseDto>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetStorePharmcistsAsync(Guid id)
+        {
+            var result = await _mediator.Send(new GetStorePharmcistsQuery(id));
+            return ControllersHelperMethods.FinalResponse(result);
+        }
         /// <summary>
         /// Get All Stores (Admin)
         /// </summary>

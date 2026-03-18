@@ -18,7 +18,7 @@ namespace SmartCare.Application.Features.Store.Commands.Create
         private readonly IUnitOfWork _unitOfWork;
         private readonly IRedisCacheService _redisCacheService;
         private readonly IMapper _mapper;
-        private readonly IMapService _mapService;
+        private readonly IBackgroundJobService _backgroundJobService;
         private readonly IResponseHandler _responseHandler;
         private readonly string tag = CacheConstants.Stories;
         #endregion
@@ -27,14 +27,14 @@ namespace SmartCare.Application.Features.Store.Commands.Create
             IUnitOfWork unitOfWork,
             IRedisCacheService redisCacheService,
             IMapper mapper,
-            IMapService mapService,
-            IResponseHandler responseHandler)
+            IResponseHandler responseHandler,
+            IBackgroundJobService backgroundJobService)
         {
             _unitOfWork = unitOfWork;
             _redisCacheService = redisCacheService;
             _mapper = mapper;
-            _mapService = mapService;
             _responseHandler = responseHandler;
+            _backgroundJobService = backgroundJobService;
         }
 
         public async Task<Response<StoreResponseForAdminDto>> Handle(CreateStoreCommand request, CancellationToken cancellationToken)
@@ -49,7 +49,7 @@ namespace SmartCare.Application.Features.Store.Commands.Create
 
             // Remove cache for store
             await _redisCacheService.DeleteKeysByTag(tag);
-
+            _backgroundJobService.Enqueue(()=>_unitOfWork.Inventories.CreateInventoryRecordsForBranchBulkAsync(store.Id));
             var createdStoreDto = _mapper.Map<StoreResponseForAdminDto>(store);
             return _responseHandler.Success(createdStoreDto);
         }

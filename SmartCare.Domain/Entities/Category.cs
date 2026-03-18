@@ -14,5 +14,10 @@ namespace SmartCare.Domain.Entities
         public int ProductsCount { get; set; }
         public bool IsDeleted { get; set; } = false;
         public  ICollection<Product> Products { get; set; }
+
+        public void IncreaseProductCount() { ProductsCount++; }
+        public void decreaseProductCount() { ProductsCount--; }
+        public void Delete() { IsDeleted = true; }
+        public void Restore() { IsDeleted = false; }
     }
 }

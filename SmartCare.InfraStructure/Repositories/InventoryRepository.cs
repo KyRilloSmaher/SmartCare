@@ -1,6 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using EFCore.BulkExtensions;
+using Microsoft.EntityFrameworkCore;
+using SmartCare.Application.DTOs.Inventory.Response;
 using SmartCare.Domain.Entities;
+using SmartCare.Domain.Exceptions;
 using SmartCare.Domain.IRepositories;
+using SmartCare.Domain.Projection_Models;
 using SmartCare.InfraStructure.DbContexts;
 
 namespace SmartCare.InfraStructure.Repositories
@@ -296,11 +300,80 @@ namespace SmartCare.InfraStructure.Repositories
         public override async Task<Inventory> AddAsync(Inventory inventory)
         {
             if (inventory.ReservedQuantity > inventory.StockQuantity)
-                throw new Exception("Reserved cannot exceed stock");
+                throw new DomainException("Reserved cannot exceed stock");
 
             return await base.AddAsync(inventory);
         }
+        public void CreateInventoryRecordsForBranchBulkAsync(Guid branchId)
+        {
+            using var transaction =  _context.Database.BeginTransaction();
 
+            try
+            {
+                // Get all products
+                var products =  _context.Products
+                    .Where(p => !p.IsDeleted)
+                    .Select(p => p.ProductId)
+                    .ToList();
+
+                // Create inventory objects
+                var inventoryRecords = products.Select(product => new Inventory
+                {
+                    Id = Guid.NewGuid(),
+                    ProductId = product,
+                    ReservedQuantity = 0, StockQuantity = 0,
+                    StoreId = branchId
+                }).ToList();
+
+                // Bulk insert (much faster for large datasets)
+                 _context.BulkInsert(inventoryRecords, new BulkConfig
+                {
+                    BatchSize = 4000,
+                    UseTempDB = true,
+                    TrackingEntities = false
+                });
+
+                transaction.Commit();
+            }
+            catch
+            {
+                transaction.Rollback();
+                throw new DomainException("Exception Ocuured While Proccessing Bulk INSERTION from Inventory Repo");
+            }
+        }
+        public IQueryable<LowStockProductDto> GetLowStockProductsAsync(Guid? storeId,int threshold)
+        {
+            var query = _context.Inventories
+                                    .Include(ps => ps.Product)
+                                    .Include(ps => ps.Store)
+                                    .AsQueryable();
+
+            if (storeId.HasValue && storeId != default)
+                query = query.Where(ps => ps.StoreId == storeId.Value);
+
+            return query
+                .Where(ps => Math.Abs(ps.StockQuantity - ps.ReservedQuantity) <= threshold)
+                .Select(ps => new LowStockProductDto
+                {
+                    ProductId = ps.ProductId,
+                    ProductName = ps.Product.NameEn,
+                    StoreId = ps.StoreId,
+                    StoreName = ps.Store.Name,
+                    CurrentStock = ps.StockQuantity,
+                    Threshold = threshold
+                })
+                .OrderBy(ps => ps.CurrentStock);
+        }
+        public void CreateInventoriesForProduct(Guid productId)
+        {
+            var storesIds = _context.Stores.Select(s=>s.Id).ToList();
+            foreach (var storeId in storesIds)
+            {
+                var Inventory = SmartCare.Domain.Entities.Inventory.Create(storeId ,productId);
+                _context.Inventories.Add(Inventory);
+            }
+            _context.SaveChanges();
+        }
 
         #endregion
     }

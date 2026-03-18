@@ -10,24 +10,21 @@ namespace SmartCare.Application.DTOs.Product.Requests
 {
     public class CreateProductRequestDto
     {
-        public string NameEn { get; set; }
+        public string NameEn { get; set; } = default!;
         public string? NameAr { get; set; }
         public Guid CategoryId { get; set; }
         public Guid CompanyId { get; set; }
-        public string Description { get; set; }
-        public string MedicalDescription { get; set; }
-        public string Tags { get; set; }
+        public string Description { get; set; } = default!;
+        public string MedicalDescription { get; set; } = default!;
+        public string Tags { get; set; } = default!;
         public float DiscountPercentage { get; set; }
-        public string ActiveIngredients { get; set; }
+        public string ActiveIngredients { get; set; } = default!;
         public string? SideEffects { get; set; }
         public string? Contraindications { get; set; }
         public decimal Price { get; set; }
-        public bool IsAvailable { get; set; }
-        public DateTime? ExpirationDate { get; set; }
+        public bool IsAvailable { get; set; } = false;
         public string? DosageForm { get; set; }
-        public IFormFile mainImage {  get; set; }
-        public IList<IFormFile> Images { get; set; }
-
-
+        public IFormFile MainImage { get; set; } = default!;
+        public IList<IFormFile>? Images { get; set; }
     }
 }

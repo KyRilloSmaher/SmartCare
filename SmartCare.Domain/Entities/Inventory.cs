@@ -38,5 +38,14 @@ namespace SmartCare.Domain.Entities
             ReservedQuantity -= qty;
             StockQuantity -= qty;
         }
+        public static Inventory Create(Guid storeId , Guid productId)
+        {
+            return new Inventory() { 
+             Id = Guid.NewGuid(),
+             StoreId = storeId,
+             ProductId = productId,
+             StockQuantity = 0, ReservedQuantity = 0
+            }; 
+        }
     }
 }
