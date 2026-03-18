@@ -259,6 +259,8 @@ namespace SmartCare.API.Helpers
             public const string Revenue = Prefix + "/revenue";
             public const string Summary = Prefix + "/summary";
             public const string Clients = Prefix + "/clients";
+            public const string Orders = Prefix + "/orders";
+            public const string orderStatus = Prefix + "/order-status";
 
         }
         #endregion

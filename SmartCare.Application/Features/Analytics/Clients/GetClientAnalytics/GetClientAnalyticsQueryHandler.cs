@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using SmartCare.Application.DTOs.Analytics;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Domain.IRepositories;
+using SmartCare.Domain.Projection_Models;
 
 namespace SmartCare.Application.Features.Analytics.Clients
 {

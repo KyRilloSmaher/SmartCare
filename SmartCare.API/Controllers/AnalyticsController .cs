@@ -7,6 +7,8 @@ using SmartCare.Application.Features.Analytics.Clients;
 using SmartCare.Application.Features.Analytics.Companies;
 using SmartCare.Application.Features.Analytics.DashBoard;
 using SmartCare.Application.Features.Analytics.DashBoard.Summary;
+using SmartCare.Application.Features.Analytics.Orders.GetOrdersAnalytics;
+using SmartCare.Application.Features.Analytics.Orders.GetOrderStatusAnalytics;
 using SmartCare.Application.Features.Analytics.Sales.Revenue;
 using SmartCare.Application.Features.Analytics.Sales.SalesChannel;
 using SmartCare.Application.Features.Analytics.Stores;
@@ -89,6 +91,24 @@ namespace SmartCare.API.Controllers
             var result = await _mediator.Send(new GetClientAnalyticsQuery( branch_id,interval, start_date, end_date));
              return ControllersHelperMethods.FinalResponse(result);
         }
+        [HttpGet(ApplicationRouting.Analytics.Orders)]
+        public async Task<IActionResult> GetOrdersAnalytics([FromQuery] Guid? branch_id,[FromQuery] string interval = "daily", [FromQuery] DateTime? start_date = null,[FromQuery] DateTime? end_date = null)
+        {
+            var result = await _mediator.Send(new GetOrdersAnalyticsQuery
+            {
+                BranchId = branch_id,
+                Interval = interval,
+                StartDate = start_date,
+                EndDate = end_date
+            });
 
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+        [HttpGet(ApplicationRouting.Analytics.orderStatus)]
+        public async Task<IActionResult> GetOrdersAnalytics([FromQuery] GetOrderStatusAnalyticsQuery query)
+        {
+            var result = await _mediator.Send(query);
+            return ControllersHelperMethods.FinalResponse(result);
+        }
     }
 }

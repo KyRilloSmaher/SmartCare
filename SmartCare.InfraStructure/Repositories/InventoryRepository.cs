@@ -1,5 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using EFCore.BulkExtensions;
+using Microsoft.EntityFrameworkCore;
 using SmartCare.Domain.Entities;
+using SmartCare.Domain.Exceptions;
 using SmartCare.Domain.IRepositories;
 using SmartCare.InfraStructure.DbContexts;
 
@@ -267,7 +269,43 @@ namespace SmartCare.InfraStructure.Repositories
 
             return await base.AddAsync(inventory);
         }
+        public void CreateInventoryRecordsForBranchBulkAsync(Guid branchId)
+        {
+            using var transaction =  _context.Database.BeginTransaction();
 
+            try
+            {
+                // Get all products
+                var products =  _context.Products
+                    .Where(p => !p.IsDeleted)
+                    .Select(p => p.ProductId)
+                    .ToList();
+
+                // Create inventory objects
+                var inventoryRecords = products.Select(product => new Inventory
+                {
+                    Id = Guid.NewGuid(),
+                    ProductId = product,
+                    ReservedQuantity = 0, StockQuantity = 0,
+                    StoreId = branchId
+                }).ToList();
+
+                // Bulk insert (much faster for large datasets)
+                 _context.BulkInsert(inventoryRecords, new BulkConfig
+                {
+                    BatchSize = 4000,
+                    UseTempDB = true,
+                    TrackingEntities = false
+                });
+
+                transaction.Commit();
+            }
+            catch
+            {
+                transaction.Rollback();
+                throw new DomainException("Exception Ocuured While Proccessing Bulk INSERTION from Inventory Repo");
+            }
+        }
         #endregion
     }
 }

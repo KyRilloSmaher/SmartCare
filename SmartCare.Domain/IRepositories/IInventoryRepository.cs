@@ -76,6 +76,7 @@ namespace SmartCare.Domain.IRepositories
         /// </summary>
         Task<bool> SetStockLevelAsync(Guid inventoryId, int newQuantity);
 
+        void CreateInventoryRecordsForBranchBulkAsync(Guid storeId);
         #endregion
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SmartCare.Domain.Entities;
 using SmartCare.Domain.Enums;
+using SmartCare.Domain.Projection_Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;

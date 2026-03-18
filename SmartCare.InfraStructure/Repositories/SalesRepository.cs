@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SmartCare.Domain.Entities;
 using SmartCare.Domain.IRepositories;
+using SmartCare.Domain.Projection_Models;
 using SmartCare.InfraStructure.DbContexts;
 using System;
 using System.Collections.Generic;
@@ -178,11 +179,7 @@ namespace SmartCare.InfraStructure.Repositories
             return result;
         }
 
-        public async Task<IEnumerable<RevenuePoint>> GetRevenueAnalyticsAsync(
-    Guid? branchId,
-    string interval,
-    DateTime? startDate,
-    DateTime? endDate)
+        public async Task<IEnumerable<RevenuePoint>> GetRevenueAnalyticsAsync( Guid? branchId,string interval,DateTime? startDate,DateTime? endDate)
         {
             var query = _context.OrderItems
                 .Include(oi => oi.Order)
@@ -396,6 +393,149 @@ namespace SmartCare.InfraStructure.Repositories
                 NewClients = newClients,
                 ReturningClients = returningClients
             };
+        }
+
+        public async Task<List<OrderTrendItemDto>> GetOrdersTrendAsync(Guid? branchId,string interval,DateTime? startDate,DateTime? endDate)
+        {
+            // Branch filter must go through OrderItems → Inventory → StoreId
+            IQueryable<Order> query;
+
+            if (branchId.HasValue && branchId.Value != Guid.Empty)
+            {
+                query = _context.OrderItems
+                    .Where(oi => oi.Inventory.StoreId == branchId.Value)
+                    .Select(oi => oi.Order)
+                    .Distinct()
+                    .Where(o => !o.IsDeleted);
+            }
+            else
+            {
+                query = _context.Orders
+                    .Where(o => !o.IsDeleted);
+            }
+
+            if (startDate.HasValue && startDate.Value != default)
+                query = query.Where(o => o.CreatedAt >= startDate.Value);
+
+            if (endDate.HasValue && endDate.Value != default)
+                query = query.Where(o => o.CreatedAt <= endDate.Value.Date.AddDays(1));
+
+            switch (interval.ToLower())
+            {
+                case "weekly":
+                    {
+                        var raw = await query
+                            .GroupBy(o => EF.Functions.DateDiffWeek(DateTime.MinValue, o.CreatedAt))
+                            .Select(g => new
+                            {
+                                WeekNumber = g.Key,
+                                MinDate = g.Min(x => x.CreatedAt),
+                                Orders = g.Count()
+                            })
+                            .ToListAsync();
+
+                        return raw
+                            .Select(g => new OrderTrendItemDto
+                            {
+                                Date = g.MinDate.ToString("yyyy-MM-dd"),
+                                Orders = g.Orders
+                            })
+                            .OrderBy(r => r.Date)
+                            .ToList();
+                    }
+
+                case "monthly":
+                    {
+                        var raw = await query
+                            .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month })
+                            .Select(g => new
+                            {
+                                g.Key.Year,
+                                g.Key.Month,
+                                Orders = g.Count()
+                            })
+                            .ToListAsync();
+
+                        return raw
+                            .Select(g => new OrderTrendItemDto
+                            {
+                                Date = $"{g.Year}-{g.Month:D2}",
+                                Orders = g.Orders
+                            })
+                            .OrderBy(r => r.Date)
+                            .ToList();
+                    }
+
+                default: // daily
+                    {
+                        var raw = await query
+                            .GroupBy(o => new
+                            {
+                                o.CreatedAt.Year,
+                                o.CreatedAt.Month,
+                                o.CreatedAt.Day
+                            })
+                            .Select(g => new
+                            {
+                                g.Key.Year,
+                                g.Key.Month,
+                                g.Key.Day,
+                                Orders = g.Count()
+                            })
+                            .ToListAsync();
+
+                        return raw
+                            .Select(g => new OrderTrendItemDto
+                            {
+                                Date = $"{g.Year}-{g.Month:D2}-{g.Day:D2}",
+                                Orders = g.Orders
+                            })
+                            .OrderBy(r => r.Date)
+                            .ToList();
+                    }
+            }
+        }
+
+        public async Task<List<OrderStatusItemDto>> GetOrderStatusDistributionAsync(Guid? branchId,DateTime? startDate,DateTime? endDate)
+        {
+            IQueryable<Order> query;
+
+            if (branchId.HasValue && branchId.Value != Guid.Empty)
+            {
+                query = _context.OrderItems
+                    .Where(oi => oi.Inventory.StoreId == branchId.Value)
+                    .Select(oi => oi.Order)
+                    .Distinct()
+                    .Where(o => !o.IsDeleted);
+            }
+            else
+            {
+                query = _context.Orders
+                    .Where(o => !o.IsDeleted);
+            }
+
+            if (startDate.HasValue && startDate.Value != default)
+                query = query.Where(o => o.CreatedAt >= startDate.Value);
+
+            if (endDate.HasValue && endDate.Value != default)
+                query = query.Where(o => o.CreatedAt <= endDate.Value.Date.AddDays(1));
+
+            var raw = await query
+                .GroupBy(o => o.Status)
+                .Select(g => new
+                {
+                    Status = g.Key,
+                    Count = g.Count()
+                })
+                .ToListAsync();
+
+            return raw
+                .Select(g => new OrderStatusItemDto
+                {
+                    Status = g.Status.ToString(),
+                    Count = g.Count
+                })
+                .ToList();
         }
     }
 
