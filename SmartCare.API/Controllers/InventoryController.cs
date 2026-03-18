@@ -8,6 +8,7 @@ using SmartCare.Application.CQRs.Inventory.Queries;
 using SmartCare.Application.DTOs.Companies.Responses;
 using SmartCare.Application.DTOs.Inventory.Request;
 using SmartCare.Application.DTOs.Inventory.Response;
+using SmartCare.Application.Features.Inventory.Commands;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Application.IServices;
 using SmartCare.Domain.Entities;
@@ -81,7 +82,33 @@ namespace SmartCare.API.Controllers
             return ControllersHelperMethods.FinalResponse(result);
         }
 
+        [HttpPatch(ApplicationRouting.Inventory.IncreaseStockInStore)]
+        [Authorize(Roles = "PHARMACIST")]
+        [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> IncreaseProductStockInStore(Guid productId, int quantityToAdd)
+        {
+            var storeIdClaim = User.FindFirst("StoreId")?.Value;
 
+            if (string.IsNullOrEmpty(storeIdClaim) || !Guid.TryParse(storeIdClaim, out Guid storeId))
+                return Unauthorized("StoreId claim not found.");
+
+            var result = await _mediator.Send(new IncreaseProductStockInStoreCommand(productId, storeId, quantityToAdd));
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+
+        [HttpPatch(ApplicationRouting.Inventory.DecreaseStockInStore)]
+        [Authorize(Roles = "PHARMACIST")]
+        [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> DecreaseProductStockInStore(Guid productId, int quantityToSubtract)
+        {
+            var storeIdClaim = User.FindFirst("StoreId")?.Value;
+
+            if (string.IsNullOrEmpty(storeIdClaim) || !Guid.TryParse(storeIdClaim, out Guid storeId))
+                return Unauthorized("StoreId claim not found.");
+
+            var result = await _mediator.Send(new DecreaseProductStockInStoreCommand(productId, storeId, quantityToSubtract));
+            return ControllersHelperMethods.FinalResponse(result);
+        }
 
 
         [HttpGet(ApplicationRouting.Inventory.GetLowStock)]

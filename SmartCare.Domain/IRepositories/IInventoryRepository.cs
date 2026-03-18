@@ -64,6 +64,12 @@ namespace SmartCare.Domain.IRepositories
         IQueryable<Inventory> GetInventoriesByCategoryInStore(Guid categoryId, Guid storeId);
 
         /// <summary>
+        /// Get Inventory By ProductId and storeId
+        /// </summary>
+        /// <param name="storeId"></param>
+        /// <param name="productId"></param>
+        /// <returns></returns>
+        Task<Inventory?> GetInventoryByStoreAndProductAsync(Guid storeId, Guid productId);
         /// Get Inventories ByProductNameInStore
         /// </summary>
         /// <param name="productName"></param>

@@ -87,8 +87,12 @@ namespace SmartCare.Domain.Constants
         public const string PRODUCT_OUT_OF_STOCK = "Product is currently out of stock.";
         public const string INVENTORY_UPDATED = "Inventory updated successfully.";
         public const string INVENTORY_NOT_FOUND = "Inventory not found.";
+        public const string INVENTORY_STOCK_INCREASED = "Stock increased successfully.";
+        public const string INVENTORY_STOCK_DECREASED = "Stock decreased successfully.";
         public const string LOW_STOCK_WARNING = "Stock level is below the safe threshold.";
         public const string INSUFFICIENT_STOCK_IN_STORE = "This Quantity Of Product is Now  unAvaialble In this Store";
+        public const string INVENTORY_NOT_FOUND_IN_STORE = "Inventory not found for the given product and store.";
+        public const string INSUFFICIENT_AVAILABLE_STOCK = "Cannot decrease stock. Requested quantity exceeds available stock.";
         // =====================
         // 🧾 Orders & Cart
         // =====================
