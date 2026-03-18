@@ -80,6 +80,9 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Auth
             if (!isPhoneNumberExists)
                 return _responseHandler.Failed<bool>(SystemMessages.PHONE_ALREADY_EXISTS);
 
+            var isLicenseNumberUnique = await _unitOfWork.Pharmacists.IsPharmacistLicenseNumberUniqueAsync(dto.LicenseNumber);
+            if (!isLicenseNumberUnique)
+                return _responseHandler.Failed<bool>(SystemMessages.LICENSE_NUMBER_ALREADY_EXISTS);
             if (dto.ProfileImage is not null)
              {
                 var uploadResult = await _imageUploaderService.UploadImageAsync(dto.ProfileImage, ImageFolder.UserProfiles);
@@ -121,9 +124,8 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Auth
                 // Generate email confirmation token
 
                 var token = await _unitOfWork.UserManager.GenerateEmailConfirmationTokenAsync(user);
+                var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
-
-                var encodedToken = Uri.EscapeDataString(token);
                 var httpRequest = _httpContextAccessor.HttpContext!.Request;
                 var scheme = httpRequest.Headers["X-Forwarded-Proto"].FirstOrDefault()
                              ?? httpRequest.Scheme;

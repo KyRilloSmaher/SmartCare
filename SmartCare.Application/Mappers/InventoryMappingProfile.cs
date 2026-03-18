@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using SmartCare.Application.DTOs.Inventory.Request;
 using SmartCare.Application.DTOs.Inventory.Response;
+using SmartCare.Application.DTOs.Product.Responses;
 using SmartCare.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -19,6 +20,7 @@ namespace SmartCare.Application.Mappers
             FromUpdateInventoryRequestDtoToInventory();
             FromInventoryToInventoryUserResponseDto();
             FromInventoryToInventoryAdminResponseDto();
+            FromInventoryToProductResponseDtoForPharmacist();
         }
 
         #region Request
@@ -74,6 +76,24 @@ namespace SmartCare.Application.Mappers
                     .ForMember(dest => dest.StoreName , opt => opt.MapFrom(src => src.Store.Name))
                     .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Store.Address))
                     .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.Store.Phone));
+        }
+
+        void FromInventoryToProductResponseDtoForPharmacist()  
+        {
+            CreateMap<Inventory, ProductResponseDtoForPharmacist>()
+                .ForMember(dest => dest.ProductId, opt => opt.MapFrom(src => src.Product.ProductId))
+                .ForMember(dest => dest.NameEn, opt => opt.MapFrom(src => src.Product.NameEn))
+                .ForMember(dest => dest.NameAr, opt => opt.MapFrom(src => src.Product.NameAr))
+                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Product.Description))
+                .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Product.Price))
+                .ForMember(dest => dest.DiscountPercentage, opt => opt.MapFrom(src => src.Product.DiscountPercentage))
+                .ForMember(dest => dest.AverageRating, opt => opt.MapFrom(src => src.Product.AverageRating))
+                .ForMember(dest => dest.IsAvailable, opt => opt.MapFrom(src => src.Product.IsAvailable))
+                .ForMember(dest => dest.DosageForm, opt => opt.MapFrom(src => src.Product.DosageForm))
+                .ForMember(dest => dest.StockQuantity, opt => opt.MapFrom(src => src.StockQuantity))
+                .ForMember(dest => dest.AvailableStock, opt => opt.MapFrom(src => src.AvailableStock))
+                .ForMember(dest => dest.ImageUrls, opt => opt.MapFrom(src => src.Product.Images.Select(img => img.Url).ToList()))
+                .ForMember(dest => dest.PrimaryImageUrl, opt => opt.MapFrom(src => src.Product.Images.FirstOrDefault(img => img.IsPrimary).Url));
         }
         #endregion
 

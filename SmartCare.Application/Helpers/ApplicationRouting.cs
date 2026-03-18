@@ -154,6 +154,8 @@ namespace SmartCare.API.Helpers
         {
             private const string Prefix = Rule + "Products";
             private const string AdminPrefix = Rule + "admin/Products";
+            private const string PharmacistPrefix = Rule + "Pharmacist/Products";
+
 
             public const string GetDetailsForUser = Prefix+ SingleRoute;
             public const string GetDetailsForAdmin = AdminPrefix+SingleRoute;
@@ -177,6 +179,10 @@ namespace SmartCare.API.Helpers
 
 
 
+            public const string Delete = AdminPrefix + "/delete" + SingleRoute;
+            public const string GetProductsByCompanyInStore = PharmacistPrefix + "/Company/Store";
+            public const string GetProductsByCategoryInStore = PharmacistPrefix + "/Category/Store";
+            public const string SearchProductsByNameInStore = PharmacistPrefix + "/SearchByName/Store";
         }
         #endregion
 

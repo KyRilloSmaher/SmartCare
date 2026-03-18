@@ -15,6 +15,7 @@ namespace SmartCare.Domain.IRepositories
         Task<Pharmacist> GetByLicenseNumberAsync(string licenseNumber);
         Task<IEnumerable<Pharmacist>> GetByBranchIdAsync(Guid branchId);
         Task<Pharmacist?> GetByUserIdAsync(string userId);
+        Task<bool> IsPharmacistLicenseNumberUniqueAsync(string licenseNumber);
         Task RollbackTransactionAsync();
     }
 }

@@ -165,6 +165,39 @@ namespace SmartCare.InfraStructure.Repositories
             return lowStock;
         }
 
+        public IQueryable<Inventory> GetInventoriesByCompanyInStore(Guid companyId, Guid storeId)
+        {
+            return _context.Inventories
+                   .Include(i => i.Product)
+                   .ThenInclude(p => p.Images)
+             .Where(i => i.StoreId == storeId
+                 && i.Product.CompanyId == companyId
+                 && !i.Product.IsDeleted
+                 && i.Product.IsAvailable);
+        }
+
+        public IQueryable<Inventory> GetInventoriesByCategoryInStore(Guid categoryId, Guid storeId)
+        {
+            return _context.Inventories
+                .Include(i => i.Product)
+                    .ThenInclude(p => p.Images)
+                .Where(i => i.StoreId == storeId
+                         && i.Product.CategoryId == categoryId
+                         && !i.Product.IsDeleted
+                         && i.Product.IsAvailable);
+        }
+
+        public IQueryable<Inventory> SearchInventoriesByProductNameInStore(string productName, Guid storeId)
+        {
+            return _context.Inventories
+                          .Include(i => i.Product)
+                          .ThenInclude(p => p.Images)
+                 .Where(i => i.StoreId == storeId
+                             && !i.Product.IsDeleted
+                             && i.Product.IsAvailable
+                             && (i.Product.NameEn.Contains(productName) ||
+                                 i.Product.NameAr.Contains(productName)));
+        }
         #endregion
 
         #region Business Logic Methods
@@ -341,6 +374,7 @@ namespace SmartCare.InfraStructure.Repositories
             }
             _context.SaveChanges();
         }
+
         #endregion
     }
 }
