@@ -121,9 +121,8 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Auth
                 // Generate email confirmation token
 
                 var token = await _unitOfWork.UserManager.GenerateEmailConfirmationTokenAsync(user);
+                var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
-
-                var encodedToken = Uri.EscapeDataString(token);
                 var httpRequest = _httpContextAccessor.HttpContext!.Request;
                 var scheme = httpRequest.Headers["X-Forwarded-Proto"].FirstOrDefault()
                              ?? httpRequest.Scheme;
