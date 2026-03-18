@@ -117,6 +117,7 @@ namespace SmartCare.InfraStructure.Repositories
         public async Task AddCartItemAsync(CartItem cartItem)
         {
             await _context.CartItems.AddAsync(cartItem);
+           
         }
 
         public Task RemoveCartItemAsync(CartItem cartItem)

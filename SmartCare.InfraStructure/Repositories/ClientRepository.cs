@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SmartCare.Domain.Entities;
 using SmartCare.Domain.IRepositories;
+using SmartCare.Domain.Projection_Models;
 using SmartCare.InfraStructure.DbContexts;
 using System.Collections.Immutable;
 namespace SmartCare.InfraStructure.Repositories
@@ -21,7 +22,7 @@ namespace SmartCare.InfraStructure.Repositories
         #region Methods
         public async Task<Client?> GetByIdAsync(string clientId, bool asTracking = false)
         {
-            return await _context.Clients
+            return await _context.Clients.Include(c=>c.User)
                                 .FirstOrDefaultAsync(u => u.Id == clientId);
         }
         public async Task<Client?> GetByIdWithDetailsAsync(string clientId, bool trackChanges = false)
@@ -78,7 +79,20 @@ namespace SmartCare.InfraStructure.Repositories
             var productIds = _context.OrderItems.Where(oi=>ordersByClient.Contains(oi.OrderId)).Select(oi=>oi.ProductId);
             return productIds.ToImmutableList();
         }
-
+        public async Task<List<ClientPurchaseItem>> GetClientPurchasesHistoryWithDatesAsync(string userId)
+        {
+            return await _context.Orders
+                .Where(o => o.ClientId == userId)
+                .SelectMany(o => o.Items)
+                .Select(oi => new ClientPurchaseItem
+                {
+                    ProductId = oi.ProductId,
+                    PurchaseDate = oi.Order.CreatedAt
+                })
+                .Distinct()
+                .ToListAsync();
+        }
+        
         #endregion
     }
 }

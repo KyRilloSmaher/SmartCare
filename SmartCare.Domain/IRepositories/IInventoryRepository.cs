@@ -1,4 +1,5 @@
 ﻿using SmartCare.Domain.Entities;
+using SmartCare.Domain.Projection_Models;
 using System.Linq.Expressions;
 
 namespace SmartCare.Domain.IRepositories
@@ -46,6 +47,21 @@ namespace SmartCare.Domain.IRepositories
         /// Gets low stock items in a specific store
         /// </summary>
         Task<List<Inventory>> GetLowStockItemsInStoreAsync(int threshold, Guid storeId);
+        /// <summary>
+        /// Get Inventories ByCompanyInStore
+        /// </summary>
+        /// <param name="companyId"></param>
+        /// <param name="storeId"></param>
+        /// <returns></returns>
+        IQueryable<Inventory> GetInventoriesByCompanyInStore(Guid companyId, Guid storeId);
+       
+        /// <summary>
+        /// Get Inventories ByCategoryInStore
+        /// </summary>
+        /// <param name="categoryId"></param>
+        /// <param name="storeId"></param>
+        /// <returns></returns>
+        IQueryable<Inventory> GetInventoriesByCategoryInStore(Guid categoryId, Guid storeId);
 
         /// <summary>
         /// Get Inventory By ProductId and storeId
@@ -54,6 +70,12 @@ namespace SmartCare.Domain.IRepositories
         /// <param name="productId"></param>
         /// <returns></returns>
         Task<Inventory?> GetInventoryByStoreAndProductAsync(Guid storeId, Guid productId);
+        /// Get Inventories ByProductNameInStore
+        /// </summary>
+        /// <param name="productName"></param>
+        /// <param name="storeId"></param>
+        /// <returns></returns>
+        IQueryable<Inventory> SearchInventoriesByProductNameInStore(string productName, Guid storeId);
         #endregion
 
         #region Business Logic Methods
@@ -83,6 +105,9 @@ namespace SmartCare.Domain.IRepositories
         /// </summary>
         Task<bool> SetStockLevelAsync(Guid inventoryId, int newQuantity);
 
+        void CreateInventoryRecordsForBranchBulkAsync(Guid storeId);
+        IQueryable<LowStockProductDto> GetLowStockProductsAsync(Guid? storeId,int threshold);
+        void CreateInventoriesForProduct(Guid productId);
         #endregion
     }
 }

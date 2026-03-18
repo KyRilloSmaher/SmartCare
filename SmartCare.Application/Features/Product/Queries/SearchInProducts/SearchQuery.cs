@@ -10,5 +10,5 @@ using System.Threading.Tasks;
 
 namespace SmartCare.Application.Features.Product.Queries.SearchInProducts
 {
-    public record SearchQuery(string query) : IRequest<Response<ICollection<ProductResponseDtoForClient>>>;
+    public record SearchQuery(string query) : IRequest<Response<IEnumerable<ProductResponseDtoForClient>>>;
 }

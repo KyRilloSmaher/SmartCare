@@ -26,6 +26,7 @@ namespace SmartCare.Infrastructure.Data
         public IAddressRepository Addresses { get; }
         public ICategoryRepository Categories { get; }
         public ICompanyRepository Companies { get; }
+        public IContradictionRepository Contradictions { get; }
         public IStoreRepository Stores { get; }
         public IRateRepository Rates { get; }
         public IProductRepository Products { get; }
@@ -37,6 +38,7 @@ namespace SmartCare.Infrastructure.Data
         public IPaymentRepository Payments { get; }
         public IPharmacistRepository Pharmacists { get; }
         public IEmailVerificationRepository EmailVerifications { get; }
+        public ISalesRepository Sales { get; }
 
         // Identity Management
         public UserManager<ApplictionUser> UserManager { get; }
@@ -71,8 +73,10 @@ namespace SmartCare.Infrastructure.Data
             IPaymentRepository paymentRepository,
             IPharmacistRepository pharmacistRepository,
             IEmailVerificationRepository emailVerificationRepository,
+            IContradictionRepository contradictionRepository,
             UserManager<ApplictionUser> userManager,
-            RoleManager<IdentityRole> roleManager)
+            RoleManager<IdentityRole> roleManager,
+            ISalesRepository salesRepository)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _repositories = new Dictionary<Type, object>();
@@ -93,7 +97,9 @@ namespace SmartCare.Infrastructure.Data
             Payments = paymentRepository ?? throw new ArgumentNullException(nameof(paymentRepository));
             Pharmacists = pharmacistRepository ?? throw new ArgumentNullException(nameof(pharmacistRepository));
             EmailVerifications = emailVerificationRepository ?? throw new ArgumentNullException(nameof(emailVerificationRepository));
+            Contradictions = contradictionRepository ?? throw new ArgumentNullException(nameof(contradictionRepository));
 
+            Sales = salesRepository ?? throw new ArgumentNullException(nameof(salesRepository));
             // Initialize Identity managers
             UserManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             RoleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));

@@ -45,7 +45,11 @@ namespace SmartCare.InfraStructure.Repositories
             return !await _context.Users.AnyAsync(u => u.PhoneNumber == phone);
         }
 
-
+        public async Task<bool> IsPharmacistLicenseNumberUniqueAsync(string licenseNumber)
+        {
+            return !await _context.Pharmacists
+                .AnyAsync(p => p.LicenseNumber == licenseNumber);
+        }
         public async Task RollbackTransactionAsync()
         {
             await _context.Database.RollbackTransactionAsync();

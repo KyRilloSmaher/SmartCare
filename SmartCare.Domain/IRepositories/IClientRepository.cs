@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SmartCare.Domain.Entities;
+using SmartCare.Domain.Projection_Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,5 +18,6 @@ namespace SmartCare.Domain.IRepositories
         Task<bool> IsClientPhoneNumberUniqueAsync(string phone);
         Task<IEnumerable<Client>> SearchClientsAsync(string searchTerm);
         Task<ICollection<Guid>> GetClientPurchasesHistoryAsync(string clientId);
+        Task<List<ClientPurchaseItem>> GetClientPurchasesHistoryWithDatesAsync(string userId);
     }
 }

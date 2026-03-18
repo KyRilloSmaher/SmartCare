@@ -1,4 +1,6 @@
-﻿namespace SmartCare.API.Helpers
+﻿using SmartCare.Domain.Entities;
+
+namespace SmartCare.API.Helpers
 {
     /// <summary>
     /// Defines the API route constants used throughout the application.
@@ -46,7 +48,8 @@
             public const string Create = AdminPrefix + "/create";
             public const string Update = AdminPrefix + "/update";
             public const string ChangeImage = AdminPrefix + "/change-image";
-            public const string Delete = AdminPrefix + "/delete" + SingleRoute;
+            public const string Delete = AdminPrefix + SingleRoute +"/delete";
+            public const string Restore = AdminPrefix + SingleRoute + "/restore";
         }
         #endregion
 
@@ -63,8 +66,9 @@
             public const string GetAllForAdmin = AdminPrefix;
             public const string Create = AdminPrefix + "/create";
             public const string Update = AdminPrefix + "/update";
-            public const string ChangeImage = AdminPrefix + "/change-logo";
-            public const string Delete = AdminPrefix + "/delete" + SingleRoute;
+            public const string ChangeImage = AdminPrefix + "/change-image";
+            public const string Delete = AdminPrefix + SingleRoute + "/delete";
+            public const string Restore = AdminPrefix + SingleRoute + "/restore";
         }
         #endregion
 
@@ -93,9 +97,13 @@
             public const string SearchByName = Prefix + "/search";
             public const string GetAll = Prefix;
             public const string GetAllForAdmin = AdminPrefix;
+            public const string GetStorePharmcists = AdminPrefix+SingleRoute+"/pharmacists";
             public const string Create = AdminPrefix + "/create";
             public const string Update = AdminPrefix + "/update";
-            public const string Delete = AdminPrefix + "/delete" + SingleRoute;
+            public const string Restore = AdminPrefix+ SingleRoute + "/restore" ;
+            public const string Delete = AdminPrefix + SingleRoute+ "/delete";
+            public const string ChangePharmacist = AdminPrefix + "/pharmacists/{pharmacist_id}/change-branch/{NewBranchId}";
+            public const string AssignPharmacist = AdminPrefix + "/{store_id}/pharmacists";
         }
         #endregion
 
@@ -146,6 +154,8 @@
         {
             private const string Prefix = Rule + "Products";
             private const string AdminPrefix = Rule + "admin/Products";
+            private const string PharmacistPrefix = Rule + "Pharmacist/Products";
+
 
             public const string GetDetailsForUser = Prefix+ SingleRoute;
             public const string GetDetailsForAdmin = AdminPrefix+SingleRoute;
@@ -164,10 +174,11 @@
             public const string GetMorePopular = Prefix + "/MorePopular";
             public const string SearchByName = Prefix + "/Name";
             public const string GetByFilter = Prefix + "/Filter";
-            public const string Delete = AdminPrefix + "/delete" + SingleRoute;
-
-
-
+            public const string Delete = AdminPrefix + SingleRoute + "/delete" ;
+            public const string Restore = AdminPrefix  + SingleRoute + "/restore";
+            public const string GetProductsByCompanyInStore = PharmacistPrefix + "/Company/Store";
+            public const string GetProductsByCategoryInStore = PharmacistPrefix + "/Category/Store";
+            public const string SearchProductsByNameInStore = PharmacistPrefix + "/SearchByName/Store";
         }
         #endregion
 
@@ -242,5 +253,31 @@
 
         #endregion
 
+        #region Analytics
+        public class Analytics
+        {
+            private const string Prefix = Rule + "admin/analytics";
+
+            public const string Categories = Prefix + "/categories";
+            public const string Companies = Prefix + "/companies";
+            public const string Stores = Prefix + "/stores";
+            public const string SalesChannels = Prefix + "/sales-channels";
+            public const string Revenue = Prefix + "/revenue";
+            public const string Summary = Prefix + "/summary";
+            public const string Clients = Prefix + "/clients";
+            public const string Orders = Prefix + "/orders";
+            public const string orderStatus = Prefix + "/order-status";
+
+        }
+        #endregion
+        #region Dashboard
+        public class Dashboard
+        {
+            private const string Prefix = Rule + "admin/dashboard";
+
+            public const string LowStock = Prefix + "/stores-Low-stock";
+
+        }
+        #endregion
     }
 }

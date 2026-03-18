@@ -2,10 +2,14 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartCare.API.Helpers;
-using SmartCare.Application.CQRs.Product.Commands;
 using SmartCare.Application.CQRs.Product.Queries;
 using SmartCare.Application.DTOs.Product.Requests;
 using SmartCare.Application.DTOs.Product.Responses;
+using SmartCare.Application.Features.Product.Commands.Create;
+using SmartCare.Application.Features.Product.Commands.Delete;
+using SmartCare.Application.Features.Product.Commands.Restore;
+using SmartCare.Application.Features.Product.Commands.Update;
+using SmartCare.Application.Features.Product.Queries;
 using SmartCare.Application.Features.Product.Queries.GetContradictionsFromUserHistory;
 using SmartCare.Application.Features.Product.Queries.RecommendSimilarProducts;
 using SmartCare.Application.Features.Product.Queries.SearchInProducts;
@@ -256,7 +260,44 @@ namespace SmartCare.API.Controllers
 
         }
 
+        [HttpGet(ApplicationRouting.Product.GetProductsByCompanyInStore)]
+        [Authorize(Roles = "PHARMACIST")]
+        [ProducesResponseType(typeof(Response<IEnumerable<ProductResponseDtoForPharmacist>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetProductsByCompanyInStore(Guid companyId, int pageNumber, int pageSize)
+        {
+            var storeIdClaim = User.FindFirst("StoreId")?.Value;
+            if (string.IsNullOrEmpty(storeIdClaim) || !Guid.TryParse(storeIdClaim, out Guid storeId))
+                return Unauthorized("StoreId claim not found.");
 
+            var result = await _mediator.Send(new GetProductsByCompanyInStoreQuery(companyId, storeId , pageNumber , pageSize));
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+
+        [HttpGet(ApplicationRouting.Product.GetProductsByCategoryInStore)]
+        [Authorize(Roles = "PHARMACIST")]
+        [ProducesResponseType(typeof(Response<PaginatedResult<ProductResponseDtoForPharmacist>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetProductsByCategoryInStore( Guid categoryId, int pageNumber = 1,  int pageSize = 10)
+        {
+            var storeIdClaim = User.FindFirst("StoreId")?.Value;
+            if (string.IsNullOrEmpty(storeIdClaim) || !Guid.TryParse(storeIdClaim, out Guid storeId))
+                return Unauthorized("StoreId claim not found.");
+
+            var result = await _mediator.Send(new GetProductsByCategoryInStoreQuery(categoryId, storeId, pageNumber, pageSize));
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+
+        [HttpGet(ApplicationRouting.Product.SearchProductsByNameInStore)]
+        [Authorize(Roles = "PHARMACIST")]
+        [ProducesResponseType(typeof(Response<IEnumerable<ProductResponseDtoForPharmacist>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> SearchProductsByNameInStore([FromQuery] string productName)
+        {
+            var storeIdClaim = User.FindFirst("StoreId")?.Value;
+            if (string.IsNullOrEmpty(storeIdClaim) || !Guid.TryParse(storeIdClaim, out Guid storeId))
+                return Unauthorized("StoreId claim not found.");
+
+            var result = await _mediator.Send(new SearchProductsByNameInStoreQuery(productName, storeId));
+            return ControllersHelperMethods.FinalResponse(result);
+        }
 
         /// <summary>
         /// Create Product
@@ -267,8 +308,7 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<ProductResponseDtoForAdmin>), StatusCodes.Status200OK)]
         public async Task<IActionResult> CreateProductAsync([FromForm] CreateProductRequestDto ProductDto)
         {
-            //var result = await _ProductService.CreateProductAsync(ProductDto);
-            var result = await _mediator.Send(new CreateProductAsyncCommand(ProductDto));
+            var result = await _mediator.Send(new CreateProductCommand(ProductDto));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -277,14 +317,24 @@ namespace SmartCare.API.Controllers
         /// Update Product
         /// </summary>
         /// <param name="id"></param>
+        [Authorize(Roles = "DASHBOARD_ADMIN")]
+        [HttpPatch(ApplicationRouting.Product.Restore)]
+        [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> RestoreProductAsync(Guid id)
+        {
+            var result = await _mediator.Send(new RestoreProductCommand(id));
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+        /// <summary>
+        /// Update Product
+        /// </summary>
         /// <param name="ProductDto"></param>
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "DASHBOARD_ADMIN")]
         [HttpPut(ApplicationRouting.Product.Update)]
         [ProducesResponseType(typeof(Response<ProductResponseDtoForAdmin>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> UpdateProductAsync(Guid id, [FromBody] UpdateProductRequestDto ProductDto)
+        public async Task<IActionResult> UpdateProductAsync([FromForm] UpdateProductRequestDto ProductDto)
         {
-            //var result = await _ProductService.UpdateProductAsync(id, ProductDto);
-            var result = await _mediator.Send(new UpdateProductAsyncCommand(id, ProductDto));
+            var result = await _mediator.Send(new UpdateProductCommand(ProductDto));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
@@ -298,8 +348,7 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> DeleteProductAsync(Guid id)
         {
-            //var result = await _ProductService.DeleteProductAsync(id);
-            var result = await _mediator.Send(new DeleteProductAsyncCommand(id));
+            var result = await _mediator.Send(new DeleteProductCommand(id));
             return ControllersHelperMethods.FinalResponse(result);
         }
 

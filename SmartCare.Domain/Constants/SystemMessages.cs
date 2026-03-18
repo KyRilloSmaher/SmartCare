@@ -14,6 +14,7 @@ namespace SmartCare.Domain.Constants
         public const string RECORD_UPDATED = "Record updated successfully.";
         public const string RECORD_DELETED = "Record deleted successfully.";
         public const string SETTINGS_SAVED = "Settings saved successfully.";
+        public const string ALREADY_ACTIVE = "Already Active.";
         // =====================
         // ⚠️ Common Validation / Errors
         // =====================
@@ -75,7 +76,7 @@ namespace SmartCare.Domain.Constants
         public const string REFRESH_TOKEN_EXPIRED = "Refresh token Has been Expired";
         public const string INVALID_REFRESH_TOKEN = "Invalid Refresh token ";
         public const string TOKEN_REFRESHED_SUCCESS = " Refresh token refreshed ";
-
+        public const string LICENSE_NUMBER_ALREADY_EXISTS = "License number is already registered.";
         // =====================
         // 💊 Product & Inventory
         // =====================

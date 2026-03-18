@@ -113,7 +113,12 @@ Stack Trace   ==> {StackTrace}
                         errorsBag["Database"] = new List<string> { dbMsg };
                         responseModel.Message = "A database error occurred.";
                         break;
-
+                    case CachedException cacheException:
+                        responseModel.StatusCode = HttpStatusCode.InternalServerError;
+                        response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                        errorsBag["Cahce Error"] = new List<string> { cacheException.Message };
+                        responseModel.Message = "Cache Service ERROR!";
+                        break;
                     case DomainException domainException:
                         responseModel.StatusCode = HttpStatusCode.BadRequest;
                         response.StatusCode = (int)HttpStatusCode.BadRequest;

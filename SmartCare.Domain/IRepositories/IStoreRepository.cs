@@ -11,6 +11,7 @@ namespace SmartCare.Domain.IRepositories
     public interface IStoreRepository : IGenericRepository<Store>
     {
          Task<IEnumerable<Store>> GetAllStoresAsync();
+         Task<IEnumerable<Pharmacist>> GetStorePharmacistsAsync(Guid storeId);
 
          IQueryable<Store> GetStoresQueryable(bool includeDeleted = false);
 

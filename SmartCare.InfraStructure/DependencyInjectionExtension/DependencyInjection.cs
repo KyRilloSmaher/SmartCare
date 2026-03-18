@@ -42,6 +42,7 @@ namespace SmartCare.InfraStructure.Extensions
             services.AddScoped<IClientRepository, ClientRepository>();
             services.AddScoped<IAddressRepository, AddressRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
+            services.AddScoped<IContradictionRepository, ContradictionRepository>();
             services.AddScoped<ICompanyRepository, CompanyRepository>();
             services.AddScoped<IStoreRepository, StoreRepository>();
             services.AddScoped<IPharmacistRepository, PharmacistRepository>();
@@ -56,6 +57,9 @@ namespace SmartCare.InfraStructure.Extensions
             services.AddScoped<IPaymentRepository, PaymentRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IPaymentGatewayFactory, PaymentGatewayFactory>();
+
+            services.AddScoped<ISalesRepository, SalesRepository>();
+
             // ---------- Identity ----------
             services.AddIdentity<ApplictionUser, IdentityRole>(options =>
             {

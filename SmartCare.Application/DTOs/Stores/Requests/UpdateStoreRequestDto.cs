@@ -8,6 +8,7 @@ namespace SmartCare.Application.DTOs.Stores.Requests
 {
     public class UpdateStoreRequestDto
     {
+        public Guid Id { get; set; }
         public string Name { get; set; }
         public string Address { get; set; }
         public float Latitude { get; set; }

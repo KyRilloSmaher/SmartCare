@@ -6,6 +6,18 @@ namespace SmartCare.Domain.Entities
 {
     public class Store
     {
+        public Store(string name, string address, float latitude, float longitude, string phone)
+        {
+            Id = Guid.NewGuid();
+            Name = name;
+            Address = address;
+            Latitude = latitude;
+            Longitude = longitude;
+            Phone = phone;
+            CreatedAt = DateTime.Now;
+            IsDeleted = false;
+        }
+
         public Guid Id { get; set; }
         public string Name { get; set; }
         public string Address { get; set; }
@@ -29,6 +41,18 @@ namespace SmartCare.Domain.Entities
         public  ICollection<Inventory> Inventories { get; set; }
 
         public ICollection<Pharmacist> pharmacists { get; set; }
+
+        public void Delete()
+        {
+            IsDeleted = true;
+        }
+
+        public void Restore() { 
+         IsDeleted = false;
+        }
+
+        public static Store Create(string name, string address, float latitude, float longitude, string phone)
+            => new Store(name, address, latitude, longitude, phone);
     }
 }
 
