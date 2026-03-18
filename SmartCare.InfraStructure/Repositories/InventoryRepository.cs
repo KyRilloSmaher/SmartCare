@@ -267,7 +267,7 @@ namespace SmartCare.InfraStructure.Repositories
         public override async Task<Inventory> AddAsync(Inventory inventory)
         {
             if (inventory.ReservedQuantity > inventory.StockQuantity)
-                throw new Exception("Reserved cannot exceed stock");
+                throw new DomainException("Reserved cannot exceed stock");
 
             return await base.AddAsync(inventory);
         }
@@ -330,6 +330,16 @@ namespace SmartCare.InfraStructure.Repositories
                     Threshold = threshold
                 })
                 .OrderBy(ps => ps.CurrentStock);
+        }
+        public void CreateInventoriesForProduct(Guid productId)
+        {
+            var storesIds = _context.Stores.Select(s=>s.Id).ToList();
+            foreach (var storeId in storesIds)
+            {
+                var Inventory = SmartCare.Domain.Entities.Inventory.Create(storeId ,productId);
+                _context.Inventories.Add(Inventory);
+            }
+            _context.SaveChanges();
         }
         #endregion
     }

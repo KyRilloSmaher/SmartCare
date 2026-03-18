@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.CQRs.Product.Commands
+namespace SmartCare.Application.Features.Product.Commands.Create
 {
-    public record CreateProductAsyncCommand(CreateProductRequestDto ProductDto) : IRequest<Response<ProductResponseDtoForAdmin>>;
+    public record CreateProductCommand(CreateProductRequestDto ProductDto) : IRequest<Response<ProductResponseDtoForAdmin>>;
 }

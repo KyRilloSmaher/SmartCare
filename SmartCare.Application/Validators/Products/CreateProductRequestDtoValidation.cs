@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using SmartCare.Application.DTOs.Product.Requests;
+using SmartCare.Domain.Constants;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -53,19 +54,15 @@ namespace SmartCare.Application.Validators.Products
             RuleFor(x => x.DiscountPercentage)
                 .InclusiveBetween(0, 100).WithMessage("Discount must be between 0 and 100.");
 
-            RuleFor(x => x.ExpirationDate)
-                .GreaterThan(DateTime.UtcNow).When(x => x.ExpirationDate.HasValue)
-                .WithMessage("Expiration date must be in the future.");
 
-            RuleFor(x => x.mainImage)
-                .NotNull().WithMessage("Main image is required.");
+            RuleFor(x => x.MainImage)
+                .NotNull().WithMessage("User image is required.")
+                .Must(Constants.BeAValidImage)
+                .WithMessage("Main Image must be jpg, jpeg, or png, and not exceed 5MB.");
 
             RuleFor(x => x.Images)
                 .NotNull().WithMessage("Images list is required.")
                 .Must(images => images.Count > 0).WithMessage("At least one additional image is required.");
-
-
-
         }
     }
 }

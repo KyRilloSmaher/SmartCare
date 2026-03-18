@@ -79,6 +79,7 @@ namespace SmartCare.Domain.IRepositories
 
         void CreateInventoryRecordsForBranchBulkAsync(Guid storeId);
         IQueryable<LowStockProductDto> GetLowStockProductsAsync(Guid? storeId,int threshold);
+        void CreateInventoriesForProduct(Guid productId);
         #endregion
     }
 }

@@ -6,6 +6,7 @@ using SmartCare.Application.CQRs.Product.Commands;
 using SmartCare.Application.CQRs.Product.Queries;
 using SmartCare.Application.DTOs.Product.Requests;
 using SmartCare.Application.DTOs.Product.Responses;
+using SmartCare.Application.Features.Product.Commands.Create;
 using SmartCare.Application.Features.Product.Queries.GetContradictionsFromUserHistory;
 using SmartCare.Application.Features.Product.Queries.RecommendSimilarProducts;
 using SmartCare.Application.Features.Product.Queries.SearchInProducts;
@@ -268,7 +269,7 @@ namespace SmartCare.API.Controllers
         public async Task<IActionResult> CreateProductAsync([FromForm] CreateProductRequestDto ProductDto)
         {
             //var result = await _ProductService.CreateProductAsync(ProductDto);
-            var result = await _mediator.Send(new CreateProductAsyncCommand(ProductDto));
+            var result = await _mediator.Send(new CreateProductCommand(ProductDto));
             return ControllersHelperMethods.FinalResponse(result);
         }
 

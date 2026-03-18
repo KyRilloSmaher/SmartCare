@@ -18,7 +18,7 @@ namespace SmartCare.Application.Mappers
             ProductToProductResponseDtoForClient();
             ProductToProductResponseDtoForManager();
             ContradictionToContradictionDetailDto();
-            ProductToContradictionDetail(); // New mapping
+            ProductToContradictionDetail();
         }
 
         void FromProductToProductProjection()
@@ -38,7 +38,14 @@ namespace SmartCare.Application.Mappers
 
         void CreateProductRequestDtoToProduct()
         {
-            CreateMap<CreateProductRequestDto, Product>();
+                CreateMap<CreateProductRequestDto, Product>()
+                    .ForMember(dest => dest.ProductId, opt => opt.Ignore())
+                    .ForMember(dest => dest.Images, opt => opt.Ignore())
+                    .ForMember(dest => dest.AverageRating, opt => opt.MapFrom(_ => 0))
+                    .ForMember(dest => dest.TotalRatings, opt => opt.MapFrom(_ => 0))
+                    .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(_ => false))
+                    .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+                    .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow)); 
         }
 
         void UpdateProductRequestDtoToProduct()
