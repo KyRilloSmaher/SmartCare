@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.CQRs.Product.Commands
+namespace SmartCare.Application.Features.Product.Commands.Update
 {
-    public record UpdateProductAsyncCommand(Guid Id, UpdateProductRequestDto ProductDto) : IRequest<Response<ProductResponseDtoForAdmin>>;
+    public record UpdateProductCommand(UpdateProductRequestDto ProductDto) : IRequest<Response<ProductResponseDtoForAdmin>>;
 }

@@ -50,7 +50,8 @@ namespace SmartCare.Application.Mappers
 
         void UpdateProductRequestDtoToProduct()
         {
-            CreateMap<UpdateProductRequestDto, Product>();
+            CreateMap<UpdateProductRequestDto, Product>()
+                        .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
         }
 
         void ProductToProductResponseDtoForClient()

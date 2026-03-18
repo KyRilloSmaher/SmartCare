@@ -2,13 +2,13 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartCare.API.Helpers;
-using SmartCare.Application.CQRs.Product.Commands;
 using SmartCare.Application.CQRs.Product.Queries;
 using SmartCare.Application.DTOs.Product.Requests;
 using SmartCare.Application.DTOs.Product.Responses;
 using SmartCare.Application.Features.Product.Commands.Create;
 using SmartCare.Application.Features.Product.Commands.Delete;
 using SmartCare.Application.Features.Product.Commands.Restore;
+using SmartCare.Application.Features.Product.Commands.Update;
 using SmartCare.Application.Features.Product.Queries.GetContradictionsFromUserHistory;
 using SmartCare.Application.Features.Product.Queries.RecommendSimilarProducts;
 using SmartCare.Application.Features.Product.Queries.SearchInProducts;
@@ -290,15 +290,13 @@ namespace SmartCare.API.Controllers
         /// <summary>
         /// Update Product
         /// </summary>
-        /// <param name="id"></param>
         /// <param name="ProductDto"></param>
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "DASHBOARD_ADMIN")]
         [HttpPut(ApplicationRouting.Product.Update)]
         [ProducesResponseType(typeof(Response<ProductResponseDtoForAdmin>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> UpdateProductAsync(Guid id, [FromBody] UpdateProductRequestDto ProductDto)
+        public async Task<IActionResult> UpdateProductAsync([FromForm] UpdateProductRequestDto ProductDto)
         {
-            //var result = await _ProductService.UpdateProductAsync(id, ProductDto);
-            var result = await _mediator.Send(new UpdateProductAsyncCommand(id, ProductDto));
+            var result = await _mediator.Send(new UpdateProductCommand(ProductDto));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
