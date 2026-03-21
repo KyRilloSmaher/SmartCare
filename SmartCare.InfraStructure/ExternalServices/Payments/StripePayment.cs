@@ -98,7 +98,7 @@ namespace SmartCare.InfraStructure.ExternalServices.Payments
                 IsValid = true,
                 Provider = PaymentMethod.Stripe,
                 ProviderReferenceId = intent.Id,
-                Status = MapStatus(intent.Status),
+                Status = MapStatus(stripeEvent.Type),
                 Amount = intent.AmountReceived / 100m,
                 OrderId = intent.Metadata.TryGetValue("OrderId", out var OrderId) && Guid.TryParse(OrderId, out var orderId) ? orderId : null,
                 ClientId = intent.Metadata.TryGetValue("ClientId", out var ClientId)? ClientId : null,
@@ -108,9 +108,10 @@ namespace SmartCare.InfraStructure.ExternalServices.Payments
         private static PaymentStatus MapStatus(string stripeStatus) =>
             stripeStatus switch
             {
-                "succeeded" => PaymentStatus.Completed,
-                "canceled" => PaymentStatus.Failed,
-                "requires_payment_method" => PaymentStatus.Failed,
+                "payment_intent.succeeded" => PaymentStatus.Completed,
+                "payment_intent.canceled" => PaymentStatus.Cancelled,
+                "failed" => PaymentStatus.Failed,
+                "requires_payment_method" => PaymentStatus.Pending,
                 _ => PaymentStatus.Pending
             };
 
