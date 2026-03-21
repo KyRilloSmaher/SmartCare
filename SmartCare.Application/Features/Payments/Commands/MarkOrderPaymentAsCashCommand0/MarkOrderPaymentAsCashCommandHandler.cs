@@ -56,8 +56,7 @@ namespace SmartCare.Application.CQRs.Payments.Commands.MarkOrderPaymentAsCashCom
             var payment = new Domain.Entities.Payment(order.Id, order.TotalPrice, PaymentMethod.Cash, null, null);
             order.Status = OrderStatus.WaitingForPickup;
             order.PaymenId = payment.Id;
-            // Save changes through UnitOfWork
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
 
             var client = await _unitOfWork.UserManager.FindByIdAsync(order.ClientId);
 
@@ -76,6 +75,15 @@ namespace SmartCare.Application.CQRs.Payments.Commands.MarkOrderPaymentAsCashCom
                     _paymentExtensions.ComputeSha256(pickupCode));
                 await _paymentExtensions.SendPickupEmailAsync(order, client, pickupCode, ((PickUpOrder)order).StoreId);
             }
+            // Clear cart
+            var cart = await _unitOfWork.Carts.GetActiveCartAsync(order.ClientId, true);
+            if (cart != null)
+            {
+                await _unitOfWork.Carts.DeleteAsync(cart);
+                await _unitOfWork.Carts.CreateCartAsync(order.ClientId);
+            }
+            // Save changes through UnitOfWork
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             // Schudeled Job To Update Reservations Times
             _backgroundJobService.Enqueue(() => UpdateResevationsForPickup(order.Id));
             return _responseHandler.Success(true);
