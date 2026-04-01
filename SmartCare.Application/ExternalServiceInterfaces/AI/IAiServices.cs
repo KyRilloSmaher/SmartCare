@@ -1,4 +1,5 @@
-﻿using SmartCare.Application.ExternalServiceInterfaces.AI.Response;
+﻿using Microsoft.AspNetCore.Http;
+using SmartCare.Application.ExternalServiceInterfaces.AI.Response;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,13 +12,17 @@ namespace SmartCare.Application.ExternalServiceInterfaces.AI
     {
         Task<SemanticSearchResult> SemanticSearchAsync(
        string query,
-       int topK = 10,
+       int topK = 25,
        bool withVectors = false,
+       CancellationToken ct = default);
+        Task<VoiceSearchResponse> VoiceSearchAsync(
+       IFormFile audioFile,
+       int topK = 25,
        CancellationToken ct = default);
 
         Task<SimilarProductsResult> GetSimilarProductsAsync(
             Guid productId,
-            int topK = 10,
+            int topK = 25,
             double? scoreThreshold = null,
             bool excludeSelf = true,
             CancellationToken ct = default);

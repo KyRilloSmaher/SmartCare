@@ -168,6 +168,7 @@ namespace SmartCare.API.Helpers
             public const string GetByCategoryId = Prefix + "/CategoryId";
             public const string SearchByCategoryName = Prefix + "/CategoryName";
             public const string Search = Prefix+"/search";
+            public const string VoiceSearch = Prefix+"/voice-search";
             public const string RecommendSimilars = Prefix + "/Similars"+SingleRoute;
             public const string GetContradictions = Prefix + SingleRoute+"/contradions-with-user-History";
             public const string GetBestSeller = Prefix + "/BestSeller";

@@ -33,7 +33,6 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="DTOs\Favorites\Requets\" />
-	  <Folder Include="DTOs\Product\Requests\" />
 	  <Folder Include="NewFolder\" />
 	</ItemGroup>
 	<ItemGroup>
