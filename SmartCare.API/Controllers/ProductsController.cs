@@ -13,6 +13,7 @@ using SmartCare.Application.Features.Product.Queries;
 using SmartCare.Application.Features.Product.Queries.GetContradictionsFromUserHistory;
 using SmartCare.Application.Features.Product.Queries.RecommendSimilarProducts;
 using SmartCare.Application.Features.Product.Queries.SearchInProducts;
+using SmartCare.Application.Features.Product.Queries.VoiceSearch;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Application.IServices;
 
@@ -298,7 +299,17 @@ namespace SmartCare.API.Controllers
             var result = await _mediator.Send(new SearchProductsByNameInStoreQuery(productName, storeId));
             return ControllersHelperMethods.FinalResponse(result);
         }
-
+        /// <summary>
+        /// Search In Products By Voice
+        /// </summary>
+        /// <param name="query"></param>
+        [HttpPost(ApplicationRouting.Product.VoiceSearch)]
+        [ProducesResponseType(typeof(Response<ICollection<ProductResponseDtoForClient>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> VoiceSearch([FromForm] VoiceSearchRequest request)
+        {
+            var result = await _mediator.Send(new VoiceSearchQuery(request.AudioFile));
+            return ControllersHelperMethods.FinalResponse(result);
+        }
         /// <summary>
         /// Create Product
         /// </summary>

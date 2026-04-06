@@ -168,6 +168,7 @@ namespace SmartCare.API.Helpers
             public const string GetByCategoryId = Prefix + "/CategoryId";
             public const string SearchByCategoryName = Prefix + "/CategoryName";
             public const string Search = Prefix+"/search";
+            public const string VoiceSearch = Prefix+"/voice-search";
             public const string RecommendSimilars = Prefix + "/Similars"+SingleRoute;
             public const string GetContradictions = Prefix + SingleRoute+"/contradions-with-user-History";
             public const string GetBestSeller = Prefix + "/BestSeller";
@@ -276,6 +277,17 @@ namespace SmartCare.API.Helpers
             private const string Prefix = Rule + "admin/dashboard";
 
             public const string LowStock = Prefix + "/stores-Low-stock";
+
+        }
+        #endregion
+
+        #region Dashboard
+        public class AI
+        {
+            private const string Prefix = Rule + "ai-medical-assistant";
+
+            public const string chat = Prefix + "/chat";
+            public const string ExtractDrugInfo = Prefix + "/extract-drug-info";
 
         }
         #endregion

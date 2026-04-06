@@ -1,4 +1,5 @@
 ﻿
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using SmartCare.Application.ExternalServiceInterfaces.AI;
 using SmartCare.Application.ExternalServiceInterfaces.AI.Request;
@@ -34,7 +35,7 @@ public class AiCoreService : IAiServices
 
     public async Task<SemanticSearchResult> SemanticSearchAsync(
         string query,
-        int topK = 10,
+        int topK = 25,
         bool withVectors = false,
         CancellationToken ct = default)
     {
@@ -44,6 +45,32 @@ public class AiCoreService : IAiServices
 
         return await PostAsync<SemanticSearchRequest, SemanticSearchResult>(
             "api/v1/semantic-search", payload, ct);
+    }
+    // ── Voice Search ───────────────────────────────────────────────────────
+    public async Task<VoiceSearchResponse> VoiceSearchAsync(
+        IFormFile file,
+        int topK = 25,
+        CancellationToken ct = default)
+    {
+        _logger.LogInformation(
+            "VoiceSearch | File Size={Size} top_k={TopK}",
+            file.Length, topK);
+
+        var fields = new Dictionary<string, string>
+            {
+                { "topK", topK.ToString() }
+            };
+
+        var files = new Dictionary<string, IFormFile>
+        {
+            { "file", file }
+        };
+
+        return await PostMultipartAsync<VoiceSearchResponse>(
+            "api/v1/voice-search",
+            fields,
+            files,
+            ct);
     }
 
     // ── Similarity ────────────────────────────────────────────────────────────
@@ -84,7 +111,63 @@ public class AiCoreService : IAiServices
         return await PostAsync<ContradictionRequest, ContradictionResult>(
             "api/v1/contradictions/check", payload, ct);
     }
+    // ── Chat ────────────────────────────────────────────────────────
 
+    public async Task<AiAnswerResult> AskAIAsync(string Question, string ingredient, IFormFile? audio = null, CancellationToken ct = default)
+    {
+        _logger.LogInformation(
+            "Chat | Question ={Question} ingredient={ingredient} File ={audio}",
+            Question,
+            ingredient,
+            audio != null ? audio.Length.ToString() : "0"
+        );
+        if (audio is null)
+        {
+            var payload = new AskAIRequest { Question = Question , ingredient = ingredient};
+            return await PostAsync<AskAIRequest, AiAnswerResult>(
+                "api/v1/chat",
+                payload,
+                ct);
+        }
+        var fields = new Dictionary<string, string>
+            {
+                {
+                 "ingredient", ingredient is null ?"":ingredient.ToString()
+                },
+                {
+                  "question", Question is null ?"":Question.ToString()
+                }
+            };
+
+        var files = new Dictionary<string, IFormFile>
+        {
+            { "audio", audio }
+        };
+
+        return await PostMultipartAsync<AiAnswerResult>(
+            "api/v1/chat",
+            fields,
+            files,
+            ct);
+    }
+    // ── DrugInformationExtractor ───────────────────────────────────────────────────────
+    public async Task<DrugExtractionResponse> DrugInformationExtractorAsync(IFormFile? image, CancellationToken ct = default)
+    { 
+        _logger.LogInformation(
+            "Drug Information Extractor | File Size={Size}",
+            image.Length);
+
+        var files = new Dictionary<string, IFormFile>
+        {
+            { "file", image }
+        };
+
+        return await PostMultipartAsync<DrugExtractionResponse>(
+            "api/v1/extract-drug",
+            null,
+            files,
+            ct);
+    }
     // ── Shared POST helper ────────────────────────────────────────────────────
 
     private async Task<TResponse> PostAsync<TRequest, TResponse>(
@@ -132,4 +215,75 @@ public class AiCoreService : IAiServices
 
         return result;
     }
+    private async Task<TResponse> PostMultipartAsync<TResponse>(
+    string endpoint,
+    Dictionary<string, string>? formFields,
+    Dictionary<string, IFormFile>? files,
+    CancellationToken ct)
+    {
+        using var content = new MultipartFormDataContent();
+
+        // 🧾 Add normal fields
+        if (formFields is not null)
+        {
+            foreach (var field in formFields)
+            {
+                content.Add(new StringContent(field.Value), field.Key);
+            }
+        }
+
+        // 📁 Add files
+        if (files is not null)
+        {
+            foreach (var fileEntry in files)
+            {
+                var file = fileEntry.Value;
+
+                var stream = file.OpenReadStream();
+                var fileContent = new StreamContent(stream);
+
+                fileContent.Headers.ContentType =
+                    new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+
+                content.Add(fileContent, fileEntry.Key, file.FileName);
+            }
+        }
+
+        HttpResponseMessage response;
+
+        try
+        {
+            response = await _httpClient.PostAsync(endpoint, content, ct);
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(ex, "HTTP error while calling {Endpoint}", endpoint);
+            throw new AiCoreException($"Network error calling {endpoint}", ex);
+        }
+        catch (TaskCanceledException ex) when (!ct.IsCancellationRequested)
+        {
+            _logger.LogError(ex, "Timeout while calling {Endpoint}", endpoint);
+            throw new AiCoreException($"Timeout calling {endpoint}", ex);
+        }
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var body = await response.Content.ReadAsStringAsync(ct);
+
+            _logger.LogError(
+                "Multipart POST failed {StatusCode} for {Endpoint}: {Body}",
+                response.StatusCode, endpoint, body);
+
+            throw new AiCoreException(
+                $"AI Core error {(int)response.StatusCode} at {endpoint}: {body}");
+        }
+
+        var result = await response.Content.ReadFromJsonAsync<TResponse>(JsonOptions, ct);
+
+        if (result is null)
+            throw new AiCoreException($"Empty response body from {endpoint}");
+
+        return result;
+    }
+
 }

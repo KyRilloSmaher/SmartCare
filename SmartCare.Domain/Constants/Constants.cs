@@ -16,6 +16,9 @@ namespace SmartCare.Domain.Constants
         public const string EGYPT_PHONE_REGEX = @"^(?:\+20|0020|0)?1[0|1|2|5]\d{8}$";
         public const long MaxImgSize = 5 * 1024 * 1024;
         public static readonly List<string> AllowedImageExtensions = new List<string>() { ".png", ".jpeg", ".jpg" };
+        private static readonly List<string> _allowedExtensions = new List<string>() { ".mp3", ".wav", ".m4a" };
+        private const long MaxaudioFileSize = 10 * 1024 * 1024; // 10 MB
+
 
         public enum StringType
         {
@@ -47,6 +50,27 @@ namespace SmartCare.Domain.Constants
             var ext = Path.GetExtension(file.FileName).ToLower();
             return AllowedImageExtensions.Contains(ext) && file.Length <= MaxImgSize;
         }
+        public static bool IsValidAudioFile(IFormFile file)
+        {
+            if (file == null)
+                return false;
+
+            if (file.Length == 0)
+                return false;
+
+            if (file.Length > MaxaudioFileSize)
+                return false;
+
+            var extension = Path.GetExtension(file.FileName)?.ToLower();
+            if (!_allowedExtensions.Contains(extension))
+                return false;
+
+            if (string.IsNullOrEmpty(file.ContentType) || !file.ContentType.StartsWith("audio/"))
+                return false;
+
+            return true;
+        }
+   
         public static List<string> GetPasswordErrors(string password)
         {
             var errors = new List<string>();
