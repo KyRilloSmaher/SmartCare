@@ -280,5 +280,16 @@ namespace SmartCare.API.Helpers
 
         }
         #endregion
+
+        #region Dashboard
+        public class AI
+        {
+            private const string Prefix = Rule + "ai-medical-assistant";
+
+            public const string chat = Prefix + "/chat";
+            public const string ExtractDrugInfo = Prefix + "/extract-drug-info";
+
+        }
+        #endregion
     }
 }

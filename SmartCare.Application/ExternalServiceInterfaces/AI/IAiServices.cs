@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using SmartCare.Application.ExternalServiceInterfaces.AI.Response;
 using System;
 using System.Collections.Generic;
@@ -32,6 +33,11 @@ namespace SmartCare.Application.ExternalServiceInterfaces.AI
             List<Guid> candidateIds,
             double contradictionThreshold = -0.25,
             bool excludeSelf = true,
+            CancellationToken ct = default);
+        Task<AiAnswerResult> AskAIAsync(
+            string Question ,
+            string ingredient,
+            IFormFile? audio = null,
             CancellationToken ct = default);
     }
 }

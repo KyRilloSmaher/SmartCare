@@ -111,6 +111,34 @@ public class AiCoreService : IAiServices
         return await PostAsync<ContradictionRequest, ContradictionResult>(
             "api/v1/contradictions/check", payload, ct);
     }
+    // ── Chat ────────────────────────────────────────────────────────
+
+    public async Task<AiAnswerResult> AskAIAsync(string Question, string ingredient, IFormFile? audio = null, CancellationToken ct = default)
+    {
+        _logger.LogInformation(
+            "Chat | Question ={Question} ingredient={ingredient} File ={audio}",
+            Question, ingredient, audio.Length);
+        var fields = new Dictionary<string, string>
+            {
+                {
+                 "ingredient", ingredient.ToString()
+                },
+                {
+                  "question", Question.ToString()
+                }
+            };
+
+        var files = new Dictionary<string, IFormFile>
+        {
+            { "file", audio }
+        };
+
+        return await PostMultipartAsync<AiAnswerResult>(
+            "api/v1/chat",
+            fields,
+            files,
+            ct);
+    }
 
     // ── Shared POST helper ────────────────────────────────────────────────────
 
@@ -229,4 +257,6 @@ public class AiCoreService : IAiServices
 
         return result;
     }
+
+
 }
