@@ -117,20 +117,31 @@ public class AiCoreService : IAiServices
     {
         _logger.LogInformation(
             "Chat | Question ={Question} ingredient={ingredient} File ={audio}",
-            Question, ingredient, audio.Length);
+            Question,
+            ingredient,
+            audio != null ? audio.Length.ToString() : "0"
+        );
+        if (audio is null)
+        {
+            var payload = new AskAIRequest { Question = Question , ingredient = ingredient};
+            return await PostAsync<AskAIRequest, AiAnswerResult>(
+                "api/v1/chat",
+                payload,
+                ct);
+        }
         var fields = new Dictionary<string, string>
             {
                 {
-                 "ingredient", ingredient.ToString()
+                 "ingredient", ingredient is null ?"":ingredient.ToString()
                 },
                 {
-                  "question", Question.ToString()
+                  "question", Question is null ?"":Question.ToString()
                 }
             };
 
         var files = new Dictionary<string, IFormFile>
         {
-            { "file", audio }
+            { "audio", audio }
         };
 
         return await PostMultipartAsync<AiAnswerResult>(
@@ -139,7 +150,24 @@ public class AiCoreService : IAiServices
             files,
             ct);
     }
+    // ── DrugInformationExtractor ───────────────────────────────────────────────────────
+    public async Task<DrugExtractionResponse> DrugInformationExtractorAsync(IFormFile? image, CancellationToken ct = default)
+    { 
+        _logger.LogInformation(
+            "Drug Information Extractor | File Size={Size}",
+            image.Length);
 
+        var files = new Dictionary<string, IFormFile>
+        {
+            { "file", image }
+        };
+
+        return await PostMultipartAsync<DrugExtractionResponse>(
+            "api/v1/extract-drug",
+            null,
+            files,
+            ct);
+    }
     // ── Shared POST helper ────────────────────────────────────────────────────
 
     private async Task<TResponse> PostAsync<TRequest, TResponse>(
@@ -257,6 +285,5 @@ public class AiCoreService : IAiServices
 
         return result;
     }
-
 
 }

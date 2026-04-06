@@ -39,5 +39,8 @@ namespace SmartCare.Application.ExternalServiceInterfaces.AI
             string ingredient,
             IFormFile? audio = null,
             CancellationToken ct = default);
+        Task<DrugExtractionResponse> DrugInformationExtractorAsync(
+            IFormFile? image ,
+            CancellationToken ct = default);
     }
 }

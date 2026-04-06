@@ -7,10 +7,8 @@ using System.Threading.Tasks;
 
 namespace SmartCare.Application.ExternalServiceInterfaces.AI.Request
 {
-    public class AskAIRequest
+    public class DrugExtractionRequest
     {
-        public IFormFile? AudioFile { get; set; } = null;
-        public string? Question { get; set; } = null;
-        public string? ingredient { get; set; } = null;
+        public IFormFile Image { get; set; }
     }
 }
