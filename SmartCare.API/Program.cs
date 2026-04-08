@@ -201,6 +201,7 @@ builder.Services.AddSingleton<IEventBus, InMemoryEventBus>();
 builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
 builder.Services.AddScoped<IEventPublisherService, EventPublisherService>();
 builder.Services.AddScoped<INotificationSender, SignalRNotificationSender>();
+builder.Services.AddScoped<IOrderNotificationService, OrderNotificationService>();
 builder.Services.AddScoped<PaymentExtensions>();
 // Add  events handlers
 builder.Services.AddScoped<PaymentStatusChangedHandler>();
@@ -268,6 +269,6 @@ app.MapHub<ProductsHub>("/hubs/products");
 app.MapHub<CartHub>("/hubs/cart");
 app.MapHub<OrderHub>("/hubs/orders");
 app.MapHub<UserNotificationHub>("/hubs/users");
-
+app.MapHub<PharmacistHub>("/hubs/pharmacist");
 
 app.Run();
