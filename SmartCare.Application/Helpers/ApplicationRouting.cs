@@ -186,6 +186,7 @@ namespace SmartCare.API.Helpers
         public static class Order
         {
             private const string Prefix = Rule + "orders";
+            private const string PharmacistPrefix = Rule + "Pharmacist/orders";
             private const string AdminPrefix = Rule + "admin/orders";
 
             public const string GetWithDetailsById = Prefix + "/details" + SingleRoute;
@@ -200,7 +201,8 @@ namespace SmartCare.API.Helpers
             public const string GetTotalCount = AdminPrefix + "/total-count";
             public const string GetTotalRevenue = AdminPrefix + "/total-revenue";
             public const string GetCountByStatus = AdminPrefix + "/count-by-status";
-
+            public const string GetTodayOnlineOrders = PharmacistPrefix + "/Today/Online";
+            public const string GetTodayPickUpOrders = PharmacistPrefix + "/Today-pickup";
 
             public const string CreateOnline = Prefix + "/create-online-order";
             public const string CreatePickUp = Prefix + "/create-pickup-order";
