@@ -10,6 +10,7 @@ using SmartCare.Application.Features.Orders.Commands.CreatePickUpOrder;
 using SmartCare.Application.Features.Orders.Commands.DeleteOrder;
 using SmartCare.Application.Features.Orders.Commands.UpdateOrder;
 using SmartCare.Application.Features.Orders.Commands.UpdateOrderStatus;
+using SmartCare.Application.Features.Orders.Queries;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Application.IServices;
 using SmartCare.Domain.Enums;
@@ -49,6 +50,45 @@ namespace SmartCare.API.Controllers
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
             //var result = await _orderService.GetOrdersByCustomerIdAsync(userId);
             var result = await _mediator.Send(new GetOrdersByCustomerIdAsyncQuery(userId));
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+
+        /// <summary>
+        /// Get Today Online Orders for specific branch — PHARMACIST only
+        /// </summary>
+        [HttpGet(ApplicationRouting.Order.GetTodayOnlineOrders)]
+        [Authorize(Roles = "PHARMACIST")]
+        [ProducesResponseType(typeof(Response<PaginatedResult<OnlineOrderResponseDto>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetTodayOnlineOrdersAsync(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var storeIdClaim = User.FindFirst("StoreId")?.Value;
+            if (string.IsNullOrEmpty(storeIdClaim) || !Guid.TryParse(storeIdClaim, out Guid storeId))
+                return Unauthorized("StoreId claim not found.");
+
+            var result = await _mediator.Send(
+                new GetTodayOnlineOrdersQuery(storeId, pageNumber, pageSize));
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+
+        /// <summary>
+        /// Get Today PickUp Orders for specific branch — PHARMACIST only
+        /// </summary>
+        [HttpGet(ApplicationRouting.Order.GetTodayPickUpOrders)]
+        [Authorize(Roles = "PHARMACIST")]
+        [ProducesResponseType(typeof(Response<PaginatedResult<PickUpOrderNotificationDto>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetTodayPickUpOrdersAsync(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var storeIdClaim = User.FindFirst("StoreId")?.Value;
+            if (string.IsNullOrEmpty(storeIdClaim) || !Guid.TryParse(storeIdClaim, out Guid storeId))
+                return Unauthorized("StoreId claim not found.");
+
+            var result = await _mediator.Send(
+                new GetTodayPickUpOrdersQuery(storeId, pageNumber, pageSize));
+
             return ControllersHelperMethods.FinalResponse(result);
         }
         /// <summary>
