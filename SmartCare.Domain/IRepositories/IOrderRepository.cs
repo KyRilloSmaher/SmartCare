@@ -36,6 +36,7 @@ namespace SmartCare.Domain.IRepositories
         Task AddInOfflineOrderAsync(PickUpOrder fromStoreOrder);
         Task SwitchOrderTypeAsync(Order order, OrderType newType, Guid? shippingAddressId, Guid? storeId);
         Task UpdatePickupCodeHashAsync(Guid orderId, string pickupCodeHash);
-
+        IQueryable<OnlineOrder> GetTodayOnlineOrdersByStore(Guid storeId);
+        Task<List<PickUpOrder>> GetTodayPickUpOrdersByStoreAsync(Guid storeId, DateTime today);
     }
 }

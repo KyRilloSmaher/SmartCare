@@ -8,6 +8,7 @@ using SmartCare.Application.DTOs.Orders.Responses;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Application.Handlers.ResponsesHandler;
 using SmartCare.Application.IServices;
+using SmartCare.Application.Notifications;
 using SmartCare.Domain.Constants;
 using SmartCare.Domain.Entities;
 using SmartCare.Domain.Enums;
@@ -32,8 +33,9 @@ namespace SmartCare.Application.Features.Orders.Commands.CreatePickUpOrder
         private readonly ILogger<CreatePickupOrderFromCartAsyncHandler> _logger;
         private readonly int OrderExpirationTimeUntilPayment;
         private readonly IEventPublisherService _eventPublisherService;
+        private readonly IOrderNotificationService _notificationService;
 
-        public CreatePickupOrderFromCartAsyncHandler(IConfiguration configuration, IResponseHandler responseHandler, IUnitOfWork unitOfWork, IBackgroundJobService backgroundJobService, IMapper mapper, ISqlLockManager sqlLockManager, ILogger<CreatePickupOrderFromCartAsyncHandler> logger, IEventPublisherService eventPublisherService)
+        public CreatePickupOrderFromCartAsyncHandler(IConfiguration configuration, IResponseHandler responseHandler, IUnitOfWork unitOfWork, IOrderNotificationService notificationService, IBackgroundJobService backgroundJobService, IMapper mapper, ISqlLockManager sqlLockManager, ILogger<CreatePickupOrderFromCartAsyncHandler> logger, IEventPublisherService eventPublisherService)
         {
             _responseHandler = responseHandler;
             _unitOfWork = unitOfWork;
@@ -43,6 +45,7 @@ namespace SmartCare.Application.Features.Orders.Commands.CreatePickUpOrder
             _logger = logger;
             OrderExpirationTimeUntilPayment = configuration.GetValue<int>("ReservationTimes:ForOrderExpirationMinutes");
             _eventPublisherService = eventPublisherService;
+            _notificationService = notificationService;
         }
         #endregion
 
@@ -153,6 +156,33 @@ namespace SmartCare.Application.Features.Orders.Commands.CreatePickUpOrder
             var response = _mapper.Map<PickUpOrderResponseDto>(order);
             foreach (var l in inventoryLocks)
                 await l.DisposeAsync();
+            try
+            {
+                var notificationDto = new PickUpOrderNotificationDto
+                {
+                    OrderId = order.Id,
+                    ClientName = $"{client.User.FirstName} {client.User.LastName}",
+                    ClientPhone = client.User.PhoneNumber,
+                    TotalPrice = order.TotalPrice,
+                    Status = order.Status.ToString(),
+                    OrderDate = order.CreatedAt,
+                    PickupCode = pickupCode, 
+                    Items = orderItems.Select(oi => new PickUpOrderItemDto
+                    {
+                        ProductId = oi.ProductId,
+                        ProductName = oi.Product?.NameEn,
+                        Quantity = oi.Quantity,
+                        UnitPrice = oi.UnitPrice,
+                        SubTotal = oi.SubTotal
+                    }).ToList()
+                };
+
+                await _notificationService.NotifyNewPickUpOrderAsync(order.StoreId, notificationDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "SignalR notification failed for PickUp order {OrderId}", order.Id);
+            }
             return _responseHandler.Success(response, SystemMessages.ORDER_PLACED);
         }
         private void ScheduledProductsStatusChanged(List<OrderItem> orderItems)

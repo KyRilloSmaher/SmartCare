@@ -199,6 +199,40 @@ namespace SmartCare.Infrastructure.Repositories
                 .FirstOrDefaultAsync(o => o.Id == orderId);
         }
 
+        public IQueryable<OnlineOrder> GetTodayOnlineOrdersByStore(Guid storeId)
+        {
+            var today = DateTime.UtcNow.Date;
+
+            return _context.OnlineOrders
+                .Include(o => o.Client)
+                    .ThenInclude(c => c.User)
+                .Include(o => o.Items)
+                    .ThenInclude(oi => oi.Product)
+                .Include(o => o.Address)
+                .Where(o => o.Items.Any(i => i.Inventory.StoreId == storeId)
+                         && o.CreatedAt.Date == today
+                         && !o.IsDeleted);
+        }
+
+        public async Task<List<PickUpOrder>> GetTodayPickUpOrdersByStoreAsync(Guid storeId, DateTime today)
+        {
+            return await _context.Orders
+                .OfType<PickUpOrder>()
+                .Where(o =>
+                    o.StoreId == storeId &&
+                    o.CreatedAt.Date == today &&
+                    !o.IsDeleted &&
+                    o.Status != OrderStatus.Cancelled && 
+                    o.Status != OrderStatus.Expired &&  
+                    o.Status != OrderStatus.Refunded)      
+                .Include(o => o.Client)
+                    .ThenInclude(c => c.User)
+                .Include(o => o.Items)
+                    .ThenInclude(oi => oi.Product)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
         #endregion
 
         #region Command Methods

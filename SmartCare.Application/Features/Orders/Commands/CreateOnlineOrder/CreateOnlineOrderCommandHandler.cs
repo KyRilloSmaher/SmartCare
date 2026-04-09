@@ -9,6 +9,7 @@ using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Application.Handlers.ResponsesHandler;
 using SmartCare.Application.IServices;
+using SmartCare.Application.Notifications;
 using SmartCare.Domain.Constants;
 using SmartCare.Domain.Entities;
 using SmartCare.Domain.Enums;
@@ -29,8 +30,11 @@ namespace SmartCare.Application.Features.Orders.Commands.CreateOnlineOrder
         private readonly ILogger<CreateOnlineOrderCommandHandler> _logger;
         private readonly int OrderExpirationTimeUntilPayment;
         private readonly IEventPublisherService _eventPublisherService;
+        private readonly IOrderNotificationService _notificationService;
+        private readonly IMapService _mapService;
+
         #endregion
-        public CreateOnlineOrderCommandHandler(IConfiguration configuration, IResponseHandler responseHandler, IUnitOfWork unitOfWork, IBackgroundJobService backgroundJobService, IMapper mapper, ISqlLockManager sqlLockManager, ILogger<CreateOnlineOrderCommandHandler> logger, IEventPublisherService eventPublisherService)
+        public CreateOnlineOrderCommandHandler(IConfiguration configuration, IResponseHandler responseHandler, IUnitOfWork unitOfWork, IBackgroundJobService backgroundJobService, IMapper mapper, ISqlLockManager sqlLockManager, ILogger<CreateOnlineOrderCommandHandler> logger, IEventPublisherService eventPublisherService, IOrderNotificationService notificationService, IMapService mapService)
         {
             _responseHandler = responseHandler;
             _unitOfWork = unitOfWork;
@@ -40,7 +44,20 @@ namespace SmartCare.Application.Features.Orders.Commands.CreateOnlineOrder
             _logger = logger;
             OrderExpirationTimeUntilPayment = configuration.GetValue<int>("ReservationTimes:ForOrderExpirationMinutes");
             _eventPublisherService = eventPublisherService;
+            _notificationService = notificationService;
+            _mapService = mapService;
         }
+        //public CreateOnlineOrderCommandHandler(IConfiguration configuration, IResponseHandler responseHandler, IUnitOfWork unitOfWork, IBackgroundJobService backgroundJobService, IMapper mapper, ISqlLockManager sqlLockManager, ILogger<CreateOnlineOrderCommandHandler> logger, IEventPublisherService eventPublisherService)
+        //{
+        //    _responseHandler = responseHandler;
+        //    _unitOfWork = unitOfWork;
+        //    _backgroundJobService = backgroundJobService;
+        //    _mapper = mapper;
+        //    _sqlLockManager = sqlLockManager;
+        //    _logger = logger;
+        //    OrderExpirationTimeUntilPayment = configuration.GetValue<int>("ReservationTimes:ForOrderExpirationMinutes");
+        //    _eventPublisherService = eventPublisherService;
+        //}
 
         public async  Task<Response<OrderResponseDto?>> Handle(CreateOnlineOrderFromCartAsyncCommand request, CancellationToken cancellationToken)
         {
@@ -150,6 +167,48 @@ namespace SmartCare.Application.Features.Orders.Commands.CreateOnlineOrder
             var response = _mapper.Map<OrderResponseDto>(order);
             foreach (var l in inventoryLocks)
                 await l.DisposeAsync();
+
+            // =====================================================
+            // 11. ✅ SignalR — Notify pharmacists in this branch
+            // =====================================================
+            try
+            {
+                var storeId = cartItems.First().Inventory.StoreId;
+                var store = await _unitOfWork.Stores.GetByIdAsync(storeId);
+                var address = await _unitOfWork.Addresses.GetByIdAsync(ShippingAddressId);
+
+                if (store != null && address != null)
+                {
+                    var notificationDto = new OnlineOrderResponseDto
+                    {
+                        OrderId = order.Id,
+                        ClientName = $"{client.User.FirstName} {client.User.LastName}",
+                        ClientPhone = client.User.PhoneNumber,
+                        TotalPrice = order.TotalPrice,
+                        Status = order.Status.ToString(),
+                        OrderDate = order.CreatedAt,
+                        DeliveryAddress = address.AddressLine,
+                        AdditionalInfo = address.AdditionalInfo,
+                        DistanceFromBranch = Math.Round(_mapService.CalculateDistanceKm(
+                            store.Latitude, store.Longitude,
+                            address.Latitude, address.Longitude), 2),
+                        Items = orderItems.Select(oi => new OnlineOrderItemDto
+                        {
+                            ProductId = oi.ProductId,
+                            ProductName = oi.Product?.NameEn,
+                            Quantity = oi.Quantity,
+                            UnitPrice = oi.UnitPrice,
+                            SubTotal = oi.SubTotal
+                        }).ToList()
+                    };
+
+                    await _notificationService.NotifyNewOnlineOrderAsync(storeId, notificationDto);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "SignalR notification failed for order {OrderId}", order.Id);
+            }
             return _responseHandler.Success(response, SystemMessages.ORDER_PLACED);
 
         }
