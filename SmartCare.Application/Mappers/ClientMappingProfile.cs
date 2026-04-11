@@ -2,6 +2,7 @@
 using SmartCare.Application.CQRs.Authentication.Commands.Auth;
 using SmartCare.Application.DTOs.Address.Requests;
 using SmartCare.Application.DTOs.Auth.Requests;
+using SmartCare.Application.DTOs.Client.Requests;
 using SmartCare.Application.DTOs.Client.Responses;
 using SmartCare.Domain.Entities;
 
@@ -17,6 +18,24 @@ public class ClientProfile : Profile
             .ForMember(dest => dest.User, opt => opt.Ignore()); // Will set after creation
 
         CreateMap<CreateAddressRequestDto, Address>();
+        CreateMap<UpdateClientRequest, Client>()
+            .ForPath(dest => dest.User.FirstName,
+                opt => opt.MapFrom(src => src.FirstName))
+
+            .ForPath(dest => dest.User.LastName,
+                opt => opt.MapFrom(src => src.LastName))
+
+            .ForPath(dest => dest.User.UserName,
+                opt => opt.MapFrom(src => src.UserName))
+
+            .ForPath(dest => dest.User.PhoneNumber,
+                opt => opt.MapFrom(src => src.PhoneNumber))
+
+            .ForPath(dest => dest.User.Gender,
+                opt => opt.MapFrom(src => src.Gender))
+
+            .ForMember(dest => dest.AccountType,
+                opt => opt.MapFrom(src => src.AccountType));
         CreateMap<Client, ClientResponseDto>()
              .ForMember(dest => dest.FirstName,
                  opt => opt.MapFrom(src => src.User.FirstName))
@@ -44,5 +63,6 @@ public class ClientProfile : Profile
 
              .ForMember(dest => dest.Addresses,
                  opt => opt.MapFrom(src => src.Addresses));
+
     }
     }

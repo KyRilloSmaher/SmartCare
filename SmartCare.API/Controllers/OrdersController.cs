@@ -254,7 +254,6 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<OrderResponseDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateOrderStatusAsync(Guid id, OrderStatus newStatus)
         {
-            //var result = await _orderService.UpdateOrderStatusAsync(id, newStatus);
             var result = await _mediator.Send(new UpdateOrderStatusCommand(id, newStatus));
             return ControllersHelperMethods.FinalResponse(result);
         }
