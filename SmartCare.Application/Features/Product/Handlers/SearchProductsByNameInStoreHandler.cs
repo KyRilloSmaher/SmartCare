@@ -64,7 +64,7 @@ namespace SmartCare.Application.Features.Product.Handlers
 
             if (query == null)
                 return _responseHandler.Failed<IEnumerable<ProductResponseDtoForPharmacist>>(
-                    SystemMessages.NOT_FOUND);
+                    SystemMessages.PRODUCT_NOT_FOUND);
 
             var projectedQuery = _mapper.ProjectTo<ProductResponseDtoForPharmacist>(query);
             var result = await projectedQuery.ToListAsync();
