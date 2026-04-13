@@ -26,16 +26,6 @@ namespace SmartCare.Application.Features.Analytics.Orders.GetOrdersAnalytics
         public async Task<Response<OrdersTrendDto>> Handle(GetOrdersAnalyticsQuery request,CancellationToken cancellationToken)
         {
 
-                // Validation — interval
-                var validIntervals = new[] { "daily", "weekly", "monthly" };
-                if (!string.IsNullOrWhiteSpace(request.Interval) &&
-                    !validIntervals.Contains(request.Interval.ToLower()))
-                {
-                    _logger.LogWarning("Invalid interval value: {Interval}", request.Interval);
-                    return _responseHandler.BadRequest<OrdersTrendDto>(
-                        "Invalid interval. Accepted values are: daily, weekly, monthly.");
-                }
-
                 // Validation — date range
                 if (request.StartDate.HasValue && request.StartDate.Value != default &&
                     request.EndDate.HasValue && request.EndDate.Value != default &&
@@ -48,13 +38,9 @@ namespace SmartCare.Application.Features.Analytics.Orders.GetOrdersAnalytics
                         "Start date cannot be after end date.");
                 }
 
-                var interval = string.IsNullOrWhiteSpace(request.Interval)
-                    ? "daily"
-                    : request.Interval.ToLower();
-
                 var data = await _unitOfWork.Sales.GetOrdersTrendAsync(
                     request.BranchId,
-                    interval,
+                    request.interval,
                     request.StartDate,
                     request.EndDate);
 
@@ -62,7 +48,7 @@ namespace SmartCare.Application.Features.Analytics.Orders.GetOrdersAnalytics
                 {
                     _logger.LogWarning(
                         "No orders trend data found. BranchId: {BranchId}, Interval: {Interval}",
-                        request.BranchId, interval);
+                        request.BranchId, request.interval);
                     return _responseHandler.NotFound<OrdersTrendDto>(
                         "No orders data found for the given filters.");
                 }
@@ -70,12 +56,12 @@ namespace SmartCare.Application.Features.Analytics.Orders.GetOrdersAnalytics
                 var result = new OrdersTrendDto
                 {
                     Data = data
-                    ,Interval = interval
+                    ,Interval = request.interval
                 };
 
                 _logger.LogInformation(
                     "Successfully fetched {Count} trend points. BranchId: {BranchId}, Interval: {Interval}",
-                    data.Count, request.BranchId, interval);
+                    data.Count, request.BranchId, request.interval);
 
                 return _responseHandler.Success(result);
             }

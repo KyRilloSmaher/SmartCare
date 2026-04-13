@@ -180,6 +180,9 @@ namespace SmartCare.API.Helpers
             public const string GetProductsByCompanyInStore = PharmacistPrefix + "/Company/Store";
             public const string GetProductsByCategoryInStore = PharmacistPrefix + "/Category/Store";
             public const string SearchProductsByNameInStore = PharmacistPrefix + "/SearchByName/Store";
+            public const string StockLevels = AdminPrefix + "/stock-levels";
+            public const string GetProductStockLevelsInStores = AdminPrefix + SingleRoute +  "/stores/stock-levels";
+
         }
         #endregion
 
@@ -279,6 +282,8 @@ namespace SmartCare.API.Helpers
             private const string Prefix = Rule + "admin/dashboard";
 
             public const string LowStock = Prefix + "/stores-Low-stock";
+            public const string CreateAdmin = Prefix + "/create-admin";
+            public const string DeleteAdmin = Prefix + "/delete-admin/{id}";
 
         }
         #endregion

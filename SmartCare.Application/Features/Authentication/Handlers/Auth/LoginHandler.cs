@@ -6,6 +6,7 @@ using SmartCare.Application.DTOs.Auth.Responses;
 using SmartCare.Application.DTOs.Stores.Responses;
 using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.Handlers.ResponseHandler;
+using SmartCare.Application.Handlers.RoleHandler;
 using SmartCare.Domain.Constants;
 using SmartCare.Domain.Entities;
 using SmartCare.Domain.Helpers;
@@ -25,6 +26,7 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Auth
         private readonly ITokenService _tokenService;
         private readonly JwtSettings _jwtSettings;
         private readonly IMapper _mapper;
+        private readonly IEnumerable<IRoleLoginHandler> _roleLoginHandlers;
         #endregion
 
         public LoginHandler(
@@ -32,13 +34,15 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Auth
             IUnitOfWork unitOfWork,
             ITokenService tokenService,
             JwtSettings jwtSettings,
-            IMapper mapper)
+            IMapper mapper,
+            IEnumerable<IRoleLoginHandler> roleLoginHandlers)
         {
             _responseHandler = responseHandler;
             _unitOfWork = unitOfWork;
             _tokenService = tokenService;
             _jwtSettings = jwtSettings;
             _mapper = mapper;
+            _roleLoginHandlers = roleLoginHandlers;
         }
 
         public async Task<Response<TokenResponseDto>> Handle(LoginAsyncCommand request, CancellationToken cancellationToken)
@@ -49,21 +53,21 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Auth
             var user = await _unitOfWork.UserManager.FindByEmailAsync(dto.Email);
 
             // Validate user credentials
-            if (user == null || !await _unitOfWork.UserManager.CheckPasswordAsync(user, dto.Password))
-            {
-                // Increment failed attempt for existing user
-                if (user != null)
-                    await _unitOfWork.UserManager.AccessFailedAsync(user);
-
+            if (user == null || user.IsDeleted)
                 return _responseHandler.Unauthorized<TokenResponseDto>(SystemMessages.INVALID_CREDENTIALS);
-            }
-            var roles = await _unitOfWork.UserManager.GetRolesAsync(user);
-            if (roles != null) {
-                if (roles.Contains("PHARMACIST"))
-                {
-                    var pharmacist = await _unitOfWork.Pharmacists.GetByUserIdAsync(user.Id);
 
-                    user.Pharmacist = pharmacist;
+            if (!await _unitOfWork.UserManager.CheckPasswordAsync(user, dto.Password))
+            { await _unitOfWork.UserManager.AccessFailedAsync(user);
+                return _responseHandler.Unauthorized<TokenResponseDto>(SystemMessages.INVALID_CREDENTIALS); 
+            }
+
+            var roles = await _unitOfWork.UserManager.GetRolesAsync(user);
+            
+            foreach (var handler in _roleLoginHandlers)
+            {
+                if (roles.Contains(handler.Role))
+                {
+                  await handler.HandleAsync(user);
                 }
             }
             // Check if email is confirmed

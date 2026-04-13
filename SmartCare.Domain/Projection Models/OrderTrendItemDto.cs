@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SmartCare.Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +9,7 @@ namespace SmartCare.Domain.Projection_Models
 {
     public class OrdersTrendDto
     {
-        public string Interval { get; set; } = default!;
+        public FilterIntervales Interval { get; set; } = default!;
         public List<OrderTrendItemDto> Data { get; set; } = new();
     }
     public class OrderTrendItemDto

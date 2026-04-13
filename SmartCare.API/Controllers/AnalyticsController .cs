@@ -12,6 +12,7 @@ using SmartCare.Application.Features.Analytics.Orders.GetOrderStatusAnalytics;
 using SmartCare.Application.Features.Analytics.Sales.Revenue;
 using SmartCare.Application.Features.Analytics.Sales.SalesChannel;
 using SmartCare.Application.Features.Analytics.Stores;
+using SmartCare.Domain.Enums;
 
 namespace SmartCare.API.Controllers
 {
@@ -67,13 +68,13 @@ namespace SmartCare.API.Controllers
             return ControllersHelperMethods.FinalResponse(result);
         }
         [HttpGet(ApplicationRouting.Analytics.Revenue)]
-        public async Task<IActionResult> GetRevenueAnalytics([FromQuery] Guid? branch_id,[FromQuery] string interval = "monthly",[FromQuery] DateTime? start_date = null, [FromQuery] DateTime? end_date = null)
+        public async Task<IActionResult> GetRevenueAnalytics([FromQuery] Guid? branch_id,[FromQuery] FilterIntervales interval = FilterIntervales.monthly, [FromQuery] DateTime? start_date = null, [FromQuery] DateTime? end_date = null)
         {
             var result = await _mediator.Send(new GetRevenueAnalyticsQuery(
                  branch_id,
-                 interval,
                  start_date,
-                 end_date
+                 end_date,
+                 interval
             ));
 
             return ControllersHelperMethods.FinalResponse(result);
@@ -86,18 +87,18 @@ namespace SmartCare.API.Controllers
             return ControllersHelperMethods.FinalResponse(result);
         }
         [HttpGet(ApplicationRouting.Analytics.Clients)]
-        public async Task<IActionResult> GetClientAnalytics([FromQuery] Guid? branch_id,[FromQuery] string interval = "monthly",[FromQuery] DateTime? start_date = null,[FromQuery] DateTime? end_date = null)
+        public async Task<IActionResult> GetClientAnalytics([FromQuery] Guid? branch_id,[FromQuery] FilterIntervales interval = FilterIntervales.monthly ,[FromQuery] DateTime? start_date = null,[FromQuery] DateTime? end_date = null)
         {
-            var result = await _mediator.Send(new GetClientAnalyticsQuery( branch_id,interval, start_date, end_date));
+            var result = await _mediator.Send(new GetClientAnalyticsQuery( branch_id, end_date, start_date,interval ));
              return ControllersHelperMethods.FinalResponse(result);
         }
         [HttpGet(ApplicationRouting.Analytics.Orders)]
-        public async Task<IActionResult> GetOrdersAnalytics([FromQuery] Guid? branch_id,[FromQuery] string interval = "daily", [FromQuery] DateTime? start_date = null,[FromQuery] DateTime? end_date = null)
+        public async Task<IActionResult> GetOrdersAnalytics([FromQuery] Guid? branch_id, [FromQuery] FilterIntervales interval = FilterIntervales.daily, [FromQuery] DateTime? start_date = null,[FromQuery] DateTime? end_date = null)
         {
             var result = await _mediator.Send(new GetOrdersAnalyticsQuery
             {
                 BranchId = branch_id,
-                Interval = interval,
+                interval = interval,
                 StartDate = start_date,
                 EndDate = end_date
             });
