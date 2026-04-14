@@ -248,7 +248,7 @@ namespace SmartCare.API.Controllers
         /// <summary>
         /// Update Order Status
         /// </summary>
-        [Authorize(Roles = "DASHBOARD_ADMIN ,PHARMACIST]")]
+        [Authorize(Roles = "DASHBOARD_ADMIN ,PHARMACIST")]
         [HttpPatch(ApplicationRouting.Order.UpdateStatus)]
         [ProducesResponseType(typeof(Response<OrderResponseDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateOrderStatusAsync(Guid id, OrderStatus newStatus)
