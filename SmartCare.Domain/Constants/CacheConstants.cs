@@ -28,6 +28,8 @@ namespace SmartCare.Domain.Constants
         public const string CompaniesClient = "companies_list_client";
         public const string Company= "company";
 
+        public const string PeopleAlsoBounght = "PeopleAlsoBought_tag";
+
     }
 
     public static class Time

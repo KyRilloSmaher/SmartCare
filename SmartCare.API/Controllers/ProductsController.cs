@@ -13,6 +13,7 @@ using SmartCare.Application.Features.Product.Queries;
 using SmartCare.Application.Features.Product.Queries.GetContradictionsFromUserHistory;
 using SmartCare.Application.Features.Product.Queries.GetGLobelProductsStockLevel;
 using SmartCare.Application.Features.Product.Queries.GetProductLStockLevels;
+using SmartCare.Application.Features.Product.Queries.PeopleAlsoBought;
 using SmartCare.Application.Features.Product.Queries.RecommendSimilarProducts;
 using SmartCare.Application.Features.Product.Queries.SearchInProducts;
 using SmartCare.Application.Features.Product.Queries.VoiceSearch;
@@ -258,6 +259,18 @@ namespace SmartCare.API.Controllers
                 return ControllersHelperMethods.FinalResponse(_responseHandler.BadRequest("Query Is Required"));
             }
             var result = await _mediator.Send(new SearchQuery(query));
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+        /// <summary>
+        ///  Get People Also Bought Products Based On A Product Id
+        /// </summary>
+        /// <param name="id">Product Id</param>
+        /// <param name="topN"></param>
+        [HttpGet(ApplicationRouting.Product.PeopleAlsoBought)]
+        [ProducesResponseType(typeof(Response<ICollection<ProductResponseDtoForClient>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> Search([FromRoute]Guid id , [FromQuery]int topN)
+        {
+            var result = await _mediator.Send(new PeopleAlsoBoughtQuery(id , topN));
             return ControllersHelperMethods.FinalResponse(result);
         }
 

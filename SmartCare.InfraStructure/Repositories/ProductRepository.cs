@@ -273,6 +273,19 @@ namespace SmartCare.InfraStructure.Repositories
             return query;
         }
 
+        public async Task<IEnumerable<Product>> GetProductsByIds(IList<Guid> ids)
+        {
+            if (ids == null || !ids.Any())
+                return Enumerable.Empty<Product>();
+            var products = await _context.Products
+                .Include(p => p.Images)
+                .Include(p => p.Company)
+                .Where(p => ids.Contains(p.ProductId))
+                .AsNoTracking()
+                .ToListAsync();
+            return products;
+        }
+
         #endregion
     }
 }
