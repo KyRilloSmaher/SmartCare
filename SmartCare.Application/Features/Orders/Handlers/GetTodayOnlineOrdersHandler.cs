@@ -48,9 +48,15 @@ namespace SmartCare.Application.Features.Orders.Queries.GetTodayOnlineOrders
                 .GetTodayOnlineOrdersByStore(storeId)
                 .ToListAsync(cancellationToken);
 
-            if (!orders.Any())
-                return _responseHandler.NotFound<PaginatedResult<OnlineOrderResponseDto>>(
-                    SystemMessages.NOT_FOUND);
+            if (orders == null || !orders.Any())
+                return _responseHandler.Success(
+                    new PaginatedResult<OnlineOrderResponseDto>
+                    {
+                        Items = new List<OnlineOrderResponseDto>(),
+                        TotalCount = 0,
+                        PageNumber = request.PageNumber,
+                        PageSize = request.PageSize
+                    });
 
             var completedStatuses = new[]
             {
