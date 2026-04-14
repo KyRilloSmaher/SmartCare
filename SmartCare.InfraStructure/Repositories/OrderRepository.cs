@@ -45,9 +45,9 @@ namespace SmartCare.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Order>> GetOrdersWithDetailsAsync()
+        public async Task<IQueryable<Order>> GetOrdersWithDetailsAsync()
         {
-            return await BaseOrderQuery().ToListAsync();
+            return  BaseOrderQuery();
         }
 
         public async Task<Order?> GetOrderWithDetailsByIdAsync(Guid orderId , bool astracked = false)
