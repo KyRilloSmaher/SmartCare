@@ -35,8 +35,4 @@
     <ProjectReference Include="..\SmartCare.Domain\SmartCare.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Services\" />
-  </ItemGroup>
-
 </Project>
