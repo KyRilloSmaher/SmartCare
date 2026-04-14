@@ -2,6 +2,7 @@
 using SmartCare.Domain.Entities;
 using SmartCare.Domain.Enums;
 using SmartCare.Domain.IRepositories;
+using SmartCare.Domain.Projection_Models;
 using SmartCare.InfraStructure.DbContexts;
 using SmartCare.InfraStructure.Repositories;
 
@@ -199,6 +200,24 @@ namespace SmartCare.Infrastructure.Repositories
                 .FirstOrDefaultAsync(o => o.Id == orderId);
         }
 
+
+        public async Task<IEnumerable<TransactionDTO>> GetTransactionsAsync()
+        {
+            var transactions = await _context.Orders
+                .Where(o => o.Status == OrderStatus.Completed)
+                .Include(o => o.Items)
+                .AsNoTracking()
+                .Select(o => new TransactionDTO
+                {
+                    OrderId = o.Id,
+                    productIds = o.Items.Select(i => i.ProductId).ToList()
+                })
+                .Where(t => t.productIds.Any())
+                .ToListAsync();
+            return transactions;
+        }
+
+
         public IQueryable<OnlineOrder> GetTodayOnlineOrdersByStore(Guid storeId)
         {
             var today = DateTime.UtcNow.Date;
@@ -351,7 +370,6 @@ namespace SmartCare.Infrastructure.Repositories
 
             return await query.AsNoTracking().ToListAsync();
         }
-
 
         #endregion
     }
