@@ -41,8 +41,10 @@ namespace SmartCare.Application.Features.Analytics.Stores
                     BranchId = s.BranchId,
                     BranchName = s.BranchName,
                     Revenue = s.Revenue,
-                    Orders = s.Orders,
-                    Percentage = totalRevenue == 0
+                    TotalOrders = s.TotalOrders,
+                    OnlineOrders = s.OnlineOrders,
+                    PickupOrders = s.PickupOrders,
+                    PercentageOfRevenue = totalRevenue == 0
                         ? 0
                         : (int)Math.Round((s.Revenue / totalRevenue) * 100)
                 }).ToList();

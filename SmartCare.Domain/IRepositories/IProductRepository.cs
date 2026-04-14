@@ -24,6 +24,7 @@ namespace SmartCare.Domain.IRepositories
 
         #region Search
         Task<List<Product>> FilterListAsync(Expression<Func<Product, bool>>? searchPredicate = null);
+
         #region SearchByProductName
         Task<Product> SearchProductByNameAsync(string nameEn);
         #endregion
@@ -55,6 +56,8 @@ namespace SmartCare.Domain.IRepositories
 
         IQueryable<Product> GetMorePopular();
 
+        Task<IEnumerable<ProductLevelInStore>> productLevelInStores(Guid productId);
+        IQueryable<GLobelProductStockLevel> GetGlobalProductStockLevels();
         #endregion
     }
 }

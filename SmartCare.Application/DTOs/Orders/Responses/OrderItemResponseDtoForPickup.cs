@@ -8,6 +8,6 @@ namespace SmartCare.Application.DTOs.Orders.Responses
 {
     public class OrderItemResponseDtoForPickup : OrderItemResponseDto
     {
-        public bool IsReadyForPickup { get; set; } 
+        public bool IsReadyForPickup { get; set; } =true;
     }
 }

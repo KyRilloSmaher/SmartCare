@@ -13,7 +13,7 @@ namespace SmartCare.Domain.IRepositories
     public interface IOrderRepository : IGenericRepository<Order>
     {
         Task<IEnumerable<Order>> GetOrdersByCustomerIdAsync(string clientId);
-        Task<IEnumerable<Order>> GetOrdersWithDetailsAsync();
+        Task<IQueryable<Order>> GetOrdersWithDetailsAsync();
         Task<Order?> GetOrderWithDetailsByIdAsync(Guid orderId, bool astracked = false);
         Task<Order?> GetOrderByPickUpCode(string code);
         Task<IEnumerable<Order>> GetOrdersByStatusAsync(OrderStatus status, Guid? storeId = null);

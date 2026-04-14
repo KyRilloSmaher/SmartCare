@@ -73,7 +73,7 @@ namespace SmartCare.Application.Features.Orders.Commands.UpdateOrderStatus
             return _responseHandler.Success(dto);
         }
 
-        private async Task RealseOrder(SmartCare.Domain.Entities.Order request)
+        public async Task RealseOrder(SmartCare.Domain.Entities.Order request)
         {
             var orderId = request.Id;
             var order = await _unitOfWork.Orders.GetOrderWithDetailsByIdAsync(orderId);

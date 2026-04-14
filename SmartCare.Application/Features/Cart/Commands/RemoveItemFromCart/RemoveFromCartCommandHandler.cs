@@ -37,7 +37,7 @@ namespace SmartCare.Application.Features.Carts.Commands.RemoveItemFromCart
         public async Task<Response<bool>> Handle(RemoveFromCartCommand request, CancellationToken cancellationToken)
         {
             var dto = request.dto;
-            var cart = await _unitOfWork.Carts.EnsureCartExistsAsync(dto.CartId);
+            var cart = await _unitOfWork.Carts.EnsureCartExistsAsync(dto.CartId,true);
             if (cart == null)
                 return _responseHandler.NotFound<bool>(SystemMessages.NOT_FOUND);
 

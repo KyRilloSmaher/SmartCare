@@ -32,7 +32,7 @@ namespace SmartCare.Application.Features.Analytics.Clients
             {
                 var result = await _unitOfWork.Sales.GetClientAnalyticsAsync(
                     request.BranchId,
-                    request.Interval,
+                    request.interval,
                     request.StartDate,
                     request.EndDate);
 

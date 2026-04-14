@@ -3,10 +3,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SmartCare.API.Helpers;
+using SmartCare.Application.DTOs.Address.Requests;
 using SmartCare.Application.DTOs.Stores.Requests;
+using SmartCare.Application.Features.DashBoard.Commands.AddAdmin;
 using SmartCare.Application.Features.DashBoard.Commands.ChangePharmacistBranch;
 using SmartCare.Application.Features.DashBoard.Commands.Create_AssignPharamsict;
+using SmartCare.Application.Features.DashBoard.Commands.RemoveAdmin;
 using SmartCare.Application.Features.DashBoard.Queries.GetLowStockProducts;
+using SmartCare.Application.Handlers.ResponseHandler;
 
 namespace SmartCare.API.Controllers
 {
@@ -32,10 +36,27 @@ namespace SmartCare.API.Controllers
             var result = await _mediator.Send(new AssignPharmacistCommand(store_id, request));
             return ControllersHelperMethods.FinalResponse(result);
         }
+        [HttpPost]
+        [Route(ApplicationRouting.Dashboard.CreateAdmin)]
+        [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> CreateAdmin([FromBody] AddAdminCommand request)
+        {
+            var result = await _mediator.Send(request);
+            return ControllersHelperMethods.FinalResponse(result);
+        }
         [HttpPut(ApplicationRouting.Store.ChangePharmacist)]
         public async Task<IActionResult> ChangePharmacistBranch([FromRoute] string pharmacist_id, [FromRoute] Guid NewBranchId)
         {
             var command = new ChangePharmacistBranchCommand(pharmacist_id, NewBranchId);
+            var result = await _mediator.Send(command);
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+        [Route(ApplicationRouting.Dashboard.DeleteAdmin)]
+        [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
+        [HttpDelete]
+        public async Task<IActionResult> DeleteAdmin([FromRoute] string id)
+        {
+            var command = new RemoveAdminCommand(id);
             var result = await _mediator.Send(command);
             return ControllersHelperMethods.FinalResponse(result);
         }

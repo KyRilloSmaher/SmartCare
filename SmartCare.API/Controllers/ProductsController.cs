@@ -11,6 +11,8 @@ using SmartCare.Application.Features.Product.Commands.Restore;
 using SmartCare.Application.Features.Product.Commands.Update;
 using SmartCare.Application.Features.Product.Queries;
 using SmartCare.Application.Features.Product.Queries.GetContradictionsFromUserHistory;
+using SmartCare.Application.Features.Product.Queries.GetGLobelProductsStockLevel;
+using SmartCare.Application.Features.Product.Queries.GetProductLStockLevels;
 using SmartCare.Application.Features.Product.Queries.RecommendSimilarProducts;
 using SmartCare.Application.Features.Product.Queries.SearchInProducts;
 using SmartCare.Application.Features.Product.Queries.VoiceSearch;
@@ -58,6 +60,7 @@ namespace SmartCare.API.Controllers
         /// Get Product By Id For Admin
         /// </summary>
         [HttpGet(ApplicationRouting.Product.GetDetailsForAdmin)]
+        [Authorize(Roles = "DASHBOARD_ADMIN")]
         [ProducesResponseType(typeof(Response<ProductResponseDtoForAdmin>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetProductByIdForAdminAsync(Guid id)
         {
@@ -65,8 +68,45 @@ namespace SmartCare.API.Controllers
             var result = await _mediator.Send(new GetDetailsOfProductForAdminQuery(id));
             return ControllersHelperMethods.FinalResponse(result);
         }
+        /// <summary>
+        /// Get global stock levels for all products (paginated)
+        /// </summary>
+        [HttpGet(ApplicationRouting.Product.StockLevels)]
+        [Authorize(Roles = "DASHBOARD_ADMIN")]
+        [ProducesResponseType(typeof(Response<PaginatedResult<GLobelProductStockLevel>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetStockLevels(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 50,
+            CancellationToken cancellationToken = default)
+        {
+            var query = new GetGLobelProductStockLevelQuery(pageNumber,pageSize);
 
+            var result = await _mediator.Send(query, cancellationToken);
 
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+        /// <summary>
+        /// Get stock levels of a specific product across all stores
+        /// </summary>
+        [HttpGet(ApplicationRouting.Product.GetProductStockLevelsInStores)]
+        [Authorize(Roles = "DASHBOARD_ADMIN")]
+        [ProducesResponseType(typeof(Response<IEnumerable<ProductLevelInStore>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetProductStockLevelsInStores(
+            [FromRoute] Guid id,
+            CancellationToken cancellationToken)
+        {
+            if (id == Guid.Empty)
+                return BadRequest("ProductId is required.");
+
+            var query = new GetProductLStockLevelsQuery
+            {
+                ProductId = id
+            };
+
+            var result = await _mediator.Send(query, cancellationToken);
+
+            return ControllersHelperMethods.FinalResponse(result);
+        }
         /// <summary>
         /// Get All Products By Pagination
         /// </summary>

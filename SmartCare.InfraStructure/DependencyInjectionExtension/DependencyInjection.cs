@@ -30,6 +30,8 @@ using System.Text;
 using Polly.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Polly;
+using SmartCare.Application.Handlers.RoleHandler;
+using SmartCare.Application.Handlers.ClaimsHandler;
 
 namespace SmartCare.InfraStructure.Extensions
 {
@@ -59,7 +61,10 @@ namespace SmartCare.InfraStructure.Extensions
             services.AddScoped<IPaymentGatewayFactory, PaymentGatewayFactory>();
 
             services.AddScoped<ISalesRepository, SalesRepository>();
-
+            // ---------- Handlers ---------
+                services.AddScoped<IResponseHandler, ResponseHandler>();
+                services.AddScoped<IClaimsProvider, PharmacistClaimsProvider>();
+                services.AddScoped<IRoleLoginHandler, PharmacistRoleLoginHandler>();
             // ---------- Identity ----------
             services.AddIdentity<ApplictionUser, IdentityRole>(options =>
             {
