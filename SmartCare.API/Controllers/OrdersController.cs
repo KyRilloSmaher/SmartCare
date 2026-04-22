@@ -92,6 +92,29 @@ namespace SmartCare.API.Controllers
             return ControllersHelperMethods.FinalResponse(result);
         }
         /// <summary>
+        /// Update Order Status
+        /// </summary>
+        [Authorize(Roles = "DASHBOARD_ADMIN ,PHARMACIST")]
+        [HttpPatch(ApplicationRouting.Order.UpdateStatus)]
+        [ProducesResponseType(typeof(Response<OrderResponseDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> UpdateOrderStatusAsync(Guid id, OrderStatus newStatus)
+        {
+            var result = await _mediator.Send(new UpdateOrderStatusCommand(id, newStatus));
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+        /// <summary>
+        /// Verify a pickup code for a given order — PHARMACIST only
+        /// </summary>
+        [HttpPost(ApplicationRouting.Order.VerifyPickupCode)]
+        [Authorize(Roles = "PHARMACIST")]
+        [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> VerifyPickupCode([FromQuery] VerifyPickupOrderRequestDto dto)
+        {
+            var query = new IsPickupCodeValidAsyncQuery(dto.OrderId, dto.VerifyCode);
+            var result = await _mediator.Send(query);
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+        /// <summary>
         /// Get Orders by Customer Id
         /// </summary>
         [HttpGet(ApplicationRouting.Order.GetByCustomerId)]
@@ -245,17 +268,7 @@ namespace SmartCare.API.Controllers
             return ControllersHelperMethods.FinalResponse(result);
         }
 
-        /// <summary>
-        /// Update Order Status
-        /// </summary>
-        [Authorize(Roles = "DASHBOARD_ADMIN ,PHARMACIST")]
-        [HttpPatch(ApplicationRouting.Order.UpdateStatus)]
-        [ProducesResponseType(typeof(Response<OrderResponseDto>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> UpdateOrderStatusAsync(Guid id, OrderStatus newStatus)
-        {
-            var result = await _mediator.Send(new UpdateOrderStatusCommand(id, newStatus));
-            return ControllersHelperMethods.FinalResponse(result);
-        }
+
         /// <summary>
         /// Update Order Status
         /// </summary>
