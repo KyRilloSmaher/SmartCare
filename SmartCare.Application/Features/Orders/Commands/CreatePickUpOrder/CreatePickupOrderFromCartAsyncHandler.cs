@@ -101,7 +101,7 @@ namespace SmartCare.Application.Features.Orders.Commands.CreatePickUpOrder
             // =====================================================
             var order = PickUpOrder.Create(clientId, cart.TotalPrice, storeId);
             var pickupCode = RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D7");
-            var HasedCode = ComputeSha256(pickupCode);
+            var HasedCode = OrderExtensions.ComputeSha256(pickupCode);
             order.AddPickUpCode(HasedCode);
             await _unitOfWork.Orders.AddInOfflineOrderAsync(order);
             // =====================================================
@@ -243,12 +243,6 @@ namespace SmartCare.Application.Features.Orders.Commands.CreatePickUpOrder
             await _eventPublisherService.PublishOrderExpirationNotification(order.ClientId, orderId);
         }
 
-        public static string ComputeSha256(string input)
-        {
-            using var sha = SHA256.Create();
-            var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(input));
-            return Convert.ToHexString(bytes); // uppercase hex
-        }
 
         private Response<PickUpOrderResponseDto> BuildStockErrorResponse(List<OutOfStockItemDto> outOfStock)
         {
