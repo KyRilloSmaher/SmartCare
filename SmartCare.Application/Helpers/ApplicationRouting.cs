@@ -207,11 +207,12 @@ namespace SmartCare.API.Helpers
             public const string GetCountByStatus = AdminPrefix + "/count-by-status";
             public const string GetTodayOnlineOrders = PharmacistPrefix + "/Today/Online";
             public const string GetTodayPickUpOrders = PharmacistPrefix + "/Today-pickup";
+            public const string VerifyPickupCode = PharmacistPrefix + "/verify-pickup-code";
 
             public const string CreateOnline = Prefix + "/create-online-order";
             public const string CreatePickUp = Prefix + "/create-pickup-order";
             public const string Update = Prefix + "/update";
-            public const string UpdateStatus = AdminPrefix + "/update-status" + SingleRoute;
+            public const string UpdateStatus = PharmacistPrefix + "/update-status" + SingleRoute;
             public const string Delete = AdminPrefix + "/delete" + SingleRoute;
         }
         #endregion
