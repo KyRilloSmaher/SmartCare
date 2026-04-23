@@ -209,6 +209,7 @@ namespace SmartCare.Infrastructure.Repositories
                 .Include(o => o.Items)
                     .ThenInclude(oi => oi.Product)
                 .Include(o => o.Address)
+                .Include(o => o.Payment)
                 .Where(o => o.Items.Any(i => i.Inventory.StoreId == storeId)
                          && o.CreatedAt.Date == today
                          && !o.IsDeleted);
@@ -229,6 +230,7 @@ namespace SmartCare.Infrastructure.Repositories
                     .ThenInclude(c => c.User)
                 .Include(o => o.Items)
                     .ThenInclude(oi => oi.Product)
+                .Include(o => o.Payment)
                 .AsNoTracking()
                 .ToListAsync();
         }
