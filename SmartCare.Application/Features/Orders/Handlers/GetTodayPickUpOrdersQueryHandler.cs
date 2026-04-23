@@ -57,6 +57,7 @@ namespace SmartCare.Application.Features.Orders.Handlers
                         PageSize = request.PageSize
                     });
 
+
             var sorted = orders
                 .OrderBy(o => GetStatusPriority(o.Status)) 
                 .ThenBy(o => o.CreatedAt)                  
@@ -76,6 +77,7 @@ namespace SmartCare.Application.Features.Orders.Handlers
                 TotalPrice = o.TotalPrice,
                 Status = o.Status.ToString(),
                 OrderDate = o.CreatedAt,
+                Is_paid = o.Payment != null,
                 PickupCode = o.PickupCodeHash,
                 Items = o.Items?.Select(oi => new PickUpOrderItemDto
                 {
