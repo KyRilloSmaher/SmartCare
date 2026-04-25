@@ -136,7 +136,7 @@ namespace SmartCare.InfraStructure.Repositories
         // ---------------------------------------------------------------------------
         // Branch Performance
         // ---------------------------------------------------------------------------
-        public async Task<IEnumerable<BranchPerformance>> GetBranchPerformanceAsync( DateTime? startDate = null, DateTime? endDate = null)
+        public async Task<IEnumerable<BranchPerformance>> GetBranchPerformanceAsync(DateTime? startDate = null, DateTime? endDate = null)
         {
 
             var ordersPerBranch = _context.OrderItems
@@ -151,7 +151,7 @@ namespace SmartCare.InfraStructure.Repositories
                     oi.Order.TotalPrice,
                     oi.Order.OrderType
                 })
-                .Distinct(); 
+                .Distinct();
             var result = await ordersPerBranch
                 .GroupBy(x => new { x.BranchId, x.BranchName })
                 .Select(g => new BranchPerformance
@@ -495,5 +495,49 @@ namespace SmartCare.InfraStructure.Repositories
                 })
                 .ToList();
         }
+
+
+        public async Task<CategoryChannelDto> GetCategoryChannelsAsync(Guid categoryId,Guid? branchId = null,DateTime? startDate = null,DateTime? endDate = null)
+        {
+            // 1. Get filtered completed orders
+            var ordersQuery = ApplyDateFilter(CompletedOrders(branchId), startDate, endDate);
+
+            // 2. Get orderIds that contain this category
+            var orderIds = await _context.OrderItems.Include(oI=>oI.Product)
+                .Where(oi => oi.Product.CategoryId == categoryId)
+                .Select(oi => oi.OrderId)
+                .Distinct()
+                .ToListAsync();
+
+            // 3. Filter orders to only those containing the category
+            var filteredOrders = ordersQuery
+                .Where(o => orderIds.Contains(o.Id));
+
+            // 4. Count per channel
+            var totalOrders = await filteredOrders.CountAsync();
+
+            if (totalOrders == 0)
+            {
+                return new CategoryChannelDto
+                {
+                    Online = 0,
+                    Offline = 0
+                };
+            }
+
+            var onlineCount = await filteredOrders
+                .CountAsync(o => o.OrderType == OrderType.Online);
+
+            var offlineCount = await filteredOrders
+                .CountAsync(o => o.OrderType == OrderType.InStore);
+
+            // 5. Convert to percentage
+            return new CategoryChannelDto
+            {
+                Online = (int)Math.Round((double)onlineCount * 100 / totalOrders),
+                Offline = (int)Math.Round((double)offlineCount * 100 / totalOrders)
+            };
+        
+       }
     }
 }

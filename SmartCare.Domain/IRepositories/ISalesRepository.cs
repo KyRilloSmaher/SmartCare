@@ -19,6 +19,7 @@ namespace SmartCare.Domain.IRepositories
         Task<IEnumerable<RevenuePoint>> GetRevenueAnalyticsAsync(Guid? branchId, FilterIntervales interval, DateTime? startDate, DateTime? endDate);
         Task<DashboardSummaryDto> GetDashboardSummaryAsync(Guid? branchId,DateTime? startDate,DateTime? endDate);
         Task<ClientAnalyticsDto> GetClientAnalyticsAsync(Guid? branchId, FilterIntervales interval,DateTime? startDate,DateTime? endDate);
+        Task<CategoryChannelDto> GetCategoryChannelsAsync(Guid categoryId, Guid? branchId = null, DateTime? startDate = null, DateTime? endDate = null);
     }
     
 }

@@ -274,6 +274,7 @@ namespace SmartCare.API.Helpers
             public const string Clients = Prefix + "/clients";
             public const string Orders = Prefix + "/orders";
             public const string orderStatus = Prefix + "/order-status";
+            public const string CategoryChannels = Prefix + "/category-channels/{categoryId}";
 
         }
         #endregion

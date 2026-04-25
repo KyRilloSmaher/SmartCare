@@ -111,5 +111,11 @@ namespace SmartCare.API.Controllers
             var result = await _mediator.Send(query);
             return ControllersHelperMethods.FinalResponse(result);
         }
+        [HttpGet(ApplicationRouting.Analytics.CategoryChannels)]
+        public async Task<IActionResult> GetCategoryChannelsAsync([FromRoute] Guid categoryId , Guid? branch_id , DateTime From ,DateTime To )
+        {
+            var result = await _mediator.Send(new CategoryChannelsQuery(categoryId,From ,To, branch_id));
+            return ControllersHelperMethods.FinalResponse(result);
+        }
     }
 }
