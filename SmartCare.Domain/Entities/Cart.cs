@@ -60,10 +60,12 @@ namespace SmartCare.Domain.Entities
         /// </summary>
         public void RemoveItem(CartItem item)
         {
-            if (item == null) return;
-            Items.Remove(item);
-        }
+            if (Items is null) return;
 
+            var cartitem = Items.FirstOrDefault(i => i.CartItemId == item.CartItemId);
+            if (cartitem != null)
+                Items.Remove(cartitem);
+        }
         /// <summary>
         /// Removes all items from the cart.
         /// </summary>
