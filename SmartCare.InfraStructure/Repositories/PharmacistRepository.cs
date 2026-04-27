@@ -37,6 +37,9 @@ namespace SmartCare.InfraStructure.Repositories
         public async Task<Pharmacist?> GetByUserIdAsync(string userId)
         {
             return await _context.Pharmacists
+                .Include(p => p.User)   
+                .Include(p => p.Store)  
+                .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.Id == userId);
         }
 

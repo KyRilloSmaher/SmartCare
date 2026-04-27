@@ -1,12 +1,16 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using SmartCare.API.Helpers;
 using SmartCare.Application.CQRs.Client.Commands;
 using SmartCare.Application.CQRs.Client.Queries;
 using SmartCare.Application.DTOs.Client.Requests;
 using SmartCare.Application.DTOs.Client.Responses;
+using SmartCare.Application.DTOs.Pharmacist.Response;
+using SmartCare.Application.Features.Pharmacist;
+using SmartCare.Application.Features.Store.Queries.GetStorePharmcists;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Application.IServices;
 using System.Security.Claims;
@@ -103,6 +107,16 @@ namespace SmartCare.API.Controllers
         {
             //var result = await _clientService.DeleteClientAsync(id);
             var result = await _mediator.Send(new DeleteClientAsyncCommand(id));
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+
+
+        [HttpGet(ApplicationRouting.Pharmacist.GetProfile)]
+        [ProducesResponseType(typeof(Response<PharmacistProfileDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetPharmacistProfile()
+        {
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var result = await _mediator.Send(new GetPharmacistProfileQuery(userId));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
