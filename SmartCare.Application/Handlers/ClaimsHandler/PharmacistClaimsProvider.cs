@@ -17,6 +17,8 @@ namespace SmartCare.Application.Handlers.ClaimsHandler
             if (user.Pharmacist != null)
             {
                 claims.Add(new Claim("StoreId", user.Pharmacist.StoreId.ToString()));
+                claims.Add(new Claim("LicenseNumber", user.Pharmacist.LicenseNumber ?? string.Empty));
+                claims.Add(new Claim("IsActive", user.Pharmacist.IsActive.ToString()));
             }
 
             return Task.FromResult<IEnumerable<Claim>>(claims);
