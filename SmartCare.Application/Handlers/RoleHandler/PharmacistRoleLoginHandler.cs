@@ -17,7 +17,7 @@ namespace SmartCare.Application.Handlers.RoleHandler
 
         public async Task HandleAsync(ApplictionUser user)
         {
-            var pharmacist = await _unitOfWork.Pharmacists.GetByUserIdAsync(user.Id);
+           var pharmacist = await _unitOfWork.Pharmacists.GetByUserIdAsync(user.Id , true);
             user.Pharmacist = pharmacist;
         }
     }
