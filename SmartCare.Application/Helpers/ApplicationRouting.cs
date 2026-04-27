@@ -260,6 +260,12 @@ namespace SmartCare.API.Helpers
 
         #endregion
 
+        public static class Pharmacist
+        {
+            private const string Base = "api/pharmacist";
+            public const string GetProfile = Base + "/profile";
+        }
+
         #region Analytics
         public class Analytics
         {
