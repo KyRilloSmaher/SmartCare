@@ -34,14 +34,20 @@ namespace SmartCare.InfraStructure.Repositories
             return await _context.Pharmacists.FirstOrDefaultAsync(p => p.LicenseNumber == licenseNumber);
         }
 
-        public async Task<Pharmacist?> GetByUserIdAsync(string userId)
+        public async Task<Pharmacist?> GetByUserIdAsync(string userId, bool isTracked = false)
         {
-            return await _context.Pharmacists
-                .Include(p => p.User)   
-                .Include(p => p.Store)  
-                .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.Id == userId);
+            var query = _context.Pharmacists
+                .Include(p => p.User)
+                .Include(p => p.Store)
+                .Where(p => p.Id == userId);
+
+            query = isTracked
+                ? query.AsTracking()
+                : query.AsNoTracking();
+
+            return await query.FirstOrDefaultAsync();
         }
+
 
         public async Task<bool> IsPharmacistPhoneNumberUniqueAsync(string phone)
         {
