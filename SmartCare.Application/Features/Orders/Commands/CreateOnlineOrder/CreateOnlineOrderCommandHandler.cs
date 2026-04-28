@@ -29,12 +29,13 @@ namespace SmartCare.Application.Features.Orders.Commands.CreateOnlineOrder
         private readonly ISqlLockManager _sqlLockManager;
         private readonly ILogger<CreateOnlineOrderCommandHandler> _logger;
         private readonly int OrderExpirationTimeUntilPayment;
+        private readonly IRedisCacheService _redisCacheService;
         private readonly IEventPublisherService _eventPublisherService;
         private readonly IOrderNotificationService _notificationService;
         private readonly IMapService _mapService;
 
         #endregion
-        public CreateOnlineOrderCommandHandler(IConfiguration configuration, IResponseHandler responseHandler, IUnitOfWork unitOfWork, IBackgroundJobService backgroundJobService, IMapper mapper, ISqlLockManager sqlLockManager, ILogger<CreateOnlineOrderCommandHandler> logger, IEventPublisherService eventPublisherService, IOrderNotificationService notificationService, IMapService mapService)
+        public CreateOnlineOrderCommandHandler(IConfiguration configuration, IResponseHandler responseHandler, IUnitOfWork unitOfWork, IBackgroundJobService backgroundJobService, IMapper mapper, ISqlLockManager sqlLockManager, ILogger<CreateOnlineOrderCommandHandler> logger, IEventPublisherService eventPublisherService, IOrderNotificationService notificationService, IMapService mapService, IRedisCacheService redisCacheService)
         {
             _responseHandler = responseHandler;
             _unitOfWork = unitOfWork;
@@ -46,6 +47,8 @@ namespace SmartCare.Application.Features.Orders.Commands.CreateOnlineOrder
             _eventPublisherService = eventPublisherService;
             _notificationService = notificationService;
             _mapService = mapService;
+            _redisCacheService = redisCacheService;
+
         }
         //public CreateOnlineOrderCommandHandler(IConfiguration configuration, IResponseHandler responseHandler, IUnitOfWork unitOfWork, IBackgroundJobService backgroundJobService, IMapper mapper, ISqlLockManager sqlLockManager, ILogger<CreateOnlineOrderCommandHandler> logger, IEventPublisherService eventPublisherService)
         //{
@@ -209,6 +212,12 @@ namespace SmartCare.Application.Features.Orders.Commands.CreateOnlineOrder
             {
                 _logger.LogWarning(ex, "SignalR notification failed for order {OrderId}", order.Id);
             }
+
+            string clientByIdKey = $"client_id_{clientId}";
+            string clientByEmailKey = $"client_email_{client.User?.Email?.ToLower()}";
+            await _redisCacheService.RemoveKeyAsync(clientByIdKey, CacheConstants.Client);
+            await _redisCacheService.RemoveKeyAsync(clientByEmailKey, CacheConstants.Client);
+            await _redisCacheService.RemoveKeyAsync("clients_all", CacheConstants.Client);
             return _responseHandler.Success(response, SystemMessages.ORDER_PLACED);
 
         }

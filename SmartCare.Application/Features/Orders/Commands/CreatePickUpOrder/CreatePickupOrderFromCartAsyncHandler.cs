@@ -33,9 +33,10 @@ namespace SmartCare.Application.Features.Orders.Commands.CreatePickUpOrder
         private readonly ILogger<CreatePickupOrderFromCartAsyncHandler> _logger;
         private readonly int OrderExpirationTimeUntilPayment;
         private readonly IEventPublisherService _eventPublisherService;
+        private readonly IRedisCacheService _redisCacheService;
         private readonly IOrderNotificationService _notificationService;
 
-        public CreatePickupOrderFromCartAsyncHandler(IConfiguration configuration, IResponseHandler responseHandler, IUnitOfWork unitOfWork, IOrderNotificationService notificationService, IBackgroundJobService backgroundJobService, IMapper mapper, ISqlLockManager sqlLockManager, ILogger<CreatePickupOrderFromCartAsyncHandler> logger, IEventPublisherService eventPublisherService)
+        public CreatePickupOrderFromCartAsyncHandler(IConfiguration configuration, IResponseHandler responseHandler, IUnitOfWork unitOfWork, IOrderNotificationService notificationService, IBackgroundJobService backgroundJobService, IMapper mapper, ISqlLockManager sqlLockManager, ILogger<CreatePickupOrderFromCartAsyncHandler> logger, IEventPublisherService eventPublisherService, IRedisCacheService redisCacheService)
         {
             _responseHandler = responseHandler;
             _unitOfWork = unitOfWork;
@@ -46,6 +47,8 @@ namespace SmartCare.Application.Features.Orders.Commands.CreatePickUpOrder
             OrderExpirationTimeUntilPayment = configuration.GetValue<int>("ReservationTimes:ForOrderExpirationMinutes");
             _eventPublisherService = eventPublisherService;
             _notificationService = notificationService;
+            _redisCacheService = redisCacheService;
+
         }
         #endregion
 
@@ -183,6 +186,11 @@ namespace SmartCare.Application.Features.Orders.Commands.CreatePickUpOrder
             {
                 _logger.LogWarning(ex, "SignalR notification failed for PickUp order {OrderId}", order.Id);
             }
+            string clientByIdKey = $"client_id_{clientId}";
+            string clientByEmailKey = $"client_email_{client.User?.Email?.ToLower()}";
+            await _redisCacheService.RemoveKeyAsync(clientByIdKey, CacheConstants.Client);
+            await _redisCacheService.RemoveKeyAsync(clientByEmailKey, CacheConstants.Client);
+            await _redisCacheService.RemoveKeyAsync("clients_all", CacheConstants.Client);
             return _responseHandler.Success(response, SystemMessages.ORDER_PLACED);
         }
         private void ScheduledProductsStatusChanged(List<OrderItem> orderItems)
