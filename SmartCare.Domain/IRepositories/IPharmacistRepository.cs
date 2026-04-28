@@ -17,5 +17,6 @@ namespace SmartCare.Domain.IRepositories
         Task<Pharmacist?> GetByUserIdAsync(string userId, bool isTracked = false);
         Task<bool> IsPharmacistLicenseNumberUniqueAsync(string licenseNumber);
         Task RollbackTransactionAsync();
+        Task<IEnumerable<Pharmacist>> GetUnconfirmedPharmacistsAsync(bool asNoTracking = false);
     }
 }

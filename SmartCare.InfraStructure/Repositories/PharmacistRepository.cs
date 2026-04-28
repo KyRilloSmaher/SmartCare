@@ -64,5 +64,14 @@ namespace SmartCare.InfraStructure.Repositories
             await _context.Database.RollbackTransactionAsync();
         }
 
+        // get unConfirmed pharmacists
+        public async Task<IEnumerable<Pharmacist>> GetUnconfirmedPharmacistsAsync(bool asNoTracking = false)
+        {
+            var query = _context.Pharmacists
+                                         .Include(p => p.User)
+                                         .Where(p => !p.User.EmailConfirmed);
+            query = asNoTracking ? query.AsNoTracking() : query.AsTracking();
+            return await query.ToListAsync();
+        }
     }
 }
