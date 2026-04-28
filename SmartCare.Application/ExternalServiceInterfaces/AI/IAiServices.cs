@@ -36,7 +36,7 @@ namespace SmartCare.Application.ExternalServiceInterfaces.AI
             CancellationToken ct = default);
         Task<AiAnswerResult> AskAIAsync(
             string Question ,
-            string ingredient,
+            List<string> ingredient = null,
             IFormFile? audio = null,
             CancellationToken ct = default);
         Task<DrugExtractionResponse> DrugInformationExtractorAsync(

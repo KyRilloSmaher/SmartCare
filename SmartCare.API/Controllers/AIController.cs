@@ -28,7 +28,7 @@ namespace SmartCare.API.Controllers
         [ProducesResponseType(typeof(Response<AiAnswerResult>), StatusCodes.Status200OK)]
         public async Task<IActionResult> ChatAsync([FromForm] AskAIRequest request)
         {
-            var result = await _mediator.Send(new AskAIQuery(request.AudioFile,request.Question, request.ingredient));
+            var result = await _mediator.Send(new AskAIQuery(request.AudioFile,request.Question, request.ingredients));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
