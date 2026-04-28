@@ -79,10 +79,15 @@ namespace SmartCare.Application.CQRs.Rate.Handlers
             string rateKey = $"rate_{Id}";
             string ratesForUserKey = $"rates_user_{userId}";
             string ratesForProductKey = $"rates_product_{productId}";
+            string clientByIdKey = $"client_id_{userId}";
+            string clientByEmailKey = $"client_email_{user.User?.Email?.ToLower()}";
 
             await _redisCacheService.RemoveKeyAsync(rateKey, Rate_tag);
             await _redisCacheService.RemoveKeyAsync(ratesForUserKey, Rate_tag);
             await _redisCacheService.RemoveKeyAsync(ratesForProductKey, Rate_tag);
+            await _redisCacheService.RemoveKeyAsync(clientByIdKey, CacheConstants.Client);
+            await _redisCacheService.RemoveKeyAsync(clientByEmailKey, CacheConstants.Client);
+            await _redisCacheService.RemoveKeyAsync("clients_all", CacheConstants.Client);
 
             var rateDto = _mapper.Map<RateResponseDto>(existingRate);
             return _responseHandler.Success(rateDto, SystemMessages.RECORD_UPDATED);

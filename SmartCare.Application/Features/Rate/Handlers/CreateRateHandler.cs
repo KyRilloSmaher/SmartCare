@@ -78,11 +78,17 @@ namespace SmartCare.Application.CQRs.Rate.Handlers
             string rates_ForUserKey = $"rates_user_{userId}";
             string rates_ForProductKey = $"rates_product_{Dto.ProductId}";
 
+            string clientByIdKey = $"client_id_{userId}";
+            string clientByEmailKey = $"client_email_{user.User?.Email?.ToLower()}";
+
             await _redisCacheService.RemoveKeyAsync(product_detailsKey, Products_tag);
             await _redisCacheService.RemoveKeyAsync(product_NameEnKey, Products_tag);
             await _redisCacheService.RemoveKeyAsync(rates_ByIdKey, Rate_tag);
             await _redisCacheService.RemoveKeyAsync(rates_ForUserKey, Rate_tag);
             await _redisCacheService.RemoveKeyAsync(rates_ForProductKey, Rate_tag);
+            await _redisCacheService.RemoveKeyAsync(clientByIdKey, CacheConstants.Client);
+            await _redisCacheService.RemoveKeyAsync(clientByEmailKey, CacheConstants.Client);
+            await _redisCacheService.RemoveKeyAsync("clients_all", CacheConstants.Client);
 
             return _responseHandler.Success(rateDto);
         }
