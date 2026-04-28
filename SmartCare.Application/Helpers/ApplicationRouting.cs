@@ -192,6 +192,8 @@ namespace SmartCare.API.Helpers
             private const string Prefix = Rule + "orders";
             private const string PharmacistPrefix = Rule + "Pharmacist/orders";
             private const string AdminPrefix = Rule + "admin/orders";
+            private const string DeliveryPrefix = Rule + "Delivery/orders";
+
 
             public const string GetWithDetailsById = Prefix + "/details" + SingleRoute;
             public const string GetForUser= Rule + "me/orders";
@@ -208,6 +210,8 @@ namespace SmartCare.API.Helpers
             public const string GetTodayOnlineOrders = PharmacistPrefix + "/Today/Online";
             public const string GetTodayPickUpOrders = PharmacistPrefix + "/Today-pickup";
             public const string VerifyPickupCode = PharmacistPrefix + "/verify-pickup-code";
+            public const string GetShippingOrders = DeliveryPrefix + "/shipping";
+            public const string ConfirmDelivery = DeliveryPrefix + "/{orderId}/confirm-delivery";
 
             public const string CreateOnline = Prefix + "/create-online-order";
             public const string CreatePickUp = Prefix + "/create-pickup-order";
@@ -293,7 +297,8 @@ namespace SmartCare.API.Helpers
             public const string LowStock = Prefix + "/stores-Low-stock";
             public const string CreateAdmin = Prefix + "/create-admin";
             public const string DeleteAdmin = Prefix + "/delete-admin/{id}";
-
+            private const string Base = "api/admin";
+            public const string AssignDeliveryRole = Base + "/assign-delivery/{clientId}";
         }
         #endregion
 
