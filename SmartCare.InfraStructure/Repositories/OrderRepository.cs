@@ -354,6 +354,24 @@ namespace SmartCare.Infrastructure.Repositories
             return await query.AsNoTracking().ToListAsync();
         }
 
+        public async Task<IEnumerable<OnlineOrder>> GetShippingOrdersAsync()
+        {
+            return await _context.Orders
+                  .OfType<OnlineOrder>()
+                  .Include(o => o.Address)
+                  .Include(o => o.Client)
+                    .ThenInclude(c => c.User)
+                  .Include(o => o.Items)
+                    .ThenInclude(i => i.Inventory)
+                      .ThenInclude(inv => inv.Store) 
+                  .Include(o => o.Items)
+                     .ThenInclude(i => i.Product)
+                  .Where(o => o.Status == OrderStatus.Shipped && !o.IsDeleted)
+                  .OrderByDescending(o => o.CreatedAt)
+                  .AsNoTracking()
+                  .ToListAsync();
+        }
+
 
         #endregion
     }
