@@ -31,7 +31,7 @@ namespace SmartCare.Application.Features.AI.Chat
 
         public async Task<Response<AiAnswerResult>> Handle(AskAIQuery request, CancellationToken cancellationToken)
         {
-            var response = await _aiServices.AskAIAsync(request.TextQuestion, request.ingredient,request.AudioFile);
+            var response = await _aiServices.AskAIAsync(request.TextQuestion, request.ingredients,request.AudioFile);
             if (response == null)
             {
                 return _responseHandler.Failed<AiAnswerResult>("Failed to get a response from the AI service.");

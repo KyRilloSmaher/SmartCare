@@ -16,5 +16,15 @@ namespace SmartCare.Domain.Entities
         public Guid StoreId { get; set; }
         public Store Store { get; set; }
         public ApplictionUser User { get; set; }
+
+        public bool ConfirmEmail()
+        {
+            if (User != null)
+            {
+                User.EmailConfirmed = true;
+                return true;
+            }
+            return false;
+        }
     }
 }

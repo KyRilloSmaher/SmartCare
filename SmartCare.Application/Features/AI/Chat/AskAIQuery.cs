@@ -14,6 +14,6 @@ namespace SmartCare.Application.Features.AI.Chat
     (
      IFormFile? AudioFile,
      string? TextQuestion,
-     string? ingredient
+     List<string>?ingredients
     ) : IRequest<Response<AiAnswerResult>>;
 }

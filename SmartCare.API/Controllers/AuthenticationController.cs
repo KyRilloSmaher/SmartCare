@@ -109,7 +109,6 @@ namespace SmartCare.API.Controllers
         /// </summary>
         [HttpPost(ApplicationRouting.Authentication.RefreshToken)]
         [ProducesResponseType(typeof(Response<TokenResponseDto>), StatusCodes.Status200OK)]
-        [Authorize]
         public async Task<IActionResult> RefreshTokenAsync([FromBody] TokenRequestDto dto)
         {
             //var result = await _authenticationService.GetRefreshTokenAsync(dto);

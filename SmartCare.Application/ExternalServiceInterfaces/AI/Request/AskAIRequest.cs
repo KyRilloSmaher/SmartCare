@@ -11,6 +11,6 @@ namespace SmartCare.Application.ExternalServiceInterfaces.AI.Request
     {
         public IFormFile? AudioFile { get; set; } = null;
         public string? Question { get; set; } = null;
-        public string? ingredient { get; set; } = null;
+        public List<string>? ingredients { get; set; } = null;
     }
 }

@@ -113,32 +113,31 @@ public class AiCoreService : IAiServices
     }
     // ── Chat ────────────────────────────────────────────────────────
 
-    public async Task<AiAnswerResult> AskAIAsync(string Question, string ingredient, IFormFile? audio = null, CancellationToken ct = default)
+    public async Task<AiAnswerResult> AskAIAsync(string Question, List<string>? ingredients = null , IFormFile? audio = null, CancellationToken ct = default)
     {
         _logger.LogInformation(
             "Chat | Question ={Question} ingredient={ingredient} File ={audio}",
             Question,
-            ingredient,
+            ingredients,
             audio != null ? audio.Length.ToString() : "0"
         );
         if (audio is null)
         {
-            var payload = new AskAIRequest { Question = Question , ingredient = ingredient};
+            var payload = new AskAIRequest { Question = Question , ingredients = ingredients};
             return await PostAsync<AskAIRequest, AiAnswerResult>(
                 "api/v1/chat",
                 payload,
                 ct);
         }
         var fields = new Dictionary<string, string>
+        {
             {
-                {
-                 "ingredient", ingredient is null ?"":ingredient.ToString()
-                },
-                {
-                  "question", Question is null ?"":Question.ToString()
-                }
-            };
-
+                "ingredients", ingredients is null ? "" : JsonSerializer.Serialize(ingredients)
+            },
+            {
+                "question", Question ?? ""
+            }
+        };
         var files = new Dictionary<string, IFormFile>
         {
             { "audio", audio }

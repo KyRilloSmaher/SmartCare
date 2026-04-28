@@ -60,7 +60,7 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Auth
             //    return _responseHandler.Unauthorized<TokenResponseDto>("Invalid User ID format.");
             //}
 
-            var pharmacist = await _unitOfWork.Pharmacists.GetByUserIdAsync(user.Id);
+            var pharmacist = await _unitOfWork.Pharmacists.GetByUserIdAsync(user.Id,true);
 
             if (pharmacist == null)
             {
@@ -82,6 +82,7 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Auth
             }
 
             // Generate claims & tokens
+            user.Pharmacist = pharmacist;
             var claims = await _tokenService.GetClaimsAsync(user);
             var accessToken = _tokenService.GenerateAccessToken(claims);
             var refreshToken = _tokenService.GenerateRefreshToken();

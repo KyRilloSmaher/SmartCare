@@ -48,6 +48,7 @@ namespace SmartCare.Application.Features.Carts.Commands.ClearCart
                 return _responseHandler.NotFound<bool>(SystemMessages.NOT_FOUND);
 
             await _unitOfWork.Carts.ClearCartAsync(cart.Id);
+            cart.ReCalculateTotalPrice();
             await _unitOfWork.SaveChangesAsync();
             return _responseHandler.Success(true, SystemMessages.CART_CLEARED);
         }
