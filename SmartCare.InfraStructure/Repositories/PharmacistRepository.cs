@@ -69,6 +69,7 @@ namespace SmartCare.InfraStructure.Repositories
         {
             var query = _context.Pharmacists
                                          .Include(p => p.User)
+                                         .Include(p => p.Store)
                                          .Where(p => !p.User.EmailConfirmed);
             query = asNoTracking ? query.AsNoTracking() : query.AsTracking();
             return await query.ToListAsync();
