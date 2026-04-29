@@ -79,6 +79,22 @@ namespace SmartCare.API.Controllers
         }
 
         /// <summary>
+        /// Accept Delivery Order — DELIVERY role only
+        /// Sets order status to DELIVERY_ACCEPTED
+        /// </summary>
+        [HttpPatch(ApplicationRouting.Order.AcceptDelivery)]
+        [Authorize(Roles = "DELIVERY")]
+        [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> AcceptDeliveryAsync(Guid orderId)
+        {
+            var deliveryPersonId = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+            var result = await _mediator.Send(new AcceptDeliveryCommand(orderId, deliveryPersonId));
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+
+        /// <summary>
         /// Get Today Online Orders for specific branch — PHARMACIST only
         /// </summary>
         [HttpGet(ApplicationRouting.Order.GetTodayOnlineOrders)]
