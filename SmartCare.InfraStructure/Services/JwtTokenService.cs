@@ -84,13 +84,6 @@ namespace SmartCare.InfraStructure.Services
                 authClaims.Add(new Claim(ClaimTypes.Role, role));
             }
 
-            if (user.Pharmacist is not null)
-            {
-                authClaims.Add(new Claim("StoreId", user.Pharmacist.StoreId.ToString()));
-                authClaims.Add(new Claim("LicenseNumber", user.Pharmacist.LicenseNumber ?? string.Empty));
-                authClaims.Add(new Claim("IsActive", user.Pharmacist.IsActive.ToString()));
-            }
-
             return authClaims;
         }
 
