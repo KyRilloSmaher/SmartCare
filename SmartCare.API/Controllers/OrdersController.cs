@@ -5,6 +5,7 @@ using SmartCare.API.Helpers;
 using SmartCare.Application.CQRs.Order.Queries;
 using SmartCare.Application.DTOs.Orders.Requests;
 using SmartCare.Application.DTOs.Orders.Responses;
+using SmartCare.Application.Features.Orders.Commands;
 using SmartCare.Application.Features.Orders.Commands.CreateOnlineOrder;
 using SmartCare.Application.Features.Orders.Commands.CreatePickUpOrder;
 using SmartCare.Application.Features.Orders.Commands.DeleteOrder;
@@ -50,6 +51,30 @@ namespace SmartCare.API.Controllers
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
             //var result = await _orderService.GetOrdersByCustomerIdAsync(userId);
             var result = await _mediator.Send(new GetOrdersByCustomerIdAsyncQuery(userId));
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+
+        [HttpGet(ApplicationRouting.Order.GetShippingOrders)]
+        [Authorize(Roles = "DELIVERY")]  
+        [ProducesResponseType(typeof(Response<IEnumerable<DeliveryOrderDto>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetShippingOrdersAsync()
+        {
+            var result = await _mediator.Send(new GetShippingOrdersQuery());
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+
+        /// <summary>
+        /// Confirm Order Delivered — DELIVERY role only
+        /// </summary>
+        [HttpPatch(ApplicationRouting.Order.ConfirmDelivery)]
+        [Authorize(Roles = "DELIVERY")]
+        [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> ConfirmDeliveryAsync(Guid orderId)
+        {
+            var deliveryPersonId = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+            var result = await _mediator.Send(new ConfirmDeliveryCommand(orderId, deliveryPersonId));
             return ControllersHelperMethods.FinalResponse(result);
         }
 

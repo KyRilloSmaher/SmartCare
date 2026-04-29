@@ -8,6 +8,7 @@ namespace SmartCare.Application.ExternalServiceInterfaces
 {
     public interface IMapService
     {
+        public decimal GetDeliveryFee(double distanceKm);
         public float CalculateDistanceKm(float lat1, float lon1, float lat2, float lon2);
         public  Task<(double lat, double lng)?> GeocodeAsync(string address);
         private double ToRadians(double angle) => Math.PI * angle / 180;

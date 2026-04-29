@@ -9,6 +9,7 @@ using SmartCare.Application.CQRs.Client.Queries;
 using SmartCare.Application.DTOs.Client.Requests;
 using SmartCare.Application.DTOs.Client.Responses;
 using SmartCare.Application.DTOs.Pharmacist.Response;
+using SmartCare.Application.Features.DashBoard.Commands.AssignDeliveryRole;
 using SmartCare.Application.Features.Pharmacist;
 using SmartCare.Application.Features.Store.Queries.GetStorePharmcists;
 using SmartCare.Application.Handlers.ResponseHandler;
@@ -117,6 +118,15 @@ namespace SmartCare.API.Controllers
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
             var result = await _mediator.Send(new GetPharmacistProfileQuery(userId));
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+
+
+        [HttpPost(ApplicationRouting.Dashboard.AssignDeliveryRole)]
+        [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> AssignDeliveryRoleAsync(string clientId)
+        {
+            var result = await _mediator.Send(new AssignDeliveryRoleCommand(clientId));
             return ControllersHelperMethods.FinalResponse(result);
         }
 

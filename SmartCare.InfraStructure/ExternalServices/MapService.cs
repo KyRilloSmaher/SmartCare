@@ -10,6 +10,8 @@ namespace SmartCare.InfraStructure.ExternalServices
     public class MapService : IMapService
     {
         private readonly HttpClient _httpClient;
+        private const decimal DeliveryFeePerKm = 5m;
+        private const decimal BaseDeliveryFee = 10m;
 
         public MapService(HttpClient httpClient)
         {
@@ -45,6 +47,14 @@ namespace SmartCare.InfraStructure.ExternalServices
                     Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
             float c = (float)(2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a)));
             return R * c;
+        }
+
+        /// <summary>
+        /// Calculates delivery fee: Base fee + 5 EGP per KM
+        /// </summary>
+        public decimal GetDeliveryFee(double distanceKm)
+        {
+            return BaseDeliveryFee + (decimal)distanceKm * DeliveryFeePerKm;
         }
         private static double ToRadians(double angle) => Math.PI * angle / 180;
     }
