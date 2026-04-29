@@ -54,7 +54,7 @@ namespace SmartCare.API.Controllers
             return ControllersHelperMethods.FinalResponse(result);
         }
 
-        [HttpGet(ApplicationRouting.Order.GetShippingOrders)]
+        [HttpGet(ApplicationRouting.Order.GetReadyOfShipOrders)]
         [Authorize(Roles = "DELIVERY")]  
         [ProducesResponseType(typeof(Response<IEnumerable<DeliveryOrderDto>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetShippingOrdersAsync()
