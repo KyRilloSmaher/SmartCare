@@ -16,6 +16,7 @@ namespace SmartCare.Application.DTOs.Orders.Responses
         // Client Info
         public string ClientName { get; set; }
         public string ClientPhone { get; set; }
+        public string ClientProfileImage { get; set; }
 
         // Client Address
         public string DeliveryAddressLine { get; set; }
