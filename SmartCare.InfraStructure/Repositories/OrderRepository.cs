@@ -366,7 +366,7 @@ namespace SmartCare.Infrastructure.Repositories
                       .ThenInclude(inv => inv.Store) 
                   .Include(o => o.Items)
                      .ThenInclude(i => i.Product)
-                  .Where(o => o.Status == OrderStatus.Shipped && !o.IsDeleted)
+                  .Where(o => o.Status == OrderStatus.Ready_To_Ship && !o.IsDeleted)
                   .OrderByDescending(o => o.CreatedAt)
                   .AsNoTracking()
                   .ToListAsync();

@@ -54,7 +54,7 @@ namespace SmartCare.API.Controllers
             return ControllersHelperMethods.FinalResponse(result);
         }
 
-        [HttpGet(ApplicationRouting.Order.GetShippingOrders)]
+        [HttpGet(ApplicationRouting.Order.GetReadyOfShipOrders)]
         [Authorize(Roles = "DELIVERY")]  
         [ProducesResponseType(typeof(Response<IEnumerable<DeliveryOrderDto>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetShippingOrdersAsync()
@@ -75,6 +75,22 @@ namespace SmartCare.API.Controllers
                 .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
             var result = await _mediator.Send(new ConfirmDeliveryCommand(orderId, deliveryPersonId));
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+
+        /// <summary>
+        /// Accept Delivery Order — DELIVERY role only
+        /// Sets order status to DELIVERY_ACCEPTED
+        /// </summary>
+        [HttpPatch(ApplicationRouting.Order.AcceptDelivery)]
+        [Authorize(Roles = "DELIVERY")]
+        [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> AcceptDeliveryAsync(Guid orderId)
+        {
+            var deliveryPersonId = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+            var result = await _mediator.Send(new AcceptDeliveryCommand(orderId, deliveryPersonId));
             return ControllersHelperMethods.FinalResponse(result);
         }
 

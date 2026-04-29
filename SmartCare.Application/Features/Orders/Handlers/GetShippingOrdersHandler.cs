@@ -68,6 +68,7 @@ namespace SmartCare.Application.Features.Orders.Handlers
                         ? $"{o.Client.User.FirstName} {o.Client.User.LastName}"
                         : "N/A",
                     ClientPhone = o.Client?.User?.PhoneNumber ?? "N/A",
+                    ClientProfileImage = o.Client?.User?.ProfileImageUrl ?? string.Empty,
                     DeliveryAddressLine = clientAddress?.AddressLine ?? "N/A",
                     DeliveryAddressLabel = clientAddress?.Label,
                     DeliveryAddressAdditionalInfo = clientAddress?.AdditionalInfo,
