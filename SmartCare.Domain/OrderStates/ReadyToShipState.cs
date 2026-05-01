@@ -12,7 +12,7 @@ namespace SmartCare.Domain.OrderStates
         {
             if (nextStatus == OrderStatus.DELIVERY_ACCEPTED)
             {
-                order.SetStatus(OrderStatus.DELIVERY_ACCEPTED)
+                order.SetStatus(OrderStatus.DELIVERY_ACCEPTED);
                 return;
             }
 
