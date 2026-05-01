@@ -54,7 +54,14 @@ namespace SmartCare.Application.CQRs.Payments.Commands.MarkOrderPaymentAsCashCom
 
             // Set Payment as Cash
             var payment = new Domain.Entities.Payment(order.Id, order.TotalPrice, PaymentMethod.Cash, null, null);
-            order.ChangeStatus(OrderStatus.WaitingForPickup);
+            if (order.OrderType == OrderType.Online)
+            {
+                order.ChangeStatus(OrderStatus.Confirmed);
+            }
+            else
+            {
+                order.ChangeStatus(OrderStatus.WaitingForPickup);
+            }
             order.PaymenId = payment.Id;
 
 
