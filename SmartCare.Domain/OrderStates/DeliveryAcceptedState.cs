@@ -13,7 +13,7 @@ namespace SmartCare.Domain.OrderStates
             if (order is not OnlineOrder)
                 throw new InvalidOperationException("Invalid order type");
 
-            if (nextStatus == OrderStatus.Ready_To_Ship)
+            if (nextStatus == OrderStatus.Shipped)
             {
                 order.SetStatus(nextStatus);
                 return;
