@@ -10,9 +10,9 @@ namespace SmartCare.Domain.OrderStates
     {
         public void Handle(Order order, OrderStatus nextStatus)
         {
-            if (nextStatus == OrderStatus.Shipped)
+            if (nextStatus == OrderStatus.DELIVERY_ACCEPTED)
             {
-                order.SetStatus(OrderStatus.Shipped);
+                order.SetStatus(OrderStatus.DELIVERY_ACCEPTED)
                 return;
             }
 
