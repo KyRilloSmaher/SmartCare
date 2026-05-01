@@ -10,9 +10,9 @@ namespace SmartCare.Domain.OrderStates
     {
         public void Handle(Order order, OrderStatus nextStatus)
         {
-            if (nextStatus == OrderStatus.Confirmed)
+            if (nextStatus == OrderStatus.WaitingForPickup)
             {
-                order.SetStatus(OrderStatus.Confirmed);
+                order.SetStatus(OrderStatus.WaitingForPickup);
                 return;
             }
 
