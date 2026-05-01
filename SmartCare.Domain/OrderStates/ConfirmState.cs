@@ -21,7 +21,7 @@ namespace SmartCare.Domain.OrderStates
 
             // Delivery flow
             if (order is OnlineOrder &&
-                nextStatus == OrderStatus.DELIVERY_ACCEPTED)
+         nextStatus == OrderStatus.        Ready_To_Ship)
             {
                 order.SetStatus(nextStatus);
                 return;
