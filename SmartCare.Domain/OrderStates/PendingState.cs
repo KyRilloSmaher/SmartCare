@@ -1,4 +1,4 @@
-﻿using SmartCare.Domain.Entities;
+using SmartCare.Domain.Entities;
 using SmartCare.Domain.Enums;
 
 namespace SmartCare.Domain.OrderStates
@@ -10,9 +10,14 @@ namespace SmartCare.Domain.OrderStates
     {
         public void Handle(Order order, OrderStatus nextStatus)
         {
-            if (nextStatus == OrderStatus.WaitingForPickup)
+            if ( order.OrderType == OrderType.InStore && nextStatus == OrderStatus.WaitingForPickup)
             {
                 order.SetStatus(OrderStatus.WaitingForPickup);
+                return;
+            }
+            else if ( order.OrderType == OrderType.Online && nextStatus == OrderStatus.Confirmed)
+            {
+                order.SetStatus(OrderStatus.Confirmed);
                 return;
             }
 
