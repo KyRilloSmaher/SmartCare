@@ -90,7 +90,7 @@ namespace SmartCare.Application.CQRs.Payments.Commands.HandlePaymentSucceededCom
                 }
             }
             // Confirm order
-            order.Status = OrderStatus.Confirmed;
+            order.ChangeStatus(OrderStatus.Confirmed);
             existingPayment.MarkCompleted();
             // Clear cart
             var cart = await _unitOfWork.Carts.GetActiveCartAsync(order.ClientId,true);

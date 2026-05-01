@@ -243,7 +243,7 @@ namespace SmartCare.Application.Features.Orders.Commands.CreatePickUpOrder
                );
             }
 
-            order.Status = OrderStatus.Expired;
+            order.ChangeStatus(OrderStatus.Expired);
 
             // Save changes through UnitOfWork
             await _unitOfWork.SaveChangesAsync();

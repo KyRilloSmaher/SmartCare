@@ -271,7 +271,7 @@ namespace SmartCare.Application.Features.Orders.Commands.CreateOnlineOrder
                 );
             }
 
-            order.Status = OrderStatus.Expired;
+            order.ChangeStatus(OrderStatus.Expired);
 
             // Save changes through UnitOfWork
             await _unitOfWork.SaveChangesAsync();

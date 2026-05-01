@@ -34,7 +34,7 @@ namespace SmartCare.Application.Features.Orders.Commands.UpdateOrderStatus
             _mediator = mediator;
         }
 
-        public async Task<Response<OrderResponseDto>> Handle(UpdateOrderStatusCommand request, CancellationToken cancellationToken)
+        public async Task<Response<OrderResponseDto>> Handle(UpdateOrderStatusCommand request,CancellationToken cancellationToken)
         {
             var orderId = request.orderId;
             var newStatus = request.newStatus;
@@ -46,23 +46,23 @@ namespace SmartCare.Application.Features.Orders.Commands.UpdateOrderStatus
                 return _responseHandler.BadRequest<OrderResponseDto>(SystemMessages.INVALID_ORDER_STATUS);
 
             var order = await _unitOfWork.Orders.GetByIdAsync(orderId, true);
+
             if (order == null)
-            {
                 return _responseHandler.NotFound<OrderResponseDto>(SystemMessages.ORDER_NOT_FOUND);
-            }
 
-            // Domain rules: prevent illegal transitions
-            if (!OrderExtensions.IsValidStatusTransition(order.Status, newStatus))
+            try
             {
-                return _responseHandler.BadRequest<OrderResponseDto>(SystemMessages.BAD_REQUEST);
+                //USE STATE PATTERN
+                order.ChangeStatus(newStatus);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return _responseHandler.BadRequest<OrderResponseDto>(ex.Message);
             }
 
-            order.Status = newStatus;
-
-            // Save changes through UnitOfWork
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            // Post-update actions (release reservations if cancelled)
+            // Post-update actions
             if (newStatus == OrderStatus.Cancelled || newStatus == OrderStatus.Expired)
             {
                 await RealseOrder(order);
@@ -72,7 +72,6 @@ namespace SmartCare.Application.Features.Orders.Commands.UpdateOrderStatus
 
             return _responseHandler.Success(dto);
         }
-
         public async Task RealseOrder(SmartCare.Domain.Entities.Order request)
         {
             var orderId = request.Id;
@@ -97,7 +96,7 @@ namespace SmartCare.Application.Features.Orders.Commands.UpdateOrderStatus
                 );
             }
 
-            order.Status = OrderStatus.Cancelled;
+            order.ChangeStatus(OrderStatus.Cancelled);
 
         }
     }

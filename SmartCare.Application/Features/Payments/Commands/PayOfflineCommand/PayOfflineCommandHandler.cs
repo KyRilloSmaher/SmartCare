@@ -62,7 +62,7 @@ namespace SmartCare.Application.CQRs.Payments.Commands.PayOfflineCommand
             }
 
             // 4. Update order
-            order.Status = OrderStatus.Completed;
+            order.ChangeStatus(OrderStatus.Completed);
             existingPayment.MarkCompleted();
 
             // Save all changes atomically through UnitOfWork

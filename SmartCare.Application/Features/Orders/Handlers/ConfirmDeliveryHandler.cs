@@ -38,7 +38,7 @@ namespace SmartCare.Application.Features.Orders.Handlers
                 return _responseHandler.BadRequest<bool>(
                     $"Order cannot be confirmed. Current status: {order.Status}");
 
-            order.Status = OrderStatus.Completed;
+            order.ChangeStatus(OrderStatus.Completed);
             order.UpdatedAt = DateTime.UtcNow;
 
             await _unitOfWork.Orders.UpdateAsync(order);

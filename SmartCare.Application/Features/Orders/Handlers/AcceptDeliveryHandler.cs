@@ -47,7 +47,7 @@ namespace SmartCare.Application.Features.Orders.Handlers
                     $"Cannot accept delivery. Current status: {order.Status}");
 
             // Update order status to DELIVERY_ACCEPTED
-            order.Status = OrderStatus.DELIVERY_ACCEPTED;
+            order.ChangeStatus(OrderStatus.DELIVERY_ACCEPTED);
             order.UpdatedAt = DateTime.UtcNow;
 
             // Save changes
