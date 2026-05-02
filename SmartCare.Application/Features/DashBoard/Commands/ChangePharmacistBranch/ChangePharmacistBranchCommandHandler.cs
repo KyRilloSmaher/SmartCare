@@ -33,7 +33,7 @@ namespace SmartCare.Application.Features.DashBoard.Commands.ChangePharmacistBran
             try
             {
                 // 1. Get pharmacist
-                var pharmacist = await _unitOfWork.Pharmacists.GetByUserIdAsync(request.PharmacistId);
+                var pharmacist = await _unitOfWork.Pharmacists.GetByUserIdAsync(request.PharmacistId ,true);
 
                 if (pharmacist == null)
                     return _responseHandler.Failed<bool>("Pharmacist not found");
