@@ -218,11 +218,12 @@ namespace SmartCare.Application.Features.Orders.Commands.CreatePickUpOrder
         }
         public async Task RealseOrder(Guid orderId)
         {
+            _logger.LogInformation($"************RealseOrder Begin For Order => {orderId}");
             var order = await _unitOfWork.Orders.GetOrderWithDetailsByIdAsync(orderId);
 
             if (order is null)
                 return;
-
+            _logger.LogInformation($"************Realse Order  For Order with Status  => {order.Status}");
             // Idempotency: don't re-expire an already finalized order
             if (order.Status is OrderStatus.Expired or OrderStatus.Cancelled or OrderStatus.Completed)
                 return;
@@ -235,18 +236,20 @@ namespace SmartCare.Application.Features.Orders.Commands.CreatePickUpOrder
             {
                 if (!item.ReservationId.HasValue)
                     continue;
-
-                await _unitOfWork.Reservations.CancelReservationAsync(
+                _logger.LogInformation($"**************Realse Reservation For Item with ReservationId is => {item.ReservationId}");
+                var result = await _unitOfWork.Reservations.CancelReservationAsync(
                    reservationId: item.ReservationId.Value,
                    inventoryId: item.InvetoryId,
                    status: reservationStatus
                );
+                _logger.LogInformation($"**************Realse Reservation For Item with ReservationId is => {item.ReservationId} Is {result} ");
             }
 
             order.ChangeStatus(OrderStatus.Expired);
-
             // Save changes through UnitOfWork
             await _unitOfWork.SaveChangesAsync();
+
+            _logger.LogInformation($"**************Realse Order  :  Order Status Become  => {order.Status}");
             // Push Notifaction to User
             await _eventPublisherService.PublishOrderExpirationNotification(order.ClientId, orderId);
         }
