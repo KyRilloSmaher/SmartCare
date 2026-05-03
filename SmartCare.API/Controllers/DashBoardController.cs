@@ -15,6 +15,7 @@ using SmartCare.Application.Features.DashBoard.Commands.Create_AssignPharamsict;
 using SmartCare.Application.Features.DashBoard.Commands.RemoveAdmin;
 using SmartCare.Application.Features.DashBoard.Queries.GetAdminProfile;
 using SmartCare.Application.Features.DashBoard.Queries.GetAllNonConfirmedPharmacist;
+using SmartCare.Application.Features.DashBoard.Queries.GetAllPharmacists;
 using SmartCare.Application.Features.DashBoard.Queries.GetLowStockProducts;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Domain.Projection_Models;
@@ -50,6 +51,14 @@ namespace SmartCare.API.Controllers
             return ControllersHelperMethods.FinalResponse(result);
         }
 
+
+        [HttpGet(ApplicationRouting.Dashboard.GetAllPharmacists)]
+        [ProducesResponseType(typeof(Response<List<PharmacistProfileDto>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAllPharmacistsAsync()
+        {
+            var result = await _mediator.Send(new GetAllPharmacistsQuery());
+            return ControllersHelperMethods.FinalResponse(result);
+        }
 
         [HttpGet(ApplicationRouting.Dashboard.GetNonConfirmedPharmacists)]
         [ProducesResponseType(typeof(Response<List<PharmacistProfileDto>>), StatusCodes.Status200OK)]

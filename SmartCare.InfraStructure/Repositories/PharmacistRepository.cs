@@ -65,13 +65,24 @@ namespace SmartCare.InfraStructure.Repositories
         }
 
         // get unConfirmed pharmacists
-        public async Task<IEnumerable<Pharmacist>> GetUnconfirmedPharmacistsAsync(bool asNoTracking = false)
+        public async Task<IEnumerable<Pharmacist>> GetUnconfirmedPharmacistsAsync(bool asTracking = false)
         {
             var query = _context.Pharmacists
                                          .Include(p => p.User)
                                          .Include(p => p.Store)
                                          .Where(p => !p.User.EmailConfirmed);
-            query = asNoTracking ? query.AsNoTracking() : query.AsTracking();
+            query = asTracking ? query.AsTracking() : query.AsNoTracking();
+            return await query.ToListAsync();
+        }
+        public virtual async Task<IEnumerable<Pharmacist>> GetAllAsync(bool asTracking = false)
+        {
+            IQueryable<Pharmacist> query = _context.Pharmacists
+                .Include(p => p.User)
+                .Include(p => p.Store);
+
+            if (!asTracking)
+                query = query.AsNoTracking();
+
             return await query.ToListAsync();
         }
     }
