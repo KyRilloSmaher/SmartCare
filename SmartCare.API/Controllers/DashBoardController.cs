@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using SmartCare.API.Helpers;
 using SmartCare.Application.DTOs.Address.Requests;
 using SmartCare.Application.DTOs.Admins;
+using SmartCare.Application.DTOs.Delivery;
 using SmartCare.Application.DTOs.Pharmacist.Response;
 using SmartCare.Application.DTOs.Stores.Requests;
 using SmartCare.Application.DTOs.Stores.Responses;
@@ -15,6 +16,7 @@ using SmartCare.Application.Features.DashBoard.Commands.Create_AssignPharamsict;
 using SmartCare.Application.Features.DashBoard.Commands.RemoveAdmin;
 using SmartCare.Application.Features.DashBoard.Queries.GetAdminProfile;
 using SmartCare.Application.Features.DashBoard.Queries.GetAllAdmins;
+using SmartCare.Application.Features.DashBoard.Queries.GetAllDeliveries;
 using SmartCare.Application.Features.DashBoard.Queries.GetAllNonConfirmedPharmacist;
 using SmartCare.Application.Features.DashBoard.Queries.GetAllPharmacists;
 using SmartCare.Application.Features.DashBoard.Queries.GetLowStockProducts;
@@ -65,6 +67,13 @@ namespace SmartCare.API.Controllers
         public async Task<IActionResult> GetAllAdminsAsync()
         {
             var result = await _mediator.Send(new GetAllAdminsQuery());
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+        [HttpGet(ApplicationRouting.Dashboard.Deliveries)]
+        [ProducesResponseType(typeof(Response<List<DeliveryDto>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAllDeliveriesAsync()
+        {
+            var result = await _mediator.Send(new GetAllDeliveriesQuery());
             return ControllersHelperMethods.FinalResponse(result);
         }
 
