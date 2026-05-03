@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SmartCare.API.Helpers;
 using SmartCare.Application.DTOs.Address.Requests;
+using SmartCare.Application.DTOs.Admins;
 using SmartCare.Application.DTOs.Pharmacist.Response;
 using SmartCare.Application.DTOs.Stores.Requests;
 using SmartCare.Application.DTOs.Stores.Responses;
@@ -12,10 +13,12 @@ using SmartCare.Application.Features.DashBoard.Commands.ChangePharmacistBranch;
 using SmartCare.Application.Features.DashBoard.Commands.ConfirmPharmacistEmail;
 using SmartCare.Application.Features.DashBoard.Commands.Create_AssignPharamsict;
 using SmartCare.Application.Features.DashBoard.Commands.RemoveAdmin;
+using SmartCare.Application.Features.DashBoard.Queries.GetAdminProfile;
 using SmartCare.Application.Features.DashBoard.Queries.GetAllNonConfirmedPharmacist;
 using SmartCare.Application.Features.DashBoard.Queries.GetLowStockProducts;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Domain.Projection_Models;
+using System.Security.Claims;
 
 namespace SmartCare.API.Controllers
 {
@@ -28,6 +31,15 @@ namespace SmartCare.API.Controllers
         public DashBoardController(IMediator mediator)
         {
             _mediator = mediator;
+        }
+
+        [HttpGet(ApplicationRouting.Dashboard.Admin)]
+        [ProducesResponseType(typeof(Response<Response<AdminProfile>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetDashBoardAdmin()
+        {
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var result = await _mediator.Send(new GetAdminProfileQuery(userId));
+            return ControllersHelperMethods.FinalResponse(result);
         }
 
         [HttpGet(ApplicationRouting.Dashboard.LowStock)]

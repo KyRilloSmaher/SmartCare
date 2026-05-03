@@ -294,6 +294,7 @@ namespace SmartCare.API.Helpers
         public class Dashboard
         {
             private const string Prefix = Rule + "admin/dashboard";
+            public const string Admin = Rule + "dashboard/admin";
             public const string GetNonConfirmedPharmacists = Prefix + "/non-confirmed-pharmacists";
             public const string ConfirmPharmacistEmail = Prefix + "/confirm-pharmacist-email" + SingleRoute;
             public const string LowStock = Prefix + "/stores-Low-stock";
