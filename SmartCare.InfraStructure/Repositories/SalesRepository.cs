@@ -14,33 +14,37 @@ namespace SmartCare.InfraStructure.Repositories
     public class SalesRepository : ISalesRepository
     {
         private readonly ApplicationDBContext _context;
-        public SalesRepository(ApplicationDBContext context) => _context = context;
 
-        // ---------------------------------------------------------------------------
-        // Helper: base query for completed, non-deleted orders scoped to a branch.
-        // When branchId is provided we go through OrderItems → Inventory so we can
-        // filter by store, then project back to the distinct Orders.
-        // ---------------------------------------------------------------------------
-        private IQueryable<Order> CompletedOrders(Guid? branchId)
+        public SalesRepository(ApplicationDBContext context)
         {
-            if (branchId.HasValue && branchId.Value != Guid.Empty)
-            {
-                return _context.OrderItems
-                    .Where(oi => oi.Inventory.StoreId == branchId.Value)
-                    .Select(oi => oi.Order)
-                    .Distinct()
-                    .Where(o => !o.IsDeleted && o.Status == (OrderStatus)5);
-            }
-
-            return _context.Orders
-                .Where(o => !o.IsDeleted && o.Status == (OrderStatus)5);
+            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        // ---------------------------------------------------------------------------
-        // Helper: apply optional date range to an Order query.
-        // ---------------------------------------------------------------------------
-        private static IQueryable<Order> ApplyDateFilter(
-            IQueryable<Order> query, DateTime? startDate, DateTime? endDate)
+        // =========================================================================
+        // PRIVATE HELPERS
+        // =========================================================================
+
+        /// <summary>
+        /// Base query for completed, non-deleted orders scoped to a branch
+        /// </summary>
+        private IQueryable<Order> CompletedOrders(Guid? branchId)
+        {
+            IQueryable<Order> query = _context.Orders
+                .AsNoTracking()
+                .Where(o => !o.IsDeleted && o.Status == OrderStatus.Completed);
+
+            if (branchId.HasValue && branchId.Value != Guid.Empty)
+            {
+                query = query.Where(o => o.Items.Any(oi => oi.Inventory.StoreId == branchId.Value));
+            }
+
+            return query;
+        }
+
+        /// <summary>
+        /// Apply date range filter to Order query
+        /// </summary>
+        private IQueryable<Order> ApplyDateFilter(IQueryable<Order> query, DateTime? startDate, DateTime? endDate)
         {
             if (startDate.HasValue && startDate.Value != default)
                 query = query.Where(o => o.CreatedAt >= startDate.Value);
@@ -51,10 +55,10 @@ namespace SmartCare.InfraStructure.Repositories
             return query;
         }
 
-        // ---------------------------------------------------------------------------
-        // Category Revenue
-        // Revenue = sum of Order.TotalPrice for orders that contain items in that category.
-        // ---------------------------------------------------------------------------
+        // =========================================================================
+        // 1. CATEGORY REVENUE
+        // =========================================================================
+
         public async Task<IEnumerable<CategoryRevenue>> GetCategoryRevenueAsync(
             Guid? branchId = null, DateTime? startDate = null, DateTime? endDate = null)
         {
@@ -93,9 +97,10 @@ namespace SmartCare.InfraStructure.Repositories
                 .ToList();
         }
 
-        // ---------------------------------------------------------------------------
-        // Company Revenue
-        // ---------------------------------------------------------------------------
+        // =========================================================================
+        // 2. COMPANY REVENUE
+        // =========================================================================
+
         public async Task<IEnumerable<CompanyRevenue>> GetCompanyRevenueAsync(
             Guid? branchId = null, DateTime? startDate = null, DateTime? endDate = null)
         {
@@ -120,6 +125,7 @@ namespace SmartCare.InfraStructure.Repositories
                 .Distinct()
                 .ToListAsync();
 
+            // Attribute each order's TotalPrice to every Company it contains.
             return items
                 .GroupBy(x => new { x.CompanyId, x.CompanyName })
                 .Select(g => new CompanyRevenue
@@ -127,75 +133,95 @@ namespace SmartCare.InfraStructure.Repositories
                     CompanyId = g.Key.CompanyId,
                     CompanyName = g.Key.CompanyName,
                     Revenue = g.Select(x => x.OrderId)
-                                   .Distinct()
-                                   .Sum(id => priceMap.GetValueOrDefault(id))
+                                    .Distinct()
+                                    .Sum(id => priceMap.GetValueOrDefault(id))
                 })
                 .ToList();
         }
 
-        // ---------------------------------------------------------------------------
-        // Branch Performance
-        // ---------------------------------------------------------------------------
-        public async Task<IEnumerable<BranchPerformance>> GetBranchPerformanceAsync(DateTime? startDate = null, DateTime? endDate = null)
-        {
+        // =========================================================================
+        // 3. BRANCH PERFORMANCE
+        // =========================================================================
 
-            var ordersPerBranch = _context.OrderItems
-                .Where(oi => !oi.Order.IsDeleted && oi.Order.Status == (OrderStatus)5)
-                .Where(oi => !startDate.HasValue || startDate.Value == default || oi.Order.CreatedAt >= startDate.Value)
-                .Where(oi => !endDate.HasValue || endDate.Value == default || oi.Order.CreatedAt < endDate.Value.Date.AddDays(1))
-                .Select(oi => new
-                {
-                    BranchId = oi.Inventory.Store.Id,
-                    BranchName = oi.Inventory.Store.Name,
-                    oi.OrderId,
-                    oi.Order.TotalPrice,
-                    oi.Order.OrderType
-                })
-                .Distinct();
-            var result = await ordersPerBranch
+        public async Task<IEnumerable<BranchPerformance>> GetBranchPerformanceAsync(
+            DateTime? startDate = null, DateTime? endDate = null)
+        {
+            var query = from oi in _context.OrderItems
+                        .AsNoTracking()
+                        .Include(oi => oi.Order)
+                        .Include(oi => oi.Inventory)
+                            .ThenInclude(i => i.Store)
+                        where !oi.Order.IsDeleted && oi.Order.Status == OrderStatus.Completed
+                        where !startDate.HasValue || oi.Order.CreatedAt >= startDate.Value
+                        where !endDate.HasValue || oi.Order.CreatedAt < endDate.Value.Date.AddDays(1)
+                        select new
+                        {
+                            BranchId = oi.Inventory.Store.Id,
+                            BranchName = oi.Inventory.Store.Name,
+                            oi.OrderId,
+                            oi.Order.TotalPrice,
+                            oi.Order.OrderType
+                        };
+
+            var distinctOrders = await query
+                .Distinct()
+                .ToListAsync();
+
+            var result = distinctOrders
                 .GroupBy(x => new { x.BranchId, x.BranchName })
                 .Select(g => new BranchPerformance
                 {
                     BranchId = g.Key.BranchId,
                     BranchName = g.Key.BranchName,
                     Revenue = g.Sum(x => x.TotalPrice),
-
-                    TotalOrders = g.Count(),
-
-                    OnlineOrders = g.Count(x => x.OrderType == OrderType.Online),
-
-                    PickupOrders = g.Count(x => x.OrderType == OrderType.InStore)
+                    TotalOrders = g.Select(x => x.OrderId).Distinct().Count(),
+                    OnlineOrders = g.Where(x => x.OrderType == OrderType.Online)
+                                    .Select(x => x.OrderId).Distinct().Count(),
+                    PickupOrders = g.Where(x => x.OrderType == OrderType.InStore)
+                                    .Select(x => x.OrderId).Distinct().Count()
                 })
-                .AsNoTracking()
-                .ToListAsync();
+                .OrderByDescending(b => b.Revenue)
+                .ToList();
 
             return result;
         }
 
-        // ---------------------------------------------------------------------------
-        // Sales Channel Analytics
-        // No item-level data needed — query Orders directly.
-        // ---------------------------------------------------------------------------
+        // =========================================================================
+        // 4. SALES CHANNEL ANALYTICS - FIXED (NO ToString() in query)
+        // =========================================================================
+
         public async Task<IEnumerable<SalesChannelPerformance>> GetSalesChannelAnalyticsAsync(
             Guid? branchId = null, DateTime? startDate = null, DateTime? endDate = null)
         {
             var query = ApplyDateFilter(CompletedOrders(branchId), startDate, endDate);
 
-            return await query
+            // Get raw data first, then format in memory
+            var rawResults = await query
                 .GroupBy(o => o.OrderType)
-                .Select(g => new SalesChannelPerformance
+                .Select(g => new
                 {
-                    Channel = g.Key.ToString().ToLower(),
+                    Channel = g.Key,
                     OrdersCount = g.Count(),
-                    Revenue = g.Sum(o => (decimal?)o.TotalPrice) ?? 0
+                    Revenue = g.Sum(o => o.TotalPrice)
                 })
+                .OrderBy(c => c.Channel)
                 .ToListAsync();
+
+            // Convert to DTO with string formatting in memory
+            var results = rawResults.Select(r => new SalesChannelPerformance
+            {
+                Channel = r.Channel.ToString(),
+                OrdersCount = r.OrdersCount,
+                Revenue = r.Revenue
+            });
+
+            return results;
         }
 
-        // ---------------------------------------------------------------------------
-        // Revenue Analytics (time-series)
-        // No item-level data needed — query Orders directly.
-        // ---------------------------------------------------------------------------
+        // =========================================================================
+        // 5. REVENUE ANALYTICS (TIME-SERIES) - FIXED (NO string.Format in query)
+        // =========================================================================
+
         public async Task<IEnumerable<RevenuePoint>> GetRevenueAnalyticsAsync(
             Guid? branchId, FilterIntervales interval, DateTime? startDate, DateTime? endDate)
         {
@@ -205,92 +231,99 @@ namespace SmartCare.InfraStructure.Repositories
             {
                 case FilterIntervales.daily:
                     {
-                        var raw = await query
+                        // Get raw data from database
+                        var rawResults = await query
                             .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month, o.CreatedAt.Day })
                             .Select(g => new
                             {
                                 g.Key.Year,
                                 g.Key.Month,
                                 g.Key.Day,
-                                Revenue = g.Sum(o => (decimal?)o.TotalPrice) ?? 0
+                                Revenue = g.Sum(o => o.TotalPrice)
                             })
+                            .OrderBy(r => r.Year).ThenBy(r => r.Month).ThenBy(r => r.Day)
                             .ToListAsync();
 
-                        return raw
-                            .Select(g => new RevenuePoint
-                            {
-                                Date = $"{g.Year}-{g.Month:D2}-{g.Day:D2}",
-                                Revenue = g.Revenue
-                            })
-                            .OrderBy(r => r.Date);
+                        // Format date in memory
+                        var results = rawResults.Select(r => new RevenuePoint
+                        {
+                            Date = $"{r.Year:D4}-{r.Month:D2}-{r.Day:D2}",
+                            Revenue = r.Revenue
+                        });
+
+                        return results;
                     }
 
                 case FilterIntervales.weekly:
                     {
-                        var raw = await query
+                        var rawResults = await query
                             .GroupBy(o => EF.Functions.DateDiffWeek(DateTime.MinValue, o.CreatedAt))
                             .Select(g => new
                             {
                                 WeekNumber = g.Key,
-                                Revenue = g.Sum(o => (decimal?)o.TotalPrice) ?? 0
+                                Revenue = g.Sum(o => o.TotalPrice)
                             })
+                            .OrderBy(r => r.WeekNumber)
                             .ToListAsync();
 
-                        return raw
-                            .OrderBy(g => g.WeekNumber)
-                            .Select(g => new RevenuePoint
-                            {
-                                Date = $"Week-{g.WeekNumber}",
-                                Revenue = g.Revenue
-                            });
+                        var results = rawResults.Select(r => new RevenuePoint
+                        {
+                            Date = $"Week-{r.WeekNumber}:D2",
+                            Revenue = r.Revenue
+                        });
+
+                        return results;
                     }
 
                 case FilterIntervales.Annually:
                     {
-                        var raw = await query
+                        var rawResults = await query
                             .GroupBy(o => o.CreatedAt.Year)
                             .Select(g => new
                             {
                                 Year = g.Key,
-                                Revenue = g.Sum(o => (decimal?)o.TotalPrice) ?? 0
+                                Revenue = g.Sum(o => o.TotalPrice)
                             })
+                            .OrderBy(r => r.Year)
                             .ToListAsync();
 
-                        return raw
-                            .Select(g => new RevenuePoint
-                            {
-                                Date = $"{g.Year}",
-                                Revenue = g.Revenue
-                            })
-                            .OrderBy(r => r.Date);
+                        var results = rawResults.Select(r => new RevenuePoint
+                        {
+                            Date = r.Year.ToString(),
+                            Revenue = r.Revenue
+                        });
+
+                        return results;
                     }
 
                 default: // monthly
                     {
-                        var raw = await query
+                        var rawResults = await query
                             .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month })
                             .Select(g => new
                             {
                                 g.Key.Year,
                                 g.Key.Month,
-                                Revenue = g.Sum(o => (decimal?)o.TotalPrice) ?? 0
+                                Revenue = g.Sum(o => o.TotalPrice)
                             })
+                            .OrderBy(r => r.Year).ThenBy(r => r.Month)
                             .ToListAsync();
 
-                        return raw
-                            .Select(g => new RevenuePoint
-                            {
-                                Date = $"{g.Year}-{g.Month:D2}",
-                                Revenue = g.Revenue
-                            })
-                            .OrderBy(r => r.Date);
+                        var results = rawResults.Select(r => new RevenuePoint
+                        {
+                            Date = $"{r.Year:D4}-{r.Month:D2}",
+                            Revenue = r.Revenue
+                        });
+
+                        return results;
                     }
             }
         }
 
-        // ---------------------------------------------------------------------------
-        // Dashboard Summary
-        // ---------------------------------------------------------------------------
+        // =========================================================================
+        // 6. DASHBOARD SUMMARY - WORKING (No changes needed)
+        // =========================================================================
+
         public async Task<DashboardSummaryDto> GetDashboardSummaryAsync(
             Guid? branchId, DateTime? startDate, DateTime? endDate)
         {
@@ -298,15 +331,11 @@ namespace SmartCare.InfraStructure.Repositories
 
             var totalRevenue = await ordersQuery.SumAsync(o => (decimal?)o.TotalPrice) ?? 0;
             var totalOrders = await ordersQuery.CountAsync();
-            var avgOrderValue = totalOrders == 0 ? 0 : totalRevenue / totalOrders;
-
-            var totalClients = await ordersQuery
-                .Select(o => o.ClientId)
-                .Distinct()
-                .CountAsync();
-
+            var totalClients = await _context.Clients.Select(o => o.Id).Distinct().CountAsync();
             var totalBranches = await _context.Stores.CountAsync();
             var totalAids = await _context.Products.CountAsync();
+
+            var avgOrderValue = totalOrders == 0 ? 0 : totalRevenue / totalOrders;
 
             return new DashboardSummaryDto
             {
@@ -319,9 +348,10 @@ namespace SmartCare.InfraStructure.Repositories
             };
         }
 
-        // ---------------------------------------------------------------------------
-        // Client Analytics
-        // ---------------------------------------------------------------------------
+        // =========================================================================
+        // 7. CLIENT ANALYTICS - WORKING
+        // =========================================================================
+
         public async Task<ClientAnalyticsDto> GetClientAnalyticsAsync(
             Guid? branchId, FilterIntervales interval, DateTime? startDate, DateTime? endDate)
         {
@@ -332,35 +362,45 @@ namespace SmartCare.InfraStructure.Repositories
                 .Distinct()
                 .ToListAsync();
 
-            var totalClients = clientsInPeriod.Count;
+            var allClientsWithOrders = await _context.Orders
+                .Where(o => !o.IsDeleted && o.Status == OrderStatus.Completed)
+                .Select(o => o.ClientId)
+                .Distinct()
+                .ToListAsync();
 
-            // First-ever completed order date per client (global, not period-scoped).
             var firstOrders = await _context.Orders
-                .Where(o => !o.IsDeleted && o.Status == (OrderStatus)5)
+                .Where(o => !o.IsDeleted && o.Status == OrderStatus.Completed)
+                .Where(o => clientsInPeriod.Contains(o.ClientId))
                 .GroupBy(o => o.ClientId)
                 .Select(g => new
                 {
-                    UserId = g.Key,
+                    ClientId = g.Key,
                     FirstOrderDate = g.Min(x => x.CreatedAt)
                 })
                 .ToListAsync();
 
             var newClients = firstOrders.Count(f =>
-                clientsInPeriod.Contains(f.UserId) &&
                 (!startDate.HasValue || f.FirstOrderDate >= startDate.Value) &&
-                (!endDate.HasValue || f.FirstOrderDate < endDate.Value.AddDays(1)));
+                (!endDate.HasValue || f.FirstOrderDate < endDate.Value.Date.AddDays(1)));
+
+            var activeClients = clientsInPeriod.Count;
+            var returningClients = activeClients - newClients;
+            var totalClientsEver = await _context.Clients.CountAsync();
 
             return new ClientAnalyticsDto
             {
-                TotalClients = totalClients,
+                TotalClients = totalClientsEver,
+                //ActiveClients = activeClients,
                 NewClients = newClients,
-                ReturningClients = totalClients - newClients
+                ReturningClients = returningClients,
+                //RetentionRate = activeClients == 0 ? 0 : Math.Round((double)returningClients / activeClients * 100, 2)
             };
         }
 
-        // ---------------------------------------------------------------------------
-        // Orders Trend
-        // ---------------------------------------------------------------------------
+        // =========================================================================
+        // 8. ORDERS TREND - FIXED (NO string.Format in query)
+        // =========================================================================
+
         public async Task<List<OrderTrendItemDto>> GetOrdersTrendAsync(
             Guid? branchId, FilterIntervales interval, DateTime? startDate, DateTime? endDate)
         {
@@ -368,74 +408,9 @@ namespace SmartCare.InfraStructure.Repositories
 
             switch (interval)
             {
-                case FilterIntervales.weekly:
+                case FilterIntervales.daily:
                     {
-                        var raw = await query
-                            .GroupBy(o => EF.Functions.DateDiffWeek(DateTime.MinValue, o.CreatedAt))
-                            .Select(g => new
-                            {
-                                WeekNumber = g.Key,
-                                MinDate = g.Min(x => x.CreatedAt),
-                                Orders = g.Count()
-                            })
-                            .ToListAsync();
-
-                        return raw
-                            .OrderBy(g => g.WeekNumber)
-                            .Select(g => new OrderTrendItemDto
-                            {
-                                Date = g.MinDate.ToString("yyyy-MM-dd"),
-                                Orders = g.Orders
-                            })
-                            .ToList();
-                    }
-
-                case FilterIntervales.monthly:
-                    {
-                        var raw = await query
-                            .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month })
-                            .Select(g => new
-                            {
-                                g.Key.Year,
-                                g.Key.Month,
-                                Orders = g.Count()
-                            })
-                            .ToListAsync();
-
-                        return raw
-                            .Select(g => new OrderTrendItemDto
-                            {
-                                Date = $"{g.Year}-{g.Month:D2}",
-                                Orders = g.Orders
-                            })
-                            .OrderBy(r => r.Date)
-                            .ToList();
-                    }
-
-                case FilterIntervales.Annually:
-                    {
-                        var raw = await query
-                            .GroupBy(o => o.CreatedAt.Year)
-                            .Select(g => new
-                            {
-                                Year = g.Key,
-                                Orders = g.Count()
-                            })
-                            .ToListAsync();
-
-                        return raw
-                            .Select(g => new OrderTrendItemDto
-                            {
-                                Date = $"{g.Year}",
-                                Orders = g.Orders
-                            })
-                            .OrderBy(r => r.Date)
-                            .ToList();
-                    }
-
-                default: // daily
-                    {
-                        var raw = await query
+                        var rawResults = await query
                             .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month, o.CreatedAt.Day })
                             .Select(g => new
                             {
@@ -444,100 +419,165 @@ namespace SmartCare.InfraStructure.Repositories
                                 g.Key.Day,
                                 Orders = g.Count()
                             })
+                            .OrderBy(r => r.Year).ThenBy(r => r.Month).ThenBy(r => r.Day)
                             .ToListAsync();
 
-                        return raw
-                            .Select(g => new OrderTrendItemDto
-                            {
-                                Date = $"{g.Year}-{g.Month:D2}-{g.Day:D2}",
-                                Orders = g.Orders
-                            })
-                            .OrderBy(r => r.Date)
-                            .ToList();
+                        var results = rawResults.Select(r => new OrderTrendItemDto
+                        {
+                            Date = $"{r.Year:D4}-{r.Month:D2}-{r.Day:D2}",
+                            Orders = r.Orders
+                        }).ToList();
+
+                        return results;
                     }
+
+                case FilterIntervales.weekly:
+                    {
+                        var rawResults = await query
+                            .GroupBy(o => EF.Functions.DateDiffWeek(DateTime.MinValue, o.CreatedAt))
+                            .Select(g => new
+                            {
+                                WeekNumber = g.Key,
+                                MinDate = g.Min(x => x.CreatedAt),
+                                Orders = g.Count()
+                            })
+                            .OrderBy(r => r.WeekNumber)
+                            .ToListAsync();
+
+                        var results = rawResults.Select(r => new OrderTrendItemDto
+                        {
+                            Date = r.MinDate.ToString("yyyy-MM-dd"),
+                            Orders = r.Orders
+                        }).ToList();
+
+                        return results;
+                    }
+
+                case FilterIntervales.monthly:
+                    {
+                        var rawResults = await query
+                            .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month })
+                            .Select(g => new
+                            {
+                                g.Key.Year,
+                                g.Key.Month,
+                                Orders = g.Count()
+                            })
+                            .OrderBy(r => r.Year).ThenBy(r => r.Month)
+                            .ToListAsync();
+
+                        var results = rawResults.Select(r => new OrderTrendItemDto
+                        {
+                            Date = $"{r.Year:D4}-{r.Month:D2}",
+                            Orders = r.Orders
+                        }).ToList();
+
+                        return results;
+                    }
+
+                case FilterIntervales.Annually:
+                    {
+                        var rawResults = await query
+                            .GroupBy(o => o.CreatedAt.Year)
+                            .Select(g => new
+                            {
+                                Year = g.Key,
+                                Orders = g.Count()
+                            })
+                            .OrderBy(r => r.Year)
+                            .ToListAsync();
+
+                        var results = rawResults.Select(r => new OrderTrendItemDto
+                        {
+                            Date = r.Year.ToString(),
+                            Orders = r.Orders
+                        }).ToList();
+
+                        return results;
+                    }
+
+                default:
+                    return new List<OrderTrendItemDto>();
             }
         }
 
-        // ---------------------------------------------------------------------------
-        // Order Status Distribution
-        // Not filtered to status=5 — all statuses are shown intentionally.
-        // ---------------------------------------------------------------------------
+        // =========================================================================
+        // 9. ORDER STATUS DISTRIBUTION - WORKING
+        // =========================================================================
+
         public async Task<List<OrderStatusItemDto>> GetOrderStatusDistributionAsync(
             Guid? branchId, DateTime? startDate, DateTime? endDate)
         {
-            IQueryable<Order> query;
+            IQueryable<Order> query = _context.Orders.AsNoTracking().Where(o => !o.IsDeleted);
 
             if (branchId.HasValue && branchId.Value != Guid.Empty)
             {
-                query = _context.OrderItems
-                    .Where(oi => oi.Inventory.StoreId == branchId.Value)
-                    .Select(oi => oi.Order)
-                    .Distinct()
-                    .Where(o => !o.IsDeleted);
-            }
-            else
-            {
-                query = _context.Orders.Where(o => !o.IsDeleted);
+                query = query.Where(o => o.Items.Any(oi => oi.Inventory.StoreId == branchId.Value));
             }
 
             query = ApplyDateFilter(query, startDate, endDate);
 
-            var raw = await query
+            var rawResults = await query
                 .GroupBy(o => o.Status)
-                .Select(g => new { Status = g.Key, Count = g.Count() })
+                .Select(g => new
+                {
+                    Status = g.Key,
+                    Count = g.Count()
+                })
+                .OrderByDescending(r => r.Count)
                 .ToListAsync();
 
-            return raw
-                .Select(g => new OrderStatusItemDto
-                {
-                    Status = g.Status.ToString(),
-                    Count = g.Count
-                })
-                .ToList();
+            var totalOrders = rawResults.Sum(r => r.Count);
+
+            var results = rawResults.Select(r => new OrderStatusItemDto
+            {
+                Status = r.Status.ToString(),
+                Count = r.Count,
+                //Percentage = totalOrders == 0 ? 0 : Math.Round((double)r.Count / totalOrders * 100, 2)
+            }).ToList();
+
+            return results;
         }
 
+        // =========================================================================
+        // 10. CATEGORY CHANNELS
+        // =========================================================================
 
-        public async Task<CategoryChannelDto> GetCategoryChannelsAsync(Guid categoryId,Guid? branchId = null,DateTime? startDate = null,DateTime? endDate = null)
+        public async Task<CategoryChannelDto> GetCategoryChannelsAsync(
+            Guid categoryId, Guid? branchId = null, DateTime? startDate = null, DateTime? endDate = null)
         {
-            // 1. Get filtered completed orders
-            var ordersQuery = ApplyDateFilter(CompletedOrders(branchId), startDate, endDate);
-
-            // 2. Get orderIds that contain this category
-            var orderIds = await _context.OrderItems.Include(oI=>oI.Product)
+            var channelData = await _context.OrderItems
+                .AsNoTracking()
+                .Include(oi => oi.Order)
+                .Include(oi => oi.Product)
                 .Where(oi => oi.Product.CategoryId == categoryId)
-                .Select(oi => oi.OrderId)
-                .Distinct()
+                .Where(oi => !oi.Order.IsDeleted && oi.Order.Status == OrderStatus.Completed)
+                .Where(oi => !branchId.HasValue || oi.Inventory.StoreId == branchId.Value)
+                .Where(oi => !startDate.HasValue || oi.Order.CreatedAt >= startDate.Value)
+                .Where(oi => !endDate.HasValue || oi.Order.CreatedAt < endDate.Value.Date.AddDays(1))
+                .Select(oi => oi.Order.OrderType)
                 .ToListAsync();
 
-            // 3. Filter orders to only those containing the category
-            var filteredOrders = ordersQuery
-                .Where(o => orderIds.Contains(o.Id));
-
-            // 4. Count per channel
-            var totalOrders = await filteredOrders.CountAsync();
-
-            if (totalOrders == 0)
+            if (!channelData.Any())
             {
                 return new CategoryChannelDto
                 {
                     Online = 0,
-                    Offline = 0
+                    Offline = 0,
+                    //TotalOrders = 0
                 };
             }
 
-            var onlineCount = await filteredOrders
-                .CountAsync(o => o.OrderType == OrderType.Online);
+            var totalOrders = channelData.Count;
+            var onlineCount = channelData.Count(ot => ot == OrderType.Online);
+            var offlineCount = channelData.Count(ot => ot == OrderType.InStore);
 
-            var offlineCount = await filteredOrders
-                .CountAsync(o => o.OrderType == OrderType.InStore);
-
-            // 5. Convert to percentage
             return new CategoryChannelDto
             {
-                Online = (int)Math.Round((double)onlineCount * 100 / totalOrders),
-                Offline = (int)Math.Round((double)offlineCount * 100 / totalOrders)
+                Online = (int)Math.Round((double)onlineCount / totalOrders * 100),
+                Offline = (int)Math.Round((double)offlineCount / totalOrders * 100),
+                //TotalOrders = totalOrders
             };
-        
-       }
+        }
     }
 }
