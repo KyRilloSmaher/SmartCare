@@ -62,7 +62,13 @@ namespace SmartCare.Application.CQRs.Favourite.Handlers
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             string cacheKey = $"fav_user_{userId}";
+            string clientByIdKey = $"client_id_{userId}";
+            string clientByEmailKey = $"client_email_{client.User?.Email?.ToLower()}";
+
             await _redisCacheService.RemoveKeyAsync(cacheKey, tag);
+            await _redisCacheService.RemoveKeyAsync(clientByIdKey, CacheConstants.Client);
+            await _redisCacheService.RemoveKeyAsync(clientByEmailKey, CacheConstants.Client);
+            await _redisCacheService.RemoveKeyAsync("clients_all", CacheConstants.Client);
 
             return _responseHandler.Success(true);
         }

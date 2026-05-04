@@ -33,9 +33,10 @@ namespace SmartCare.Application.Features.Orders.Commands.CreatePickUpOrder
         private readonly ILogger<CreatePickupOrderFromCartAsyncHandler> _logger;
         private readonly int OrderExpirationTimeUntilPayment;
         private readonly IEventPublisherService _eventPublisherService;
+        private readonly IRedisCacheService _redisCacheService;
         private readonly IOrderNotificationService _notificationService;
 
-        public CreatePickupOrderFromCartAsyncHandler(IConfiguration configuration, IResponseHandler responseHandler, IUnitOfWork unitOfWork, IOrderNotificationService notificationService, IBackgroundJobService backgroundJobService, IMapper mapper, ISqlLockManager sqlLockManager, ILogger<CreatePickupOrderFromCartAsyncHandler> logger, IEventPublisherService eventPublisherService)
+        public CreatePickupOrderFromCartAsyncHandler(IConfiguration configuration, IResponseHandler responseHandler, IUnitOfWork unitOfWork, IOrderNotificationService notificationService, IBackgroundJobService backgroundJobService, IMapper mapper, ISqlLockManager sqlLockManager, ILogger<CreatePickupOrderFromCartAsyncHandler> logger, IEventPublisherService eventPublisherService, IRedisCacheService redisCacheService)
         {
             _responseHandler = responseHandler;
             _unitOfWork = unitOfWork;
@@ -46,6 +47,8 @@ namespace SmartCare.Application.Features.Orders.Commands.CreatePickUpOrder
             OrderExpirationTimeUntilPayment = configuration.GetValue<int>("ReservationTimes:ForOrderExpirationMinutes");
             _eventPublisherService = eventPublisherService;
             _notificationService = notificationService;
+            _redisCacheService = redisCacheService;
+
         }
         #endregion
 
@@ -101,7 +104,7 @@ namespace SmartCare.Application.Features.Orders.Commands.CreatePickUpOrder
             // =====================================================
             var order = PickUpOrder.Create(clientId, cart.TotalPrice, storeId);
             var pickupCode = RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D7");
-            var HasedCode = ComputeSha256(pickupCode);
+            var HasedCode = OrderExtensions.ComputeSha256(pickupCode);
             order.AddPickUpCode(HasedCode);
             await _unitOfWork.Orders.AddInOfflineOrderAsync(order);
             // =====================================================
@@ -183,6 +186,11 @@ namespace SmartCare.Application.Features.Orders.Commands.CreatePickUpOrder
             {
                 _logger.LogWarning(ex, "SignalR notification failed for PickUp order {OrderId}", order.Id);
             }
+            string clientByIdKey = $"client_id_{clientId}";
+            string clientByEmailKey = $"client_email_{client.User?.Email?.ToLower()}";
+            await _redisCacheService.RemoveKeyAsync(clientByIdKey, CacheConstants.Client);
+            await _redisCacheService.RemoveKeyAsync(clientByEmailKey, CacheConstants.Client);
+            await _redisCacheService.RemoveKeyAsync("clients_all", CacheConstants.Client);
             return _responseHandler.Success(response, SystemMessages.ORDER_PLACED);
         }
         private void ScheduledProductsStatusChanged(List<OrderItem> orderItems)
@@ -235,7 +243,7 @@ namespace SmartCare.Application.Features.Orders.Commands.CreatePickUpOrder
                );
             }
 
-            order.Status = OrderStatus.Expired;
+            order.ChangeStatus(OrderStatus.Expired);
 
             // Save changes through UnitOfWork
             await _unitOfWork.SaveChangesAsync();
@@ -243,12 +251,6 @@ namespace SmartCare.Application.Features.Orders.Commands.CreatePickUpOrder
             await _eventPublisherService.PublishOrderExpirationNotification(order.ClientId, orderId);
         }
 
-        public static string ComputeSha256(string input)
-        {
-            using var sha = SHA256.Create();
-            var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(input));
-            return Convert.ToHexString(bytes); // uppercase hex
-        }
 
         private Response<PickUpOrderResponseDto> BuildStockErrorResponse(List<OutOfStockItemDto> outOfStock)
         {

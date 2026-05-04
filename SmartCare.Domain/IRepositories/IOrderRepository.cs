@@ -44,5 +44,6 @@ namespace SmartCare.Domain.IRepositories
 
 
         Task<IEnumerable<TransactionDTO>> GetTransactionsAsync();
+        Task<IEnumerable<OnlineOrder>> GetShippingOrdersAsync();
     }
 }

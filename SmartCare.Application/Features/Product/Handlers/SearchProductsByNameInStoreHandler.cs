@@ -45,20 +45,7 @@ namespace SmartCare.Application.Features.Product.Handlers
 
             if (string.IsNullOrWhiteSpace(productName))
                 return _responseHandler.BadRequest<IEnumerable<ProductResponseDtoForPharmacist>>(
-                    SystemMessages.NOT_FOUND);
-
-            string cacheKey = $"products_name_{productName}_store_{storeId}";
-
-            try
-            {
-                var cachedData = await _redisCacheService.GetDataAsync<IEnumerable<ProductResponseDtoForPharmacist>>(cacheKey, tag);
-                if (cachedData != null)
-                    return _responseHandler.Success(cachedData);
-            }
-            catch (Exception)
-            {
-                // Ignore cache errors
-            }
+                    SystemMessages.PRODUCT_NOT_FOUND);
 
             var query = _unitOfWork.Inventories.SearchInventoriesByProductNameInStore(productName, storeId);
 
@@ -70,11 +57,8 @@ namespace SmartCare.Application.Features.Product.Handlers
             var result = await projectedQuery.ToListAsync();
 
             if (!result.Any())
-                return _responseHandler.NotFound<IEnumerable<ProductResponseDtoForPharmacist>>(
-                    SystemMessages.NOT_FOUND);
-
-            if (result != null)
-                await _redisCacheService.SetDataAsync(cacheKey, result, tag, Time.Default);
+                return _responseHandler.BadRequest<IEnumerable<ProductResponseDtoForPharmacist>>(
+                    SystemMessages.PRODUCT_NOT_FOUND);
 
             return _responseHandler.Success<IEnumerable<ProductResponseDtoForPharmacist>>(result);
         }

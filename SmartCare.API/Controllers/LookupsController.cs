@@ -103,12 +103,46 @@ namespace SmartCare.API.Controllers
 
             return Ok(list);
         }
+        [HttpGet("cart-statues")]
+        public async Task<IActionResult> GetCartstatues()
+        {
+
+            var list = Enum.GetValues(typeof(CartStatus))
+                .Cast<CartStatus>()
+                .Select(e => new
+                {
+                    Value = (int)e,
+                    DisplayName = e.ToString()
+                })
+                .ToList();
+
+            return Ok(list);
+        }
+
+        
         [HttpGet("Reservation-statues")]
         public async Task<IActionResult> GetReservationstatues()
         {
 
             var list = Enum.GetValues(typeof(ReservationStatus))
                 .Cast<ReservationStatus>()
+                .Select(e => new
+                {
+                    Value = (int)e,
+                    DisplayName = e.ToString()
+                })
+                .ToList();
+
+            return Ok(list);
+        }
+
+        
+        [HttpGet("Filter-intervales")]
+        public async Task<IActionResult> GetFilterintervals()
+        {
+
+            var list = Enum.GetValues(typeof(FilterIntervales))
+                .Cast<FilterIntervales>()
                 .Select(e => new
                 {
                     Value = (int)e,

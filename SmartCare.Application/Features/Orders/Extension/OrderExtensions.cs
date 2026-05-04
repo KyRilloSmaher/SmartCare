@@ -55,6 +55,13 @@ namespace SmartCare.Application.CQRs.Order.Extension
             // Allow any transition for this template except the disallowed above
             return true;
         }
-       
+
+        public static string ComputeSha256(string input)
+        {
+            using var sha = SHA256.Create();
+            var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(input));
+            return Convert.ToHexString(bytes); // uppercase hex
+        }
+
     }
 }

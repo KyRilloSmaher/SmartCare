@@ -16,7 +16,7 @@ namespace SmartCare.Domain.IRepositories
         Task<ICollection<T>> AddRangeAsync(ICollection<T> entities);
         Task DeleteAsync(T entity);
         Task DeleteRangeAsync(ICollection<T> entities);
-
+        Task UpdateAsync(T entity);
         Task<IEnumerable<T>> GetAllAsync(bool asTracking = false);
         Task<T?> GetByIdAsync(Guid id, bool asTracking = false);
 

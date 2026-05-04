@@ -15,6 +15,7 @@ namespace SmartCare.Application.DTOs.Orders.Responses
         public string Status { get; set; }
         public DateTime OrderDate { get; set; }
         public string? PickupCode { get; set; }
+        public bool Is_paid { get; set; } = false;
         public List<PickUpOrderItemDto> Items { get; set; }
     }
 

@@ -228,6 +228,7 @@ namespace SmartCare.Infrastructure.Repositories
                 .Include(o => o.Items)
                     .ThenInclude(oi => oi.Product)
                 .Include(o => o.Address)
+                .Include(o => o.Payment)
                 .Where(o => o.Items.Any(i => i.Inventory.StoreId == storeId)
                          && o.CreatedAt.Date == today
                          && !o.IsDeleted);
@@ -248,6 +249,7 @@ namespace SmartCare.Infrastructure.Repositories
                     .ThenInclude(c => c.User)
                 .Include(o => o.Items)
                     .ThenInclude(oi => oi.Product)
+                .Include(o => o.Payment)
                 .AsNoTracking()
                 .ToListAsync();
         }
@@ -370,6 +372,25 @@ namespace SmartCare.Infrastructure.Repositories
 
             return await query.AsNoTracking().ToListAsync();
         }
+
+        public async Task<IEnumerable<OnlineOrder>> GetShippingOrdersAsync()
+        {
+            return await _context.Orders
+                  .OfType<OnlineOrder>()
+                  .Include(o => o.Address)
+                  .Include(o => o.Client)
+                    .ThenInclude(c => c.User)
+                  .Include(o => o.Items)
+                    .ThenInclude(i => i.Inventory)
+                      .ThenInclude(inv => inv.Store) 
+                  .Include(o => o.Items)
+                     .ThenInclude(i => i.Product)
+                  .Where(o => o.Status == OrderStatus.Ready_To_Ship && !o.IsDeleted)
+                  .OrderByDescending(o => o.CreatedAt)
+                  .AsNoTracking()
+                  .ToListAsync();
+        }
+
 
         #endregion
     }

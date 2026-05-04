@@ -5,6 +5,7 @@ using SmartCare.API.Helpers;
 using SmartCare.Application.CQRs.Order.Queries;
 using SmartCare.Application.DTOs.Orders.Requests;
 using SmartCare.Application.DTOs.Orders.Responses;
+using SmartCare.Application.Features.Orders.Commands;
 using SmartCare.Application.Features.Orders.Commands.CreateOnlineOrder;
 using SmartCare.Application.Features.Orders.Commands.CreatePickUpOrder;
 using SmartCare.Application.Features.Orders.Commands.DeleteOrder;
@@ -53,6 +54,46 @@ namespace SmartCare.API.Controllers
             return ControllersHelperMethods.FinalResponse(result);
         }
 
+        [HttpGet(ApplicationRouting.Order.GetReadyOfShipOrders)]
+        [Authorize(Roles = "DELIVERY")]  
+        [ProducesResponseType(typeof(Response<IEnumerable<DeliveryOrderDto>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetShippingOrdersAsync()
+        {
+            var result = await _mediator.Send(new GetShippingOrdersQuery());
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+
+        /// <summary>
+        /// Confirm Order Delivered — DELIVERY role only
+        /// </summary>
+        [HttpPatch(ApplicationRouting.Order.ConfirmDelivery)]
+        [Authorize(Roles = "DELIVERY")]
+        [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> ConfirmDeliveryAsync(Guid orderId)
+        {
+            var deliveryPersonId = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+            var result = await _mediator.Send(new ConfirmDeliveryCommand(orderId, deliveryPersonId));
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+
+        /// <summary>
+        /// Accept Delivery Order — DELIVERY role only
+        /// Sets order status to DELIVERY_ACCEPTED
+        /// </summary>
+        [HttpPatch(ApplicationRouting.Order.AcceptDelivery)]
+        [Authorize(Roles = "DELIVERY")]
+        [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> AcceptDeliveryAsync(Guid orderId)
+        {
+            var deliveryPersonId = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+            var result = await _mediator.Send(new AcceptDeliveryCommand(orderId, deliveryPersonId));
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+
         /// <summary>
         /// Get Today Online Orders for specific branch — PHARMACIST only
         /// </summary>
@@ -89,6 +130,29 @@ namespace SmartCare.API.Controllers
             var result = await _mediator.Send(
                 new GetTodayPickUpOrdersQuery(storeId, pageNumber, pageSize));
 
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+        /// <summary>
+        /// Update Order Status
+        /// </summary>
+        [Authorize(Roles = "DASHBOARD_ADMIN ,PHARMACIST")]
+        [HttpPatch(ApplicationRouting.Order.UpdateStatus)]
+        [ProducesResponseType(typeof(Response<OrderResponseDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> UpdateOrderStatusAsync(Guid id, OrderStatus newStatus)
+        {
+            var result = await _mediator.Send(new UpdateOrderStatusCommand(id, newStatus));
+            return ControllersHelperMethods.FinalResponse(result);
+        }
+        /// <summary>
+        /// Verify a pickup code for a given order — PHARMACIST only
+        /// </summary>
+        [HttpPost(ApplicationRouting.Order.VerifyPickupCode)]
+        [Authorize(Roles = "PHARMACIST")]
+        [ProducesResponseType(typeof(Response<bool>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> VerifyPickupCode([FromQuery] VerifyPickupOrderRequestDto dto)
+        {
+            var query = new IsPickupCodeValidAsyncQuery(dto.OrderId, dto.VerifyCode);
+            var result = await _mediator.Send(query);
             return ControllersHelperMethods.FinalResponse(result);
         }
         /// <summary>
@@ -256,6 +320,7 @@ namespace SmartCare.API.Controllers
             var result = await _mediator.Send(new UpdateOrderStatusCommand(id, newStatus));
             return ControllersHelperMethods.FinalResponse(result);
         }
+
         /// <summary>
         /// Update Order Status
         /// </summary>
