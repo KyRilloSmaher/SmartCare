@@ -46,9 +46,30 @@ namespace SmartCare.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<IQueryable<Order>> GetOrdersWithDetailsAsync()
+        public async Task<IQueryable<Order>> GetOrdersWithDetailsAsync(string? ClientId ,Guid? BranchId , PaymentMethod? paymentMethod , OrderType? orderType , DateTime? From , DateTime? To )
         {
-            return  BaseOrderQuery();
+            var query = BaseOrderQuery();
+
+            //Filtering
+            if (!string.IsNullOrEmpty(ClientId))
+                query = query.Where(o => o.ClientId == ClientId);
+
+            if (BranchId.HasValue)
+                query = query.OfType<PickUpOrder>().Where(pickup => pickup.StoreId == BranchId);
+
+            if (orderType.HasValue)
+                query = query.Where(o => o.OrderType == orderType.Value);
+
+            if (paymentMethod.HasValue)
+                query = query.Where(o => o.Payment.Method == paymentMethod.Value);
+
+            if (From.HasValue && From != default)
+                query = query.Where(o => o.CreatedAt >= From.Value);
+
+            if (To.HasValue && To != default)
+                query = query.Where(o => o.CreatedAt <=To.Value);
+
+            return query;
         }
 
         public async Task<Order?> GetOrderWithDetailsByIdAsync(Guid orderId , bool astracked = false)

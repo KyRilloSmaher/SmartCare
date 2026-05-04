@@ -42,7 +42,7 @@ namespace SmartCare.Application.CQRs.Address.Handlers
             if (client == null)
                 return await _responseHandler.ClientNotFoundAsync<AddressResponseDto>();
 
-            var address = await _unitOfWork.Addresses.GetByIdAsync(clientId, true);
+            var address = await _unitOfWork.Addresses.GetByIdAsync(dto.Id, true);
             if (address == null || address.ClientId != client.Id)
                 return _responseHandler.NotFound<AddressResponseDto>(SystemMessages.ADDRESS_NOT_FOUND);
 

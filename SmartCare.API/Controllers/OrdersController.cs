@@ -12,6 +12,7 @@ using SmartCare.Application.Features.Orders.Commands.DeleteOrder;
 using SmartCare.Application.Features.Orders.Commands.UpdateOrder;
 using SmartCare.Application.Features.Orders.Commands.UpdateOrderStatus;
 using SmartCare.Application.Features.Orders.Queries;
+using SmartCare.Application.Features.Orders.Queries.GetOrdersWithDetails;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Application.IServices;
 using SmartCare.Domain.Enums;
@@ -132,17 +133,7 @@ namespace SmartCare.API.Controllers
 
             return ControllersHelperMethods.FinalResponse(result);
         }
-        /// <summary>
-        /// Update Order Status
-        /// </summary>
-        [Authorize(Roles = "DASHBOARD_ADMIN ,PHARMACIST")]
-        [HttpPatch(ApplicationRouting.Order.UpdateStatus)]
-        [ProducesResponseType(typeof(Response<OrderResponseDto>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> UpdateOrderStatusAsync(Guid id, OrderStatus newStatus)
-        {
-            var result = await _mediator.Send(new UpdateOrderStatusCommand(id, newStatus));
-            return ControllersHelperMethods.FinalResponse(result);
-        }
+
         /// <summary>
         /// Verify a pickup code for a given order — PHARMACIST only
         /// </summary>
@@ -238,9 +229,9 @@ namespace SmartCare.API.Controllers
         [Authorize(Roles = "DASHBOARD_ADMIN , OWNER")]
         [HttpGet(ApplicationRouting.Order.GetAllWithDetails)]
         [ProducesResponseType(typeof(Response<IEnumerable<OrderResponseDto>>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetOrdersWithDetailsAsync(int pageNumber , int Pagesize)
+        public async Task<IActionResult> GetOrdersWithDetailsAsync(GetOrdersForAdminRequestDto request)
         {
-            var result = await _mediator.Send(new GetOrdersWithDetailsAsyncQuery(pageNumber, Pagesize));
+            var result = await _mediator.Send(new GetOrdersWithDetailsQuery(request));
             return ControllersHelperMethods.FinalResponse(result);
         }
 
