@@ -25,8 +25,10 @@ namespace SmartCare.Application.CQRs.Address.Handlers
         string tag = CacheConstants.Addresses;
 
         #endregion
-        public UpdateClientAddressHandler(IResponseHandler responseHandler, IClientRepository clientRepository, IAddressRepository addressRepository, IRedisCacheService redisCacheService, IMapper mapper, IUnitOfWork unitOfWork)
+        public UpdateClientAddressHandler(IResponseHandler responseHandler, IRedisCacheService redisCacheService, IMapper mapper, IUnitOfWork unitOfWork)
         {
+            _responseHandler = responseHandler;
+            _redisCacheService = redisCacheService;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
         }
@@ -40,7 +42,7 @@ namespace SmartCare.Application.CQRs.Address.Handlers
             if (client == null)
                 return await _responseHandler.ClientNotFoundAsync<AddressResponseDto>();
 
-            var address = await _unitOfWork.Addresses.GetByIdAsync(dto.Id, true);
+            var address = await _unitOfWork.Addresses.GetByIdAsync(clientId, true);
             if (address == null || address.ClientId != client.Id)
                 return _responseHandler.NotFound<AddressResponseDto>(SystemMessages.ADDRESS_NOT_FOUND);
 
