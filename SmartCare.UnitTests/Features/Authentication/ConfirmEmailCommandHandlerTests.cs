@@ -8,7 +8,7 @@ using SmartCare.Application.Features.Authentication.Commands.Email.ConfirmEmail;
 using SmartCare.Domain.Constants;
 using SmartCare.Domain.Entities;
 using SmartCare.Domain.IRepositories;
-using SmartCare.UnitTests.TestHelpers;
+using SmartCare.UnitTests.TestInfrastructure;
 using System.Text;
 
 namespace SmartCare.UnitTests.Features;

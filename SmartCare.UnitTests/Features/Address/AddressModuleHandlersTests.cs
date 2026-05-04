@@ -100,7 +100,7 @@ public class AddressModuleHandlersTests
         // Arrange
         var client = new Client { Id = "c1" };
         var clients = new Mock<IClientRepository>();
-        clients.Setup(x => x.GetValidClientAsync("c1")).ReturnsAsync(client); 
+        clients.Setup(x => x.GetByIdAsync("c1", false)).ReturnsAsync(client);
 
         var addresses = new Mock<IAddressRepository>();
         addresses.Setup(x => x.GetByIdAsync(It.IsAny<Guid>(), true)).ReturnsAsync((Address?)null);
@@ -109,7 +109,7 @@ public class AddressModuleHandlersTests
         uow.SetupGet(x => x.Clients).Returns(clients.Object);
         uow.SetupGet(x => x.Addresses).Returns(addresses.Object);
 
-        var sut = new UpdateClientAddressHandler(new SmartCare.Application.Handlers.ResponsesHandler.ResponseHandler(), clients.Object, addresses.Object, Mock.Of<IRedisCacheService>(), Mock.Of<IMapper>(), uow.Object);
+        var sut = new UpdateClientAddressHandler(new SmartCare.Application.Handlers.ResponsesHandler.ResponseHandler(), Mock.Of<IRedisCacheService>(), Mock.Of<IMapper>(), uow.Object);
         var result = await sut.Handle(new UpdateClientAddressAsyncCommand("c1", new UpdateAddressRequestDto { Id = Guid.NewGuid(), IsPrimary = true }), CancellationToken.None);
 
         result.Succeeded.Should().BeFalse();

@@ -9,7 +9,7 @@ using SmartCare.Domain.Entities;
 using SmartCare.Domain.Helpers;
 using SmartCare.Domain.Interfaces.IServices;
 using SmartCare.Domain.IRepositories;
-using SmartCare.UnitTests.TestHelpers;
+using SmartCare.UnitTests.TestInfrastructure;
 using System.Security.Claims;
 
 namespace SmartCare.UnitTests.Features;
