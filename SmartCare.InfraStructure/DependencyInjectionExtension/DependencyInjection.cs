@@ -30,6 +30,9 @@ using System.Text;
 using Polly.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Polly;
+using SmartCare.Application.Handlers.RoleHandler;
+using SmartCare.Application.Handlers.ClaimsHandler;
+using SmartCare.InfraStructure.Services.FP_Growth;
 
 namespace SmartCare.InfraStructure.Extensions
 {
@@ -59,7 +62,10 @@ namespace SmartCare.InfraStructure.Extensions
             services.AddScoped<IPaymentGatewayFactory, PaymentGatewayFactory>();
 
             services.AddScoped<ISalesRepository, SalesRepository>();
-
+            // ---------- Handlers ---------
+                services.AddScoped<IResponseHandler, ResponseHandler>();
+                services.AddScoped<IClaimsProvider, PharmacistClaimsProvider>();
+                services.AddScoped<IRoleLoginHandler, PharmacistRoleLoginHandler>();
             // ---------- Identity ----------
             services.AddIdentity<ApplictionUser, IdentityRole>(options =>
             {
@@ -99,7 +105,7 @@ namespace SmartCare.InfraStructure.Extensions
             //services.AddScoped<IOrderService, OrderService>();
             //services.AddScoped<IinventoryService, InventoryService>();
             services.AddScoped<ISqlLockManager, SqlLockManager>();
-
+            services.AddScoped<IDataMiningService,FP_Growth >();
             // ---------- External Services ----------
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IImageUploaderService, ImageUploaderService>();

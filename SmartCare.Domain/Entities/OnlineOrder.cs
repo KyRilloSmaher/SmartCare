@@ -13,15 +13,19 @@ namespace SmartCare.Domain.Entities
         [ForeignKey(nameof(ShippingAddressId))]
         public Address Address { get; set; }
 
+        public OnlineOrder() { }
+
+        public OnlineOrder(string clientId, decimal totalPrice, Guid deliveryAddressId)
+        {
+            ClientId = clientId;
+            TotalPrice = totalPrice;
+            ShippingAddressId = deliveryAddressId;
+            OrderType = Enums.OrderType.Online;
+            Status = Enums.OrderStatus.Pending;
+        }
         public static OnlineOrder Create(string clientId , decimal totalPrice , Guid deliveryAddressId )
         {
-            return new OnlineOrder
-            {
-                ClientId = clientId,
-                TotalPrice = totalPrice,
-                ShippingAddressId = deliveryAddressId,
-                OrderType = Enums.OrderType.Online
-            };
+            return new OnlineOrder( clientId,  totalPrice,  deliveryAddressId);
         }
     }
 }

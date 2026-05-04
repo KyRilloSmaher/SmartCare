@@ -7,13 +7,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace SmartCare.Domain.IRepositories
 {
     public interface IOrderRepository : IGenericRepository<Order>
     {
         Task<IEnumerable<Order>> GetOrdersByCustomerIdAsync(string clientId);
-        Task<IEnumerable<Order>> GetOrdersWithDetailsAsync();
+        Task<IQueryable<Order>> GetOrdersWithDetailsAsync(string? ClientId, Guid? BranchId, PaymentMethod? paymentMethod, OrderType? orderType, DateTime? From, DateTime? To);
         Task<Order?> GetOrderWithDetailsByIdAsync(Guid orderId, bool astracked = false);
         Task<Order?> GetOrderByPickUpCode(string code);
         Task<IEnumerable<Order>> GetOrdersByStatusAsync(OrderStatus status, Guid? storeId = null);
@@ -36,6 +37,13 @@ namespace SmartCare.Domain.IRepositories
         Task AddInOfflineOrderAsync(PickUpOrder fromStoreOrder);
         Task SwitchOrderTypeAsync(Order order, OrderType newType, Guid? shippingAddressId, Guid? storeId);
         Task UpdatePickupCodeHashAsync(Guid orderId, string pickupCodeHash);
+        IQueryable<OnlineOrder> GetTodayOnlineOrdersByStore(Guid storeId);
+        Task<List<PickUpOrder>> GetTodayPickUpOrdersByStoreAsync(Guid storeId, DateTime today);
 
+
+
+
+        Task<IEnumerable<TransactionDTO>> GetTransactionsAsync();
+        Task<IEnumerable<OnlineOrder>> GetShippingOrdersAsync();
     }
 }

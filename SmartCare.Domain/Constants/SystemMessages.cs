@@ -117,6 +117,9 @@ namespace SmartCare.Domain.Constants
         public const string RESERVATION_FAILED = "Failed to create reservation for the product.";
         public const string INVALID_ORDER_TYPE = "INVALID ORDER TYPE";
         public const string ORDER_NOT_EDITABLE = "This Order is Pending For Payment And Can not be Updated";
+        public const string PICKUP_CODE_VALID = "Pickup code is valid. Order is ready for handoff.";
+        public const string INVALID_PICKUP_CODE = "Invalid pickup code. Please try again.";
+        public const string PICKUP_ORDER_NOT_FOUND = "Pickup order not found.";
         // =====================
         // 💳 Payments & Subscriptions
         // =====================

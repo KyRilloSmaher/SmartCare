@@ -7,7 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.CQRs.Order.Queries
+namespace SmartCare.Application.Features.Orders.Queries
 {
-     public record GetOrdersWithDetailsAsyncQuery : IRequest<Response<IEnumerable<OrderResponseDto>>>;
+    public record GetShippingOrdersQuery()
+        : IRequest<Response<IEnumerable<DeliveryOrderDto>>>;
 }

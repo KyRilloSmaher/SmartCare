@@ -8,6 +8,7 @@ using SmartCare.Application.DTOs.Orders.Responses;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Application.Handlers.ResponsesHandler;
 using SmartCare.Application.IServices;
+using SmartCare.Application.Notifications;
 using SmartCare.Domain.Constants;
 using SmartCare.Domain.Entities;
 using SmartCare.Domain.Enums;
@@ -32,8 +33,10 @@ namespace SmartCare.Application.Features.Orders.Commands.CreatePickUpOrder
         private readonly ILogger<CreatePickupOrderFromCartAsyncHandler> _logger;
         private readonly int OrderExpirationTimeUntilPayment;
         private readonly IEventPublisherService _eventPublisherService;
+        private readonly IRedisCacheService _redisCacheService;
+        private readonly IOrderNotificationService _notificationService;
 
-        public CreatePickupOrderFromCartAsyncHandler(IConfiguration configuration, IResponseHandler responseHandler, IUnitOfWork unitOfWork, IBackgroundJobService backgroundJobService, IMapper mapper, ISqlLockManager sqlLockManager, ILogger<CreatePickupOrderFromCartAsyncHandler> logger, IEventPublisherService eventPublisherService)
+        public CreatePickupOrderFromCartAsyncHandler(IConfiguration configuration, IResponseHandler responseHandler, IUnitOfWork unitOfWork, IOrderNotificationService notificationService, IBackgroundJobService backgroundJobService, IMapper mapper, ISqlLockManager sqlLockManager, ILogger<CreatePickupOrderFromCartAsyncHandler> logger, IEventPublisherService eventPublisherService, IRedisCacheService redisCacheService)
         {
             _responseHandler = responseHandler;
             _unitOfWork = unitOfWork;
@@ -43,6 +46,9 @@ namespace SmartCare.Application.Features.Orders.Commands.CreatePickUpOrder
             _logger = logger;
             OrderExpirationTimeUntilPayment = configuration.GetValue<int>("ReservationTimes:ForOrderExpirationMinutes");
             _eventPublisherService = eventPublisherService;
+            _notificationService = notificationService;
+            _redisCacheService = redisCacheService;
+
         }
         #endregion
 
@@ -98,7 +104,7 @@ namespace SmartCare.Application.Features.Orders.Commands.CreatePickUpOrder
             // =====================================================
             var order = PickUpOrder.Create(clientId, cart.TotalPrice, storeId);
             var pickupCode = RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D7");
-            var HasedCode = ComputeSha256(pickupCode);
+            var HasedCode = OrderExtensions.ComputeSha256(pickupCode);
             order.AddPickUpCode(HasedCode);
             await _unitOfWork.Orders.AddInOfflineOrderAsync(order);
             // =====================================================
@@ -153,6 +159,38 @@ namespace SmartCare.Application.Features.Orders.Commands.CreatePickUpOrder
             var response = _mapper.Map<PickUpOrderResponseDto>(order);
             foreach (var l in inventoryLocks)
                 await l.DisposeAsync();
+            try
+            {
+                var notificationDto = new PickUpOrderNotificationDto
+                {
+                    OrderId = order.Id,
+                    ClientName = $"{client.User.FirstName} {client.User.LastName}",
+                    ClientPhone = client.User.PhoneNumber,
+                    TotalPrice = order.TotalPrice,
+                    Status = order.Status.ToString(),
+                    OrderDate = order.CreatedAt,
+                    PickupCode = pickupCode, 
+                    Items = orderItems.Select(oi => new PickUpOrderItemDto
+                    {
+                        ProductId = oi.ProductId,
+                        ProductName = oi.Product?.NameEn,
+                        Quantity = oi.Quantity,
+                        UnitPrice = oi.UnitPrice,
+                        SubTotal = oi.SubTotal
+                    }).ToList()
+                };
+
+                await _notificationService.NotifyNewPickUpOrderAsync(order.StoreId, notificationDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "SignalR notification failed for PickUp order {OrderId}", order.Id);
+            }
+            string clientByIdKey = $"client_id_{clientId}";
+            string clientByEmailKey = $"client_email_{client.User?.Email?.ToLower()}";
+            await _redisCacheService.RemoveKeyAsync(clientByIdKey, CacheConstants.Client);
+            await _redisCacheService.RemoveKeyAsync(clientByEmailKey, CacheConstants.Client);
+            await _redisCacheService.RemoveKeyAsync("clients_all", CacheConstants.Client);
             return _responseHandler.Success(response, SystemMessages.ORDER_PLACED);
         }
         private void ScheduledProductsStatusChanged(List<OrderItem> orderItems)
@@ -180,11 +218,12 @@ namespace SmartCare.Application.Features.Orders.Commands.CreatePickUpOrder
         }
         public async Task RealseOrder(Guid orderId)
         {
+            _logger.LogInformation($"************RealseOrder Begin For Order => {orderId}");
             var order = await _unitOfWork.Orders.GetOrderWithDetailsByIdAsync(orderId);
 
             if (order is null)
                 return;
-
+            _logger.LogInformation($"************Realse Order  For Order with Status  => {order.Status}");
             // Idempotency: don't re-expire an already finalized order
             if (order.Status is OrderStatus.Expired or OrderStatus.Cancelled or OrderStatus.Completed)
                 return;
@@ -197,28 +236,24 @@ namespace SmartCare.Application.Features.Orders.Commands.CreatePickUpOrder
             {
                 if (!item.ReservationId.HasValue)
                     continue;
-
-                await _unitOfWork.Reservations.CancelReservationAsync(
+                _logger.LogInformation($"**************Realse Reservation For Item with ReservationId is => {item.ReservationId}");
+                var result = await _unitOfWork.Reservations.CancelReservationAsync(
                    reservationId: item.ReservationId.Value,
                    inventoryId: item.InvetoryId,
                    status: reservationStatus
                );
+                _logger.LogInformation($"**************Realse Reservation For Item with ReservationId is => {item.ReservationId} Is {result} ");
             }
 
-            order.Status = OrderStatus.Expired;
-
+            order.ChangeStatus(OrderStatus.Expired);
             // Save changes through UnitOfWork
             await _unitOfWork.SaveChangesAsync();
+
+            _logger.LogInformation($"**************Realse Order  :  Order Status Become  => {order.Status}");
             // Push Notifaction to User
             await _eventPublisherService.PublishOrderExpirationNotification(order.ClientId, orderId);
         }
 
-        public static string ComputeSha256(string input)
-        {
-            using var sha = SHA256.Create();
-            var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(input));
-            return Convert.ToHexString(bytes); // uppercase hex
-        }
 
         private Response<PickUpOrderResponseDto> BuildStockErrorResponse(List<OutOfStockItemDto> outOfStock)
         {

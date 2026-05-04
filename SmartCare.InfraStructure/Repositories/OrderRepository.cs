@@ -2,6 +2,7 @@
 using SmartCare.Domain.Entities;
 using SmartCare.Domain.Enums;
 using SmartCare.Domain.IRepositories;
+using SmartCare.Domain.Projection_Models;
 using SmartCare.InfraStructure.DbContexts;
 using SmartCare.InfraStructure.Repositories;
 
@@ -45,9 +46,30 @@ namespace SmartCare.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Order>> GetOrdersWithDetailsAsync()
+        public async Task<IQueryable<Order>> GetOrdersWithDetailsAsync(string? ClientId ,Guid? BranchId , PaymentMethod? paymentMethod , OrderType? orderType , DateTime? From , DateTime? To )
         {
-            return await BaseOrderQuery().ToListAsync();
+            var query = BaseOrderQuery();
+
+            //Filtering
+            if (!string.IsNullOrEmpty(ClientId))
+                query = query.Where(o => o.ClientId == ClientId);
+
+            if (BranchId.HasValue)
+                query = query.OfType<PickUpOrder>().Where(pickup => pickup.StoreId == BranchId);
+
+            if (orderType.HasValue)
+                query = query.Where(o => o.OrderType == orderType.Value);
+
+            if (paymentMethod.HasValue)
+                query = query.Where(o => o.Payment.Method == paymentMethod.Value);
+
+            if (From.HasValue && From != default)
+                query = query.Where(o => o.CreatedAt >= From.Value);
+
+            if (To.HasValue && To != default)
+                query = query.Where(o => o.CreatedAt <=To.Value);
+
+            return query;
         }
 
         public async Task<Order?> GetOrderWithDetailsByIdAsync(Guid orderId , bool astracked = false)
@@ -199,6 +221,60 @@ namespace SmartCare.Infrastructure.Repositories
                 .FirstOrDefaultAsync(o => o.Id == orderId);
         }
 
+
+        public async Task<IEnumerable<TransactionDTO>> GetTransactionsAsync()
+        {
+            var transactions = await _context.Orders
+                .Where(o => o.Status == OrderStatus.Completed)
+                .Include(o => o.Items)
+                .AsNoTracking()
+                .Select(o => new TransactionDTO
+                {
+                    OrderId = o.Id,
+                    productIds = o.Items.Select(i => i.ProductId).ToList()
+                })
+                .Where(t => t.productIds.Any())
+                .ToListAsync();
+            return transactions;
+        }
+
+
+        public IQueryable<OnlineOrder> GetTodayOnlineOrdersByStore(Guid storeId)
+        {
+            var today = DateTime.UtcNow.Date;
+
+            return _context.OnlineOrders
+                .Include(o => o.Client)
+                    .ThenInclude(c => c.User)
+                .Include(o => o.Items)
+                    .ThenInclude(oi => oi.Product)
+                .Include(o => o.Address)
+                .Include(o => o.Payment)
+                .Where(o => o.Items.Any(i => i.Inventory.StoreId == storeId)
+                         && o.CreatedAt.Date == today
+                         && !o.IsDeleted);
+        }
+
+        public async Task<List<PickUpOrder>> GetTodayPickUpOrdersByStoreAsync(Guid storeId, DateTime today)
+        {
+            return await _context.Orders
+                .OfType<PickUpOrder>()
+                .Where(o =>
+                    o.StoreId == storeId &&
+                    o.CreatedAt.Date == today &&
+                    !o.IsDeleted &&
+                    o.Status != OrderStatus.Cancelled && 
+                    o.Status != OrderStatus.Expired &&  
+                    o.Status != OrderStatus.Refunded)      
+                .Include(o => o.Client)
+                    .ThenInclude(c => c.User)
+                .Include(o => o.Items)
+                    .ThenInclude(oi => oi.Product)
+                .Include(o => o.Payment)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
         #endregion
 
         #region Command Methods
@@ -316,6 +392,24 @@ namespace SmartCare.Infrastructure.Repositories
                 query = query.Where(o => o.StoreId == storeId.Value);
 
             return await query.AsNoTracking().ToListAsync();
+        }
+
+        public async Task<IEnumerable<OnlineOrder>> GetShippingOrdersAsync()
+        {
+            return await _context.Orders
+                  .OfType<OnlineOrder>()
+                  .Include(o => o.Address)
+                  .Include(o => o.Client)
+                    .ThenInclude(c => c.User)
+                  .Include(o => o.Items)
+                    .ThenInclude(i => i.Inventory)
+                      .ThenInclude(inv => inv.Store) 
+                  .Include(o => o.Items)
+                     .ThenInclude(i => i.Product)
+                  .Where(o => o.Status == OrderStatus.Ready_To_Ship && !o.IsDeleted)
+                  .OrderByDescending(o => o.CreatedAt)
+                  .AsNoTracking()
+                  .ToListAsync();
         }
 
 

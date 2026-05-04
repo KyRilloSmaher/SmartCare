@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using SmartCare.API.EventHandlers;
@@ -22,6 +23,7 @@ using SmartCare.Application.InMemoryEventsHandlers;
 using SmartCare.Application.IServices;
 using SmartCare.Application.Messaging;
 using SmartCare.Application.Notifications;
+using SmartCare.Domain.Enums;
 using SmartCare.InfraStructure.DbContexts;
 using SmartCare.InfraStructure.Extensions;
 using SmartCare.InfraStructure.Messaging;
@@ -35,6 +37,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 // Add services to the container.
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -42,12 +45,12 @@ builder.Services.AddHttpClient();
 
 
 #region Swagger_Gn
-    builder.Services.AddSwaggerGen(c =>
+    builder.Services.AddSwaggerGen(options =>
     {
-        c.SwaggerDoc("v1", new OpenApiInfo { Title = "SmartCare_Application_API ", Version = "v1" });
-        c.EnableAnnotations();
+        options.SwaggerDoc("v1", new OpenApiInfo { Title = "SmartCare_Application_API ", Version = "v1" });
+        options.EnableAnnotations();
 
-        c.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
+        options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
         {
             Description = "JWT Authorization header using the Bearer scheme (Example: 'Bearer 12345abcdef')",
             Name = "Authorization",
@@ -56,8 +59,17 @@ builder.Services.AddHttpClient();
             Scheme = JwtBearerDefaults.AuthenticationScheme
 
         });
+        options.UseInlineDefinitionsForEnums(); // optional but cleaner
 
-        c.AddSecurityRequirement(new OpenApiSecurityRequirement
+        options.MapType<OrderStatus>(() => new Microsoft.OpenApi.Models.OpenApiSchema
+        {
+            Type = "string",
+            Enum = Enum.GetNames(typeof(OrderStatus))
+                       .Select(name => new Microsoft.OpenApi.Any.OpenApiString(name))
+                       .Cast<Microsoft.OpenApi.Any.IOpenApiAny>()
+                       .ToList()
+        });
+        options.AddSecurityRequirement(new OpenApiSecurityRequirement
                     {
                      {
                      new OpenApiSecurityScheme
@@ -201,6 +213,7 @@ builder.Services.AddSingleton<IEventBus, InMemoryEventBus>();
 builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
 builder.Services.AddScoped<IEventPublisherService, EventPublisherService>();
 builder.Services.AddScoped<INotificationSender, SignalRNotificationSender>();
+builder.Services.AddScoped<IOrderNotificationService, OrderNotificationService>();
 builder.Services.AddScoped<PaymentExtensions>();
 // Add  events handlers
 builder.Services.AddScoped<PaymentStatusChangedHandler>();
@@ -268,6 +281,6 @@ app.MapHub<ProductsHub>("/hubs/products");
 app.MapHub<CartHub>("/hubs/cart");
 app.MapHub<OrderHub>("/hubs/orders");
 app.MapHub<UserNotificationHub>("/hubs/users");
-
+app.MapHub<PharmacistHub>("/hubs/pharmacist");
 
 app.Run();

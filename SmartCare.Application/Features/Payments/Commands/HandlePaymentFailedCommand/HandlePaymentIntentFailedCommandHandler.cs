@@ -52,7 +52,7 @@ namespace SmartCare.Application.CQRs.Payments.Commands.HandlePaymentFailedComman
                 _logger.LogError($"No Payment Found By OrderId {order.Id}!");
             }
             existingPayment.MarkFailed();
-            order.Status = OrderStatus.PaymentFailed;
+            order.ChangeStatus(OrderStatus.PaymentFailed);
             // Save all changes atomically through UnitOfWork
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             _paymentExtensions.PublishPaymentEvent(order, "failed", "Payment failed");

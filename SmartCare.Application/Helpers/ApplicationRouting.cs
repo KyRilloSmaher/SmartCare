@@ -180,6 +180,10 @@ namespace SmartCare.API.Helpers
             public const string GetProductsByCompanyInStore = PharmacistPrefix + "/Company/Store";
             public const string GetProductsByCategoryInStore = PharmacistPrefix + "/Category/Store";
             public const string SearchProductsByNameInStore = PharmacistPrefix + "/SearchByName/Store";
+            public const string StockLevels = AdminPrefix + "/stock-levels";
+            public const string GetProductStockLevelsInStores = AdminPrefix + SingleRoute +  "/stores/stock-levels";
+            public const string PeopleAlsoBought = Prefix + "/people-also-bought" + SingleRoute;
+
         }
         #endregion
 
@@ -187,7 +191,10 @@ namespace SmartCare.API.Helpers
         public static class Order
         {
             private const string Prefix = Rule + "orders";
+            private const string PharmacistPrefix = Rule + "Pharmacist/orders";
             private const string AdminPrefix = Rule + "admin/orders";
+            private const string DeliveryPrefix = Rule + "Delivery/orders";
+
 
             public const string GetWithDetailsById = Prefix + "/details" + SingleRoute;
             public const string GetForUser= Rule + "me/orders";
@@ -201,12 +208,17 @@ namespace SmartCare.API.Helpers
             public const string GetTotalCount = AdminPrefix + "/total-count";
             public const string GetTotalRevenue = AdminPrefix + "/total-revenue";
             public const string GetCountByStatus = AdminPrefix + "/count-by-status";
-
+            public const string GetTodayOnlineOrders = PharmacistPrefix + "/Today/Online";
+            public const string GetTodayPickUpOrders = PharmacistPrefix + "/Today-pickup";
+            public const string VerifyPickupCode = PharmacistPrefix + "/verify-pickup-code";
+            public const string GetReadyOfShipOrders = DeliveryPrefix + "/Ready-Of-Ship";
+            public const string AcceptDelivery = DeliveryPrefix + "/Accepted";
+            public const string ConfirmDelivery = DeliveryPrefix + "/{orderId}/confirm-delivery";
 
             public const string CreateOnline = Prefix + "/create-online-order";
             public const string CreatePickUp = Prefix + "/create-pickup-order";
             public const string Update = Prefix + "/update";
-            public const string UpdateStatus = AdminPrefix + "/update-status" + SingleRoute;
+            public const string UpdateStatus = PharmacistPrefix + "/update-status" + SingleRoute;
             public const string Delete = AdminPrefix + "/delete" + SingleRoute;
         }
         #endregion
@@ -254,6 +266,12 @@ namespace SmartCare.API.Helpers
 
         #endregion
 
+        public static class Pharmacist
+        {
+            private const string Base = "api/pharmacist";
+            public const string GetProfile = Base + "/profile";
+        }
+
         #region Analytics
         public class Analytics
         {
@@ -268,6 +286,7 @@ namespace SmartCare.API.Helpers
             public const string Clients = Prefix + "/clients";
             public const string Orders = Prefix + "/orders";
             public const string orderStatus = Prefix + "/order-status";
+            public const string CategoryChannels = Prefix + "/category-channels/{categoryId}";
 
         }
         #endregion
@@ -275,9 +294,17 @@ namespace SmartCare.API.Helpers
         public class Dashboard
         {
             private const string Prefix = Rule + "admin/dashboard";
-
+            public const string Admin = Rule + "dashboard/admin";
+            public const string Admins = Prefix + "/admins";
+            public const string Deliveries = Prefix + "/deliveries";
+            public const string GetNonConfirmedPharmacists = Prefix + "/non-confirmed-pharmacists";
+            public const string ConfirmPharmacistEmail = Prefix + "/confirm-pharmacist-email" + SingleRoute;
+            public const string GetAllPharmacists = Prefix + "/pharmacists";
             public const string LowStock = Prefix + "/stores-Low-stock";
-
+            public const string CreateAdmin = Prefix + "/create-admin";
+            public const string DeleteAdmin = Prefix + "/delete-admin/{id}";
+            private const string Base = "api/admin";
+            public const string AssignDeliveryRole = Base + "/assign-delivery/{clientId}";
         }
         #endregion
 

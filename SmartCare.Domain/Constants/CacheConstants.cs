@@ -17,6 +17,7 @@ namespace SmartCare.Domain.Constants
         public const string Pharmacist = "pharmacist_tag";
         public const string Favourite = "Favourites_tag";
         public const string Rates = "Rates_tag";
+        public const string Orders = "orders_tag";
 
 
         public const string CategoriesAllAdmin = "categories_all_admin";
@@ -26,6 +27,9 @@ namespace SmartCare.Domain.Constants
         public const string CompanyiesAllAdmin = "companies_list_admin";
         public const string CompaniesClient = "companies_list_client";
         public const string Company= "company";
+
+        public const string PeopleAlsoBounght = "PeopleAlsoBought_tag";
+
     }
 
     public static class Time

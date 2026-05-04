@@ -34,11 +34,20 @@ namespace SmartCare.InfraStructure.Repositories
             return await _context.Pharmacists.FirstOrDefaultAsync(p => p.LicenseNumber == licenseNumber);
         }
 
-        public async Task<Pharmacist?> GetByUserIdAsync(string userId)
+        public async Task<Pharmacist?> GetByUserIdAsync(string userId, bool isTracked = false)
         {
-            return await _context.Pharmacists
-                .FirstOrDefaultAsync(p => p.Id == userId);
+            var query = _context.Pharmacists
+                .Include(p => p.User)
+                .Include(p => p.Store)
+                .Where(p => p.Id == userId);
+
+            query = isTracked
+                ? query.AsTracking()
+                : query.AsNoTracking();
+
+            return await query.FirstOrDefaultAsync();
         }
+
 
         public async Task<bool> IsPharmacistPhoneNumberUniqueAsync(string phone)
         {
@@ -55,5 +64,26 @@ namespace SmartCare.InfraStructure.Repositories
             await _context.Database.RollbackTransactionAsync();
         }
 
+        // get unConfirmed pharmacists
+        public async Task<IEnumerable<Pharmacist>> GetUnconfirmedPharmacistsAsync(bool asTracking = false)
+        {
+            var query = _context.Pharmacists
+                                         .Include(p => p.User)
+                                         .Include(p => p.Store)
+                                         .Where(p => !p.User.EmailConfirmed);
+            query = asTracking ? query.AsTracking() : query.AsNoTracking();
+            return await query.ToListAsync();
+        }
+        public virtual async Task<IEnumerable<Pharmacist>> GetAllAsync(bool asTracking = false)
+        {
+            IQueryable<Pharmacist> query = _context.Pharmacists
+                .Include(p => p.User)
+                .Include(p => p.Store);
+
+            if (!asTracking)
+                query = query.AsNoTracking();
+
+            return await query.ToListAsync();
+        }
     }
 }

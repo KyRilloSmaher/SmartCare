@@ -76,7 +76,7 @@ namespace SmartCare.Application.Features.Orders.Commands.DeleteOrder
                );
             }
 
-            order.Status = OrderStatus.Cancelled;
+            order.ChangeStatus(OrderStatus.Cancelled);
 
         }
     }

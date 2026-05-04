@@ -53,18 +53,6 @@ namespace SmartCare.Application.Features.Product.Handlers
                 return _responseHandler.BadRequest<PaginatedResult<ProductResponseDtoForPharmacist>>(
                     SystemMessages.INVALID_PAGINATION_PARAMETERS);
 
-            string cacheKey = $"products_company_{companyId}_store_{storeId}_p{pageNumber}_s{pageSize}";
-
-            try
-            {
-                var cachedData = await _redisCacheService.GetDataAsync<PaginatedResult<ProductResponseDtoForPharmacist>>(cacheKey, tag);
-                if (cachedData != null)
-                    return _responseHandler.Success(cachedData);
-            }
-            catch (Exception)
-            {
-                // Ignore cache errors
-            }
 
             var query = _unitOfWork.Inventories.GetInventoriesByCompanyInStore(companyId, storeId);
 
@@ -75,8 +63,8 @@ namespace SmartCare.Application.Features.Product.Handlers
             var projectedQuery = _mapper.ProjectTo<ProductResponseDtoForPharmacist>(query);
             var paginatedResult = await projectedQuery.ToPaginatedListAsync(pageNumber, pageSize);
 
-            if (paginatedResult != null)
-                await _redisCacheService.SetDataAsync(cacheKey, paginatedResult, tag, Time.Default);
+            //if (paginatedResult != null)
+            //    await _redisCacheService.SetDataAsync(cacheKey, paginatedResult, tag, Time.Default);
 
             return _responseHandler.Success(paginatedResult);
         }

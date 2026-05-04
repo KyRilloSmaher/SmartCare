@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using SmartCare.Application.Handlers.ClaimsHandler;
 using SmartCare.Domain.Entities;
 using SmartCare.Domain.Helpers;
 using SmartCare.Domain.Interfaces.IServices;
@@ -16,11 +17,13 @@ namespace SmartCare.InfraStructure.Services
     {
         private readonly JwtSettings _jwtSettings;
         private readonly UserManager<ApplictionUser> _userManager;
+        private readonly IEnumerable<IClaimsProvider> _claimsProviders;
 
-        public TokenService(JwtSettings jwt, UserManager<ApplictionUser> userManager)
+        public TokenService(JwtSettings jwt, UserManager<ApplictionUser> userManager, IEnumerable<IClaimsProvider> claimsProviders)
         {
             _jwtSettings = jwt;
             _userManager = userManager;
+            _claimsProviders = claimsProviders;
         }
 
         // Generate Access Token (JWT)
@@ -60,24 +63,27 @@ namespace SmartCare.InfraStructure.Services
         {
             var userRoles = await _userManager.GetRolesAsync(user);
             var securityStamp = await _userManager.GetSecurityStampAsync(user);
-            var authClaims = new List<Claim>
-                                {
-                                    new Claim(ClaimTypes.NameIdentifier, user.Id),
-                                    new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
-                                    new Claim(ClaimTypes.Name, user.UserName ?? string.Empty),
-                                    new Claim("security_stamp", securityStamp ?? "")
-                                };
 
-            if (user.Pharmacist != null) 
-            { 
-                authClaims.Add(new Claim("StoreId",user.Pharmacist.StoreId.ToString()));
+            var authClaims = new List<Claim>
+                        {
+                            new Claim(ClaimTypes.NameIdentifier, user.Id),
+                            new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
+                            new Claim(ClaimTypes.Name, user.UserName ?? string.Empty),
+                            new Claim("security_stamp", securityStamp ?? "")
+                        };
+
+            foreach (var provider in _claimsProviders)
+            {
+                var claims = await provider.GetClaimsAsync(user);
+                authClaims.AddRange(claims);
             }
-            
-            // Add role claims
+
+            // Roles
             foreach (var role in userRoles)
             {
                 authClaims.Add(new Claim(ClaimTypes.Role, role));
             }
+
             return authClaims;
         }
 

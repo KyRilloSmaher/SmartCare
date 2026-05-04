@@ -36,13 +36,13 @@ namespace SmartCare.Application.Features.Analytics.Sales.Revenue
             {
                 var revenue = await _unitOfWork.Sales.GetRevenueAnalyticsAsync(
                     request.BranchId,
-                    request.Interval,
+                    request.interval,
                     request.StartDate,
                     request.EndDate);
 
                 var dto = new RevenueAnalyticsDto
                 {
-                    Interval = request.Interval,
+                    Interval = request.interval,
                     Data = revenue.Select(r => new RevenuePointDto
                     {
                         Date = r.Date,

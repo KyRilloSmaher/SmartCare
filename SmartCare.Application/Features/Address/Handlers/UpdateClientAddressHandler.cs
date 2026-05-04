@@ -42,7 +42,7 @@ namespace SmartCare.Application.CQRs.Address.Handlers
             if (client == null)
                 return await _responseHandler.ClientNotFoundAsync<AddressResponseDto>();
 
-            var address = await _unitOfWork.Addresses.GetClientAddressByIdAsync(clientId, dto.Id, true);
+            var address = await _unitOfWork.Addresses.GetByIdAsync(dto.Id, true);
             if (address == null || address.ClientId != client.Id)
                 return _responseHandler.NotFound<AddressResponseDto>(SystemMessages.ADDRESS_NOT_FOUND);
 
@@ -59,7 +59,11 @@ namespace SmartCare.Application.CQRs.Address.Handlers
             await _unitOfWork.SaveChangesAsync();
 
             string cacheKey = $"client_addresses_{client.Id}";
-
+            string clientByIdKey = $"client_id_{clientId}";
+            string clientByEmailKey = $"client_email_{client.User?.Email?.ToLower()}";
+            await _redisCacheService.RemoveKeyAsync(clientByIdKey, CacheConstants.Client);
+            await _redisCacheService.RemoveKeyAsync(clientByEmailKey, CacheConstants.Client);
+            await _redisCacheService.RemoveKeyAsync("clients_all", CacheConstants.Client);
             // Remove cache for store
             await _redisCacheService.RemoveKeyAsync(cacheKey, tag);
 

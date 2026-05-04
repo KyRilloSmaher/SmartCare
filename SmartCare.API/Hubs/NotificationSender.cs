@@ -11,14 +11,22 @@ namespace SmartCare.Application.Notifications
     {
         private readonly IHubContext<UserNotificationHub> _userHub;
         private readonly IHubContext<ProductsHub> _productHub;
+        private readonly IHubContext<PharmacistHub> _pharmacistHub;
 
-        public SignalRNotificationSender(
-            IHubContext<UserNotificationHub> userHub,
-            IHubContext<ProductsHub> productHub)
+        public SignalRNotificationSender(IHubContext<UserNotificationHub> userHub, IHubContext<ProductsHub> productHub, IHubContext<PharmacistHub> pharmacistHub)
         {
             _userHub = userHub;
             _productHub = productHub;
+            _pharmacistHub = pharmacistHub;
         }
+
+        //public SignalRNotificationSender(
+        //    IHubContext<UserNotificationHub> userHub,
+        //    IHubContext<ProductsHub> productHub)
+        //{
+        //    _userHub = userHub;
+        //    _productHub = productHub;
+        //}
 
         // ===== BASIC METHODS =====
         public Task SendToUserAsync(string userId, string method, object payload, CancellationToken ct = default)
@@ -67,6 +75,31 @@ namespace SmartCare.Application.Notifications
                 .SendAsync("ProductStockStatusChanged", payload, ct);
 
             Console.WriteLine($"[SignalR] ProductStockStatusChanged -> Product {productId}");
+        }
+
+
+        // ==============================
+        //      ORDER NOTIFICATIONS
+        // ===============================
+
+
+        public async Task SendNewOnlineOrderToStoreAsync(
+            Guid storeId, object payload, CancellationToken ct = default)
+        {
+            await _pharmacistHub.Clients
+                .Group($"store:{storeId}")
+                .SendAsync("NewOnlineOrder", payload, ct);
+
+            Console.WriteLine($"[SignalR] NewOnlineOrder -> Store {storeId}");
+        }
+
+        public async Task SendNewPickUpOrderToStoreAsync(
+              Guid storeId, object payload, CancellationToken ct = default)
+        {
+            await _pharmacistHub.Clients
+                .Group($"store:{storeId}")
+                .SendAsync("NewPickUpOrder", payload, ct); 
+            Console.WriteLine($"[SignalR] NewPickUpOrder -> Store {storeId}");
         }
     }
 }

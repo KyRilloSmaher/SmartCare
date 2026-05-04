@@ -14,6 +14,7 @@ namespace SmartCare.Application.Notifications
         Task SendProductStockStatusChangedAsync(Guid productId, object payload, CancellationToken ct = default);
         Task SendPaymentStatusChangedAsync(string clientId, object payload, CancellationToken ct = default);
         Task SendCartUpdatedAsync(string userId ,Guid cartId, object payload, CancellationToken ct = default);
-        
+        Task SendNewOnlineOrderToStoreAsync(Guid storeId, object payload, CancellationToken ct = default);
+        Task SendNewPickUpOrderToStoreAsync(Guid storeId,object payload,CancellationToken ct = default);
     }
 }

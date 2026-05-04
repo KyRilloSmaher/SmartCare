@@ -230,7 +230,62 @@ namespace SmartCare.InfraStructure.Repositories
             return UpdateAsync(product);
         }
 
-       
+       public async Task<IEnumerable<ProductLevelInStore>> productLevelInStores(Guid productId)
+       {
+
+                var inventoryLevels = await _context.Inventories.Include(inv => inv.Store)
+                    .Where(inv => inv.ProductId == productId)
+                    .Select(inv => new ProductLevelInStore
+                    {
+                        ProductId = inv.ProductId,
+                        StoreId = inv.StoreId,
+                        StoreName = inv.Store.Name,
+                        AvailableQuantity = inv.StockQuantity - inv.ReservedQuantity
+                    })
+                    .ToListAsync();
+    
+                return inventoryLevels;
+        }
+
+        public IQueryable<GLobelProductStockLevel> GetGlobalProductStockLevels()
+        {
+            var query = _context.Inventories
+                .GroupBy(inv => inv.ProductId)
+                .Select(g => new
+                {
+                    ProductId = g.Key,
+                    TotalStock = g.Sum(inv => inv.StockQuantity - inv.ReservedQuantity)
+                })
+                .Join(_context.Products,
+                    g => g.ProductId,
+                    p => p.ProductId,
+                    (g, p) => new GLobelProductStockLevel
+                    {
+                        ProductId = p.ProductId,
+                        ProductName = p.NameEn,
+                        Price = p.Price,
+                        CategoryName = p.Category != null ? p.Category.Name : "Uncategorized",
+                        ComanyName = p.Company != null ? p.Company.Name : "No Company",
+                        TotalStockLevel = g.TotalStock
+                    })
+                .AsNoTracking();
+
+            return query;
+        }
+
+        public async Task<IEnumerable<Product>> GetProductsByIds(IList<Guid> ids)
+        {
+            if (ids == null || !ids.Any())
+                return Enumerable.Empty<Product>();
+            var products = await _context.Products
+                .Include(p => p.Images)
+                .Include(p => p.Company)
+                .Where(p => ids.Contains(p.ProductId))
+                .AsNoTracking()
+                .ToListAsync();
+            return products;
+        }
+
         #endregion
     }
 }

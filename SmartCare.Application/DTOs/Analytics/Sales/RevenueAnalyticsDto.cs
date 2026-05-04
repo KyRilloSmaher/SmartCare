@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SmartCare.Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,7 +15,7 @@ namespace SmartCare.Application.DTOs.Analytics.Sales
 
     public class RevenueAnalyticsDto
     {
-        public string Interval { get; set; } = default!;
+        public FilterIntervales Interval { get; set; } = default!;
         public List<RevenuePointDto> Data { get; set; } = new();
     }
 }

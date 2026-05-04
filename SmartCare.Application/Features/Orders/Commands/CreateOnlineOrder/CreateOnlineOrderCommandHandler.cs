@@ -9,6 +9,7 @@ using SmartCare.Application.ExternalServiceInterfaces;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Application.Handlers.ResponsesHandler;
 using SmartCare.Application.IServices;
+using SmartCare.Application.Notifications;
 using SmartCare.Domain.Constants;
 using SmartCare.Domain.Entities;
 using SmartCare.Domain.Enums;
@@ -28,9 +29,13 @@ namespace SmartCare.Application.Features.Orders.Commands.CreateOnlineOrder
         private readonly ISqlLockManager _sqlLockManager;
         private readonly ILogger<CreateOnlineOrderCommandHandler> _logger;
         private readonly int OrderExpirationTimeUntilPayment;
+        private readonly IRedisCacheService _redisCacheService;
         private readonly IEventPublisherService _eventPublisherService;
+        private readonly IOrderNotificationService _notificationService;
+        private readonly IMapService _mapService;
+
         #endregion
-        public CreateOnlineOrderCommandHandler(IConfiguration configuration, IResponseHandler responseHandler, IUnitOfWork unitOfWork, IBackgroundJobService backgroundJobService, IMapper mapper, ISqlLockManager sqlLockManager, ILogger<CreateOnlineOrderCommandHandler> logger, IEventPublisherService eventPublisherService)
+        public CreateOnlineOrderCommandHandler(IConfiguration configuration, IResponseHandler responseHandler, IUnitOfWork unitOfWork, IBackgroundJobService backgroundJobService, IMapper mapper, ISqlLockManager sqlLockManager, ILogger<CreateOnlineOrderCommandHandler> logger, IEventPublisherService eventPublisherService, IOrderNotificationService notificationService, IMapService mapService, IRedisCacheService redisCacheService)
         {
             _responseHandler = responseHandler;
             _unitOfWork = unitOfWork;
@@ -40,7 +45,22 @@ namespace SmartCare.Application.Features.Orders.Commands.CreateOnlineOrder
             _logger = logger;
             OrderExpirationTimeUntilPayment = configuration.GetValue<int>("ReservationTimes:ForOrderExpirationMinutes");
             _eventPublisherService = eventPublisherService;
+            _notificationService = notificationService;
+            _mapService = mapService;
+            _redisCacheService = redisCacheService;
+
         }
+        //public CreateOnlineOrderCommandHandler(IConfiguration configuration, IResponseHandler responseHandler, IUnitOfWork unitOfWork, IBackgroundJobService backgroundJobService, IMapper mapper, ISqlLockManager sqlLockManager, ILogger<CreateOnlineOrderCommandHandler> logger, IEventPublisherService eventPublisherService)
+        //{
+        //    _responseHandler = responseHandler;
+        //    _unitOfWork = unitOfWork;
+        //    _backgroundJobService = backgroundJobService;
+        //    _mapper = mapper;
+        //    _sqlLockManager = sqlLockManager;
+        //    _logger = logger;
+        //    OrderExpirationTimeUntilPayment = configuration.GetValue<int>("ReservationTimes:ForOrderExpirationMinutes");
+        //    _eventPublisherService = eventPublisherService;
+        //}
 
         public async  Task<Response<OrderResponseDto?>> Handle(CreateOnlineOrderFromCartAsyncCommand request, CancellationToken cancellationToken)
         {
@@ -150,6 +170,54 @@ namespace SmartCare.Application.Features.Orders.Commands.CreateOnlineOrder
             var response = _mapper.Map<OrderResponseDto>(order);
             foreach (var l in inventoryLocks)
                 await l.DisposeAsync();
+
+            // =====================================================
+            // 11. ✅ SignalR — Notify pharmacists in this branch
+            // =====================================================
+            try
+            {
+                var storeId = cartItems.First().Inventory.StoreId;
+                var store = await _unitOfWork.Stores.GetByIdAsync(storeId);
+                var address = await _unitOfWork.Addresses.GetByIdAsync(ShippingAddressId);
+
+                if (store != null && address != null)
+                {
+                    var notificationDto = new OnlineOrderResponseDto
+                    {
+                        OrderId = order.Id,
+                        ClientName = $"{client.User.FirstName} {client.User.LastName}",
+                        ClientPhone = client.User.PhoneNumber,
+                        TotalPrice = order.TotalPrice,
+                        Status = order.Status.ToString(),
+                        OrderDate = order.CreatedAt,
+                        DeliveryAddress = address.AddressLine,
+                        AdditionalInfo = address.AdditionalInfo,
+                        DistanceFromBranch = Math.Round(_mapService.CalculateDistanceKm(
+                            store.Latitude, store.Longitude,
+                            address.Latitude, address.Longitude), 2),
+                        Items = orderItems.Select(oi => new OnlineOrderItemDto
+                        {
+                            ProductId = oi.ProductId,
+                            ProductName = oi.Product?.NameEn,
+                            Quantity = oi.Quantity,
+                            UnitPrice = oi.UnitPrice,
+                            SubTotal = oi.SubTotal
+                        }).ToList()
+                    };
+
+                    await _notificationService.NotifyNewOnlineOrderAsync(storeId, notificationDto);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "SignalR notification failed for order {OrderId}", order.Id);
+            }
+
+            string clientByIdKey = $"client_id_{clientId}";
+            string clientByEmailKey = $"client_email_{client.User?.Email?.ToLower()}";
+            await _redisCacheService.RemoveKeyAsync(clientByIdKey, CacheConstants.Client);
+            await _redisCacheService.RemoveKeyAsync(clientByEmailKey, CacheConstants.Client);
+            await _redisCacheService.RemoveKeyAsync("clients_all", CacheConstants.Client);
             return _responseHandler.Success(response, SystemMessages.ORDER_PLACED);
 
         }
@@ -176,16 +244,17 @@ namespace SmartCare.Application.Features.Orders.Commands.CreateOnlineOrder
             var delay = TimeSpan.FromMinutes(OrderExpirationTimeUntilPayment);
             _backgroundJobService.Schedule(() => RealseOrder(order.Id), delay);
         }
-        public async Task  RealseOrder(Guid orderId)
+        public async Task RealseOrder(Guid orderId)
         {
+            _logger.LogInformation($"************RealseOrder Begin For Order => {orderId}");
             var order = await _unitOfWork.Orders.GetOrderWithDetailsByIdAsync(orderId);
 
             if (order is null)
-                  return;
-
+                return;
+            _logger.LogInformation($"************Realse Order  For Order with Status  => {order.Status}");
             // Idempotency: don't re-expire an already finalized order
-            if (order.Status is OrderStatus.Expired or OrderStatus.Cancelled or OrderStatus.Completed or OrderStatus.Confirmed)
-                return ;
+            if (order.Status is OrderStatus.Expired or OrderStatus.Cancelled or OrderStatus.Completed)
+                return;
 
             if (order.Items is null || !order.Items.Any())
                 return;
@@ -195,18 +264,20 @@ namespace SmartCare.Application.Features.Orders.Commands.CreateOnlineOrder
             {
                 if (!item.ReservationId.HasValue)
                     continue;
-
-                 await _unitOfWork.Reservations.CancelReservationAsync(
-                    reservationId: item.ReservationId.Value,
-                    inventoryId: item.InvetoryId,
-                    status: reservationStatus
-                );
+                _logger.LogInformation($"**************Realse Reservation For Item with ReservationId is => {item.ReservationId}");
+                var result = await _unitOfWork.Reservations.CancelReservationAsync(
+                   reservationId: item.ReservationId.Value,
+                   inventoryId: item.InvetoryId,
+                   status: reservationStatus
+               );
+                _logger.LogInformation($"**************Realse Reservation For Item with ReservationId is => {item.ReservationId} Is {result} ");
             }
 
-            order.Status = OrderStatus.Expired;
-
+            order.ChangeStatus(OrderStatus.Expired);
             // Save changes through UnitOfWork
             await _unitOfWork.SaveChangesAsync();
+
+            _logger.LogInformation($"**************Realse Order  :  Order Status Become  => {order.Status}");
             // Push Notifaction to User
             await _eventPublisherService.PublishOrderExpirationNotification(order.ClientId, orderId);
         }

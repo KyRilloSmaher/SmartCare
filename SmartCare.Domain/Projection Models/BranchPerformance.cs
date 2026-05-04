@@ -11,7 +11,9 @@ namespace SmartCare.Domain.Projection_Models
         public Guid BranchId { get; set; }
         public string BranchName { get; set; } = default!;
         public decimal Revenue { get; set; }
-        public int Orders { get; set; }
+        public int TotalOrders { get; set; }
+        public int OnlineOrders { get; set; }
+        public int PickupOrders { get; set; }
     }
 
 }
