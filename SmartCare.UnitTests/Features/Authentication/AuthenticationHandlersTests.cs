@@ -9,7 +9,7 @@ using SmartCare.Application.Features.Authentication.Commands.Passwords.ResetPass
 using SmartCare.Domain.Constants;
 using SmartCare.Domain.Entities;
 using SmartCare.Domain.IRepositories;
-using SmartCare.UnitTests.TestHelpers;
+using SmartCare.UnitTests.TestInfrastructure;
 
 namespace SmartCare.UnitTests.Features;
 

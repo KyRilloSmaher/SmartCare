@@ -1,2 +1,9 @@
 global using Xunit;
 global using FluentAssertions;
+global using Moq;
+global using AutoMapper;
+global using Microsoft.Extensions.Logging;
+global using SmartCare.Domain.Entities;
+global using SmartCare.Domain.IRepositories;
+global using SmartCare.Domain.Constants;
+global using SmartCare.UnitTests.TestInfrastructure;

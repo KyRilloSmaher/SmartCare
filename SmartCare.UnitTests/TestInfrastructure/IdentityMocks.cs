@@ -2,8 +2,11 @@ using Microsoft.AspNetCore.Identity;
 using Moq;
 using SmartCare.Domain.Entities;
 
-namespace SmartCare.UnitTests.TestHelpers;
+namespace SmartCare.UnitTests.TestInfrastructure;
 
+/// <summary>
+/// Shared factory methods for creating Identity-related mocks.
+/// </summary>
 internal static class IdentityMocks
 {
     public static Mock<UserManager<ApplictionUser>> CreateUserManagerMock()

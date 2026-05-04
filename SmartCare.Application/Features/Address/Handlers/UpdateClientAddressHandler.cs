@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using MediatR;
 using SmartCare.Application.CQRs.Address.Commands;
 using SmartCare.Application.CQRs.Address.Extensions;
