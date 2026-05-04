@@ -58,6 +58,7 @@ namespace SmartCare.Domain.IRepositories
 
         Task<IEnumerable<ProductLevelInStore>> productLevelInStores(Guid productId);
         IQueryable<GLobelProductStockLevel> GetGlobalProductStockLevels();
+        Task<IEnumerable<Product>> GetProductsByIds(IList<Guid> ids);
         #endregion
     }
 }

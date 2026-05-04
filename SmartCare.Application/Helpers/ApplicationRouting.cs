@@ -182,6 +182,7 @@ namespace SmartCare.API.Helpers
             public const string SearchProductsByNameInStore = PharmacistPrefix + "/SearchByName/Store";
             public const string StockLevels = AdminPrefix + "/stock-levels";
             public const string GetProductStockLevelsInStores = AdminPrefix + SingleRoute +  "/stores/stock-levels";
+            public const string PeopleAlsoBought = Prefix + "/people-also-bought" + SingleRoute;
 
         }
         #endregion

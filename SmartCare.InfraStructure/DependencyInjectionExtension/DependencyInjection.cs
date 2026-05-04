@@ -32,6 +32,7 @@ using Microsoft.Extensions.Logging;
 using Polly;
 using SmartCare.Application.Handlers.RoleHandler;
 using SmartCare.Application.Handlers.ClaimsHandler;
+using SmartCare.InfraStructure.Services.FP_Growth;
 
 namespace SmartCare.InfraStructure.Extensions
 {
@@ -104,7 +105,7 @@ namespace SmartCare.InfraStructure.Extensions
             //services.AddScoped<IOrderService, OrderService>();
             //services.AddScoped<IinventoryService, InventoryService>();
             services.AddScoped<ISqlLockManager, SqlLockManager>();
-
+            services.AddScoped<IDataMiningService,FP_Growth >();
             // ---------- External Services ----------
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IImageUploaderService, ImageUploaderService>();

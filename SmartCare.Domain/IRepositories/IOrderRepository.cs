@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace SmartCare.Domain.IRepositories
 {
@@ -38,6 +39,11 @@ namespace SmartCare.Domain.IRepositories
         Task UpdatePickupCodeHashAsync(Guid orderId, string pickupCodeHash);
         IQueryable<OnlineOrder> GetTodayOnlineOrdersByStore(Guid storeId);
         Task<List<PickUpOrder>> GetTodayPickUpOrdersByStoreAsync(Guid storeId, DateTime today);
+
+
+
+
+        Task<IEnumerable<TransactionDTO>> GetTransactionsAsync();
         Task<IEnumerable<OnlineOrder>> GetShippingOrdersAsync();
     }
 }

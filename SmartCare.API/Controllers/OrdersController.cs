@@ -309,6 +309,17 @@ namespace SmartCare.API.Controllers
             return ControllersHelperMethods.FinalResponse(result);
         }
 
+        /// <summary>
+        /// Update Order Status
+        /// </summary>
+        [Authorize(Roles = "DASHBOARD_ADMIN,PHARMACIST")]
+        [HttpPatch(ApplicationRouting.Order.UpdateStatus)]
+        [ProducesResponseType(typeof(Response<OrderResponseDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> UpdateOrderStatusAsync(Guid id, OrderStatus newStatus)
+        {
+            var result = await _mediator.Send(new UpdateOrderStatusCommand(id, newStatus));
+            return ControllersHelperMethods.FinalResponse(result);
+        }
 
         /// <summary>
         /// Update Order Status
