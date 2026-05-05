@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -124,6 +124,21 @@ Stack Trace   ==> {StackTrace}
                         response.StatusCode = (int)HttpStatusCode.BadRequest;
                         errorsBag["DomainError"] = new List<string> { domainException.Message };
                         responseModel.Message = "A domain rule was violated.";
+                        break;
+                    case AiCoreFeatureDisabledException featureDisabledEx:
+                        responseModel.StatusCode = HttpStatusCode.ServiceUnavailable;
+                        response.StatusCode = (int)HttpStatusCode.ServiceUnavailable;
+
+                        errorsBag["AiCore"] = new List<string> { featureDisabledEx.Message };
+                        responseModel.Message = "AI Core feature is currently unavailable.";
+                        break;
+
+                    case AiCoreValidationException aiValidationEx:
+                        responseModel.StatusCode = HttpStatusCode.BadRequest;
+                        response.StatusCode = (int)HttpStatusCode.BadRequest;
+
+                        errorsBag["AiCoreValidation"] = new List<string> { aiValidationEx.Message };
+                        responseModel.Message = "AI Core validation failed.";
                         break;
 
                     default:
