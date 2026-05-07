@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using SmartCare.Domain.Entities;
 using SmartCare.Domain.Enums;
+using SmartCare.Domain.Exceptions;
 using SmartCare.Domain.IRepositories;
 using SmartCare.InfraStructure.DbContexts;
 
@@ -180,9 +181,15 @@ namespace SmartCare.InfraStructure.Repositories
             return reservation;
         }
 
-        public Task<bool> Delete(Guid Id)
+        public async Task<bool> Delete(Guid Id)
         {
-            throw new NotImplementedException();
+           var reservation =  await _context.Reservations.FirstOrDefaultAsync(r => r.Id == Id);
+            if (reservation is null)
+            {
+                throw new DomainException("Can not Delete Reservation because it does not exist");
+            }
+            _context.Reservations.Remove(reservation);
+            return true;
         }
 
         #endregion

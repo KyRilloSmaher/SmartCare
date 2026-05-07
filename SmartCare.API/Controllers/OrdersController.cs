@@ -229,7 +229,7 @@ namespace SmartCare.API.Controllers
         [Authorize(Roles = "DASHBOARD_ADMIN , OWNER")]
         [HttpGet(ApplicationRouting.Order.GetAllWithDetails)]
         [ProducesResponseType(typeof(Response<IEnumerable<OrderResponseDto>>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetOrdersWithDetailsAsync(GetOrdersForAdminRequestDto request)
+        public async Task<IActionResult> GetOrdersWithDetailsAsync([FromQuery] GetOrdersForAdminRequestDto request)
         {
             var result = await _mediator.Send(new GetOrdersWithDetailsQuery(request));
             return ControllersHelperMethods.FinalResponse(result);

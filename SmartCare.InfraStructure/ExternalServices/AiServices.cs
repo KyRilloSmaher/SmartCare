@@ -194,16 +194,13 @@ public class AiCoreService : IAiServices
         if (!response.IsSuccessStatusCode)
         {
             var body = await response.Content.ReadAsStringAsync(ct);
-            _logger.LogError(
-                "AI Core returned {StatusCode} for {Endpoint}: {Body}",
-                response.StatusCode, endpoint, body);
+            _logger.LogError("AI Core returned {StatusCode} for {Endpoint}: {Body}",response.StatusCode, endpoint, body);
 
             throw response.StatusCode switch
             {
                 HttpStatusCode.ServiceUnavailable => new AiCoreFeatureDisabledException(endpoint, body),
                 HttpStatusCode.BadRequest => new AiCoreValidationException(endpoint, body),
-                _ => new AiCoreException(
-                                                         $"AI Core error {(int)response.StatusCode} at {endpoint}: {body}")
+                _ => new AiCoreException($"AI Core error {(int)response.StatusCode} at {endpoint}: {body}")
             };
         }
 
