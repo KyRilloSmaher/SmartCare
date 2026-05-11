@@ -11,6 +11,7 @@ namespace SmartCare.Application.DTOs.Pharmacist.Response
 {
     public class PharmacistProfileDto
     {
+        public string Id { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string UserName { get; set; }

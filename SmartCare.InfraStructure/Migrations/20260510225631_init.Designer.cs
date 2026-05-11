@@ -13,8 +13,8 @@ using SmartCare.InfraStructure.DbContexts;
 namespace SmartCare.InfraStructure.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    [Migration("20260315155841_CreateContradictionTable")]
-    partial class CreateContradictionTable
+    [Migration("20260510225631_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -477,21 +477,12 @@ namespace SmartCare.InfraStructure.Migrations
 
             modelBuilder.Entity("SmartCare.Domain.Entities.Contradiction", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("Id");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
                     b.Property<string>("Ingredient_A")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)")
                         .HasColumnName("Ingredient_A");
 
                     b.Property<string>("Ingredient_B")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)")
                         .HasColumnName("Ingredient_B");
@@ -505,7 +496,7 @@ namespace SmartCare.InfraStructure.Migrations
                         .HasColumnType("nvarchar(20)")
                         .HasColumnName("Severity");
 
-                    b.HasKey("Id");
+                    b.HasKey("Ingredient_A", "Ingredient_B");
 
                     b.HasIndex("Ingredient_A")
                         .HasDatabaseName("IX_Contradictions_Ingredient_A");
@@ -709,7 +700,7 @@ namespace SmartCare.InfraStructure.Migrations
                     b.Property<int>("Method")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasDefaultValue(2);
+                        .HasDefaultValue(0);
 
                     b.Property<Guid>("OrderId")
                         .HasColumnType("uniqueidentifier");

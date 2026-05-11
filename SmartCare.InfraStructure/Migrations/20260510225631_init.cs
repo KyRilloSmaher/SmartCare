@@ -7,7 +7,7 @@ using NetTopologySuite.Geometries;
 namespace SmartCare.InfraStructure.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdatePaymentsTable : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -35,7 +35,6 @@ namespace SmartCare.InfraStructure.Migrations
                     LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Gender = table.Column<int>(type: "int", nullable: false),
                     ProfileImageUrl = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    BirthDate = table.Column<DateOnly>(type: "date", nullable: false),
                     OTP = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     OTPExpiryTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     OTPAttempts = table.Column<int>(type: "int", nullable: false),
@@ -91,6 +90,20 @@ namespace SmartCare.InfraStructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Company", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Contradictions",
+                columns: table => new
+                {
+                    Ingredient_A = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Ingredient_B = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Reason = table.Column<string>(type: "text", nullable: true),
+                    Severity = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Contradictions", x => new { x.Ingredient_A, x.Ingredient_B });
                 });
 
             migrationBuilder.CreateTable(
@@ -259,6 +272,7 @@ namespace SmartCare.InfraStructure.Migrations
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     AccountType = table.Column<int>(type: "int", nullable: false),
+                    BirthDate = table.Column<DateOnly>(type: "date", nullable: false),
                     RatesCount = table.Column<int>(type: "int", nullable: false),
                     OrdersCount = table.Column<int>(type: "int", nullable: false),
                     FavoritesCount = table.Column<int>(type: "int", nullable: false)
@@ -295,7 +309,9 @@ namespace SmartCare.InfraStructure.Migrations
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     IsAvailable = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
-                    DosageForm = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true)
+                    DosageForm = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -317,8 +333,8 @@ namespace SmartCare.InfraStructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    LicenseNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    LicenseNumber = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
                     StoreId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
@@ -335,7 +351,7 @@ namespace SmartCare.InfraStructure.Migrations
                         column: x => x.StoreId,
                         principalTable: "Store",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -535,7 +551,7 @@ namespace SmartCare.InfraStructure.Migrations
                     ProviderReferenceId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     Amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
-                    Method = table.Column<int>(type: "int", nullable: false, defaultValue: 2),
+                    Method = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CompletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -772,6 +788,22 @@ namespace SmartCare.InfraStructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Contradictions_Ingredient_A",
+                table: "Contradictions",
+                column: "Ingredient_A");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Contradictions_Ingredient_B",
+                table: "Contradictions",
+                column: "Ingredient_B");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Contradictions_Ingredient_Combination",
+                table: "Contradictions",
+                columns: new[] { "Ingredient_A", "Ingredient_B" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Favorite_ClientId",
                 table: "Favorite",
                 column: "ClientId");
@@ -843,6 +875,12 @@ namespace SmartCare.InfraStructure.Migrations
                 name: "IX_Payment_ProviderReferenceId",
                 table: "Payment",
                 column: "ProviderReferenceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Pharmacists_LicenseNumber",
+                table: "Pharmacists",
+                column: "LicenseNumber",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Pharmacists_StoreId",
@@ -987,6 +1025,9 @@ namespace SmartCare.InfraStructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "CartItem");
+
+            migrationBuilder.DropTable(
+                name: "Contradictions");
 
             migrationBuilder.DropTable(
                 name: "EmailVerifications");

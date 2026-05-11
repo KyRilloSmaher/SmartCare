@@ -123,34 +123,34 @@ namespace SmartCare.Application.CQRs.Authentication.Handlers.Auth
 
                 // Generate email confirmation token
 
-                var token = await _unitOfWork.UserManager.GenerateEmailConfirmationTokenAsync(user);
-                var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+                //var token = await _unitOfWork.UserManager.GenerateEmailConfirmationTokenAsync(user);
+                //var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
-                var httpRequest = _httpContextAccessor.HttpContext!.Request;
-                var scheme = httpRequest.Headers["X-Forwarded-Proto"].FirstOrDefault()
-                             ?? httpRequest.Scheme;
-                var host = httpRequest.Headers["X-Forwarded-Host"].FirstOrDefault()
-                           ?? httpRequest.Host.ToUriComponent();
-                var baseUrl = $"{scheme}://{host}";
-                var encodedEmail = Uri.EscapeDataString(user.Email!);
-                var confirmEmailUrl = $"{baseUrl}/{ApplicationRouting.Authentication.ConfirmEmail}?email={encodedEmail}&token={encodedToken}";
-
-
+                //var httpRequest = _httpContextAccessor.HttpContext!.Request;
+                //var scheme = httpRequest.Headers["X-Forwarded-Proto"].FirstOrDefault()
+                //             ?? httpRequest.Scheme;
+                //var host = httpRequest.Headers["X-Forwarded-Host"].FirstOrDefault()
+                //           ?? httpRequest.Host.ToUriComponent();
+                //var baseUrl = $"{scheme}://{host}";
+                //var encodedEmail = Uri.EscapeDataString(user.Email!);
+                //var confirmEmailUrl = $"{baseUrl}/{ApplicationRouting.Authentication.ConfirmEmail}?email={encodedEmail}&token={encodedToken}";
 
 
-                // Store email verification
-                await _unitOfWork.EmailVerifications.AddVerificationAsync(
-                    email: user.Email,
-                    code: token,
-                    validFor: TimeSpan.FromHours(24)
-                );
+
+
+                //// Store email verification
+                //await _unitOfWork.EmailVerifications.AddVerificationAsync(
+                //    email: user.Email,
+                //    code: token,
+                //    validFor: TimeSpan.FromHours(24)
+                //);
 
 
                 // Save all changes atomically in one transaction
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 
                 // Send confirmation email (after successful save)
-                await _emailService.SendConfirmationEmailAsync(user.Email, confirmEmailUrl);
+                //await _emailService.SendConfirmationEmailAsync(user.Email, confirmEmailUrl);
 
                 return _responseHandler.Success(true, SystemMessages.SUCCESS);
                   }
