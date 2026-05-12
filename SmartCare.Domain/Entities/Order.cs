@@ -34,10 +34,20 @@ namespace SmartCare.Domain.Entities
         /// </summary>
         public void ChangeStatus(OrderStatus newStatus)
         {
+
             var state = OrderStates.OrderStateFactory.Create(this);
             state.Handle(this, newStatus);
-
             UpdatedAt = DateTime.UtcNow;
+            if (newStatus == OrderStatus.Completed)
+            {
+                foreach (var item in Items)
+                {
+                    if (item.Inventory != null)
+                    {
+                        item.Inventory.Confirm(item.Quantity);
+                    }
+                }
+            }
         }
 
         /// <summary>
