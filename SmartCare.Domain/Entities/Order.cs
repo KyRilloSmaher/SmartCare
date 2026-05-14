@@ -38,6 +38,16 @@ namespace SmartCare.Domain.Entities
             state.Handle(this, newStatus);
 
             UpdatedAt = DateTime.UtcNow;
+            if (newStatus == OrderStatus.Completed)
+            {
+                foreach (var item in Items)
+                {
+                    if (item.Inventory != null)
+                    {
+                        item.Inventory.Confirm(item.Quantity);
+                    }
+                }
+            }
         }
 
         /// <summary>

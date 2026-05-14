@@ -16,13 +16,6 @@ namespace SmartCare.Domain.OrderStates
 
             if (nextStatus == OrderStatus.Completed)
             {
-                foreach (var item in order.Items)
-                {
-                    if (item.Inventory != null)
-                    {
-                        item.Inventory.Confirm(item.Quantity);
-                    }
-                }
                 order.SetStatus(OrderStatus.Completed);
                 return;
             }
