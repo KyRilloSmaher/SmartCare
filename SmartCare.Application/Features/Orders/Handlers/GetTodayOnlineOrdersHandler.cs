@@ -91,6 +91,7 @@ namespace SmartCare.Application.Features.Orders.Queries.GetTodayOnlineOrders
                 Status = o.Order.Status.ToString(),
                 OrderDate = o.Order.CreatedAt,
                 Is_paid = o.Order.Payment != null,
+                DeliveryFees = o.Order.DeleiveryFees,
                 DistanceFromBranch = Math.Round(o.Distance, 2),
                 DeliveryAddress = o.Order.Address.AddressLine,
                 AdditionalInfo = o.Order.Address.AdditionalInfo,

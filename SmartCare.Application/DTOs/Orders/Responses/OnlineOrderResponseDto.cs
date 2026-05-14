@@ -18,6 +18,7 @@ namespace SmartCare.Application.DTOs.Orders.Responses
         public string DeliveryAddress { get; set; }
         public bool Is_paid { get; set; } = false;
         public string? AdditionalInfo { get; set; }
+        public decimal? DeliveryFees { get; set; }
         public List<OnlineOrderItemDto> Items { get; set; }
     }
 
