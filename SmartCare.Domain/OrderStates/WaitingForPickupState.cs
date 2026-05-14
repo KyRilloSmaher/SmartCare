@@ -1,4 +1,5 @@
-﻿using SmartCare.Domain.Entities;
+﻿using NetTopologySuite.Index.HPRtree;
+using SmartCare.Domain.Entities;
 using SmartCare.Domain.Enums;
 
 namespace SmartCare.Domain.OrderStates
@@ -15,6 +16,13 @@ namespace SmartCare.Domain.OrderStates
 
             if (nextStatus == OrderStatus.Completed)
             {
+                foreach (var item in order.Items)
+                {
+                    if (item.Inventory != null)
+                    {
+                        item.Inventory.Confirm(item.Quantity);
+                    }
+                }
                 order.SetStatus(OrderStatus.Completed);
                 return;
             }

@@ -27,6 +27,8 @@ namespace SmartCare.Infrastructure.Repositories
                 .Include(o => o.Items)
                     .ThenInclude(i => i.Product)
                         .ThenInclude(p => p.Images)
+                .Include(o => o.Items)
+                    .ThenInclude(i => i.Inventory)
                 .Include(o => o.Payment)
                 .Include(o => o.Client)
                 .Include(o => o.Client.User);
