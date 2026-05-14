@@ -60,6 +60,8 @@ namespace SmartCare.InfraStructure.Extensions
             services.AddScoped<IPaymentRepository, PaymentRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IPaymentGatewayFactory, PaymentGatewayFactory>();
+            services.AddScoped<IDeliveryRepository, DeliveryRepository>();
+
 
             services.AddScoped<ISalesRepository, SalesRepository>();
             // ---------- Handlers ---------

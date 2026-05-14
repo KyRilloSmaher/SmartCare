@@ -12,6 +12,9 @@ namespace SmartCare.Domain.Entities
         public Guid ShippingAddressId { get; set; }
         [ForeignKey(nameof(ShippingAddressId))]
         public Address Address { get; set; }
+        public decimal? DeleiveryFees { get; set; } = 0;
+        public string? DeliveryId { get; set; }
+        public Delivery Delivery { get; set; }
 
         public OnlineOrder() { }
 
@@ -27,5 +30,6 @@ namespace SmartCare.Domain.Entities
         {
             return new OnlineOrder( clientId,  totalPrice,  deliveryAddressId);
         }
+        public decimal GetTotalFees() => TotalPrice + (DeleiveryFees ?? 0);
     }
 }

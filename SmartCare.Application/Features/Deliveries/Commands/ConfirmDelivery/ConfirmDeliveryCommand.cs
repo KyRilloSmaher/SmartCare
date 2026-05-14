@@ -6,8 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.Features.Orders.Commands
+namespace SmartCare.Application.Features.Deliveries.Commands
 {
-    public record AcceptDeliveryCommand(Guid OrderId, string DeliveryPersonId)
-       : IRequest<Response<bool>>;
+    public record ConfirmDeliveryCommand(Guid OrderId, string DeliveryPersonId):IRequest<Response<bool>>;
 }

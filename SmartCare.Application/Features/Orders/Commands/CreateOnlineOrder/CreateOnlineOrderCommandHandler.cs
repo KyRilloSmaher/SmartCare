@@ -16,6 +16,8 @@ using SmartCare.Domain.Enums;
 using SmartCare.Domain.IRepositories;
 using Stripe.Climate;
 using System.Threading;
+using System.Threading.Tasks;
+using static SmartCare.API.Helpers.ApplicationRouting;
 
 namespace SmartCare.Application.Features.Orders.Commands.CreateOnlineOrder
 {
@@ -129,14 +131,14 @@ namespace SmartCare.Application.Features.Orders.Commands.CreateOnlineOrder
 
             foreach (var item in orderItems)
             {
-                var inventory = await _unitOfWork.Inventories.GetByIdAsync(item.InvetoryId);
+                var inventory = await _unitOfWork.Inventories.GetByIdAsync(item.InvetoryId,true);
 
                 if ( inventory is null || inventory.StockQuantity < item.Quantity)
                 {
                     step7OutOfStock.Add(OrderExtensions.BuildOutOfStock(new CartItem { ProductId = item.ProductId, Quantity = inventory.StockQuantity }, inventory.StockQuantity));
                     continue;
                 }
-
+                item.Inventory = inventory;
                 var reservationStatus =ReservationStatus.ReservedUntilPayment;
 
                 var reservation = await _unitOfWork.Reservations.CreateReservationAsync(
@@ -156,14 +158,24 @@ namespace SmartCare.Application.Features.Orders.Commands.CreateOnlineOrder
             // 8. Update order items with reservation ids
             // =====================================================
             await _unitOfWork.Orders.UpdateOrderItemsAsync(orderItems);
+
+
             // =====================================================
-            // 9. Save all changes atomically through UnitOfWork
+            // 9. Calculate Delivery Fees
+            // =====================================================
+            var StoreId = orderItems.Select(oi => oi.Inventory.StoreId).FirstOrDefault(); // not Accurate ofc :)
+            var deliveryFees = await CalculateDeliveryFees(ShippingAddressId ,StoreId);
+            order.DeleiveryFees = deliveryFees;
+            order.TotalPrice = order.GetTotalFees();
+
+            // =====================================================
+            // 10. Save all changes atomically through UnitOfWork
             // =====================================================
 
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
+             await _unitOfWork.SaveChangesAsync(cancellationToken);
            
             // =====================================================
-            // 10. Post-commit actions
+            // 11. Post-commit actions
             // =====================================================
             ScheduleOrderExpiration(order);
             ScheduledProductsStatusChanged(orderItems);
@@ -172,7 +184,7 @@ namespace SmartCare.Application.Features.Orders.Commands.CreateOnlineOrder
                 await l.DisposeAsync();
 
             // =====================================================
-            // 11. ✅ SignalR — Notify pharmacists in this branch
+            // 12. ✅ SignalR — Notify pharmacists in this branch
             // =====================================================
             try
             {
@@ -284,6 +296,19 @@ namespace SmartCare.Application.Features.Orders.Commands.CreateOnlineOrder
         private Response<OrderResponseDto?>  BuildStockErrorResponse(List<OutOfStockItemDto> items)
         {
             return _responseHandler.Success<OrderResponseDto?>(new OrderResponseDto { outOfStocks = items},SystemMessages.ORDER_PLACED);
+        }
+        private async Task<decimal> CalculateDeliveryFees(Guid clientAddressId ,Guid storeId)
+        {
+            var clientAddress = await _unitOfWork.Addresses.GetByIdAsync(clientAddressId);
+            var store = await _unitOfWork.Stores.GetByIdAsync(storeId);
+            var distanceKm = (store is not null && clientAddress is not null)
+            ? _mapService.CalculateDistanceKm(
+                store.Latitude, store.Longitude,
+                clientAddress.Latitude, clientAddress.Longitude)
+            : 0;
+            var deliveryFees = _mapService.GetDeliveryFee(distanceKm);
+
+            return deliveryFees;
         }
     }
 }

@@ -24,6 +24,7 @@ namespace SmartCare.Domain.Entities
         public Client? Client { get; set; }
         public Pharmacist? Pharmacist { get; set; }
         public Admin? Admin { get; set; }
+        public Delivery? Delivery { get; set; }
 
     }
 }

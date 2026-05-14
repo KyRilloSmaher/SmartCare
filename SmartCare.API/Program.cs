@@ -269,10 +269,10 @@ app.UseHangfireDashboard("/hangfire");
 
 app.UseMiddleware<ErrorHandlerMiddleware>();
 
+app.UseCors(CORS);
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseCors(CORS);
 
 app.MapControllers();
 

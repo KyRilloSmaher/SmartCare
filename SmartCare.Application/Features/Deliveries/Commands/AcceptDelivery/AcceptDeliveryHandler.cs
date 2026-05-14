@@ -11,7 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.Features.Orders.Handlers
+namespace SmartCare.Application.Features.Deliveries.Commands
 {
     public class AcceptDeliveryHandler : IRequestHandler<AcceptDeliveryCommand, Response<bool>>
     {
@@ -36,7 +36,7 @@ namespace SmartCare.Application.Features.Orders.Handlers
             if (string.IsNullOrWhiteSpace(request.DeliveryPersonId))
                 return _responseHandler.BadRequest<bool>("Delivery person ID is invalid.");
 
-            var order = await _unitOfWork.Orders.GetByIdAsync(request.OrderId);
+            var order = await _unitOfWork.Orders.GetOnlineOrderAsync(request.OrderId);
 
             if (order is null)
                 return _responseHandler.NotFound<bool>("Order not found.");
@@ -49,7 +49,7 @@ namespace SmartCare.Application.Features.Orders.Handlers
             // Update order status to DELIVERY_ACCEPTED
             order.ChangeStatus(OrderStatus.DELIVERY_ACCEPTED);
             order.UpdatedAt = DateTime.UtcNow;
-
+            order.DeliveryId = request.DeliveryPersonId;
             // Save changes
             await _unitOfWork.Orders.UpdateAsync(order);
             await _unitOfWork.SaveChangesAsync();

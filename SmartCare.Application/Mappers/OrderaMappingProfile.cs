@@ -38,6 +38,7 @@ namespace SmartCare.Application.Mappers
                 .ForMember(dest => dest.ClientId, opt => opt.MapFrom(src => src.ClientId))
                 .ForMember(dest => dest.OrderItems, opt => opt.MapFrom(src => src.Items))
                 .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
+                .ForMember(dest => dest.DeliveryFees, opt => opt.MapFrom(src => src.DeleiveryFees))
                 .ReverseMap();
 
             // CHILD: Store Order
@@ -49,6 +50,7 @@ namespace SmartCare.Application.Mappers
                 .ForMember(dest => dest.ClientId, opt => opt.MapFrom(src => src.ClientId))
                 .ForMember(dest => dest.OrderItems, opt => opt.MapFrom(src => src.Items))
                 .ForMember(dest => dest.Store, opt => opt.MapFrom(src => src.Store))
+                .ForMember(dest => dest.DeliveryFees, opt => opt.MapFrom(src => 0))
                 .ReverseMap();
             CreateMap<PickUpOrder, PickUpOrderResponseDto>()
                 //.ForMember(dest => dest.PaymentId, opt => opt.MapFrom(src => src.PaymentIntentId))

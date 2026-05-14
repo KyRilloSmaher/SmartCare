@@ -44,6 +44,11 @@ namespace SmartCare.InfraStructure.Configurations
                 .WithOne(a => a.User)
                 .HasForeignKey<Admin>(a => a.Id);
 
+            builder
+                .HasOne(u => u.Delivery)
+                .WithOne(a => a.User)
+                .HasForeignKey<Delivery>(a => a.Id);
+
 
         }
     }

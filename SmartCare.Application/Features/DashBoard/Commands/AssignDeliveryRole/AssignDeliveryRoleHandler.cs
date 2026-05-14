@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using SmartCare.Application.Handlers.ResponseHandler;
 using SmartCare.Domain.Entities;
+using SmartCare.Domain.IRepositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,13 +16,17 @@ namespace SmartCare.Application.Features.DashBoard.Commands.AssignDeliveryRole
     {
         private readonly UserManager<ApplictionUser> _userManager;
         private readonly IResponseHandler _responseHandler;
+        private readonly IUnitOfWork _unitOfWork;
+
 
         public AssignDeliveryRoleHandler(
             UserManager<ApplictionUser> userManager,
-            IResponseHandler responseHandler)
+            IResponseHandler responseHandler,
+            IUnitOfWork unitOfWork)
         {
             _userManager = userManager;
             _responseHandler = responseHandler;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<Response<bool>> Handle(
@@ -34,6 +39,10 @@ namespace SmartCare.Application.Features.DashBoard.Commands.AssignDeliveryRole
 
             if (await _userManager.IsInRoleAsync(user, "DELIVERY"))
                 return _responseHandler.BadRequest<bool>("User already has DELIVERY role.");
+
+            // mashi 7alak
+            var deliveryEntity = new Delivery { Id = user.Id };
+            await _unitOfWork.Deliveries.AddAsync(deliveryEntity);
 
             var result = await _userManager.AddToRoleAsync(user, "DELIVERY");
 

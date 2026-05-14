@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartCare.Application.Features.Orders.Handlers
+namespace SmartCare.Application.Features.Deliveries.Commands
 {
     public class ConfirmDeliveryHandler
         : IRequestHandler<ConfirmDeliveryCommand, Response<bool>>
